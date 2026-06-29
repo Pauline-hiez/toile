@@ -3,7 +3,8 @@
     "description": "Toile - Le marketplace des artistes",
     "type": "project",
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "altorouter/altorouter": "^2.0"
     },
     "autoload": {
         "psr-4": {
