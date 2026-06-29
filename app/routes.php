@@ -17,3 +17,4 @@
  */
 
 $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
+$router->map('GET', '/test-db', ['App\Controllers\HomeController', 'testDb']);

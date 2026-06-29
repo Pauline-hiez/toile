@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Si le fichier ou dossier demandé existe réellement (assets, images...), on le sert tel quel.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Sinon, on envoie tout vers index.php pour que AltoRouter gère la route.
+RewriteRule ^ index.php [L]
