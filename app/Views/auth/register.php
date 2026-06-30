@@ -10,6 +10,7 @@
     <h1>Créer un compte</h1>
 
     <form method="POST" action="/register">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
         <div>
             <label for="email">Email</label>
             <input
