@@ -16,8 +16,21 @@ class AuthController
         $this->userModel = new User();
     }
 
-    // Affiche le formulaire d'inscription
+    /**
+     * Affiche le formulaire d'inscription (GET /register).
+     */
     public function showRegister(): void
+    {
+        $this->renderer->render('auth/register', [
+            'errors' => [],
+            'old' => [],
+        ]);
+    }
+
+    /**
+     * Traite la soumission du formulaire d'inscription (POST /register).
+     */
+    public function register(): void
     {
         $email = trim($_POST['email'] ?? '');
         $username = trim($_POST['username'] ?? '');
@@ -64,6 +77,7 @@ class AuthController
         } elseif ($password !== $passwordConfirm) {
             $errors['password'] = 'Les mots de passe ne correspondent pas.';
         }
+
         return $errors;
     }
 }

@@ -16,4 +16,9 @@
  * déjà créée dans public/index.php.
  */
 
+// Accueil
 $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
+
+// Auth
+$router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);
+$router->map('POST', '/register', ['App\Controllers\AuthController', 'register']);
