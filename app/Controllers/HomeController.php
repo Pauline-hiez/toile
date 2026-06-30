@@ -20,4 +20,14 @@ class HomeController
             'title' => 'Toile',
         ]);
     }
+
+    public function testDb(): void
+    {
+        try {
+            $pdo = \App\Core\Database::getInstance()->getConnection();
+            echo 'Connexion à la base de données réussie ✅';
+        } catch (\Throwable $e) {
+            echo 'Erreur de connexion ❌ : ' . htmlspecialchars($e->getMessage());
+        }
+    }
 }
