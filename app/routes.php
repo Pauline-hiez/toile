@@ -48,3 +48,18 @@ $router->map('POST', '/profile/password', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Devenir artiste
+$router->map('GET', '/become-artist', [
+    'controller' => ['App\Controllers\ArtistController', 'showRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/become-artist', [
+    'controller' => ['App\Controllers\ArtistController', 'submitRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);

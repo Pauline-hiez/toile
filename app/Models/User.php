@@ -14,4 +14,9 @@ class User extends BaseModel
         $result = $stmt->fetch();
         return $result ?: null;
     }
+
+    public function setArtistRequestStatus(int $userId, string $status): bool
+    {
+        return $this->update($userId, ['artist_request_status' => $status]);
+    }
 }
