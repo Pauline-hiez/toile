@@ -121,3 +121,28 @@ $router->map('POST', '/my-services/[i:id]/delete', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Portfolio
+$router->map('GET', '/my-portfolio', [
+    'controller' => ['App\Controllers\PortfolioController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-portfolio/upload', [
+    'controller' => ['App\Controllers\PortfolioController', 'upload'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-portfolio/[i:id]/delete', [
+    'controller' => ['App\Controllers\PortfolioController', 'delete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
