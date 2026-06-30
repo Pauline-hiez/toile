@@ -36,8 +36,21 @@ if ($match === false) {
     exit;
 }
 
-// $match['target'] contient ['App\Controllers\HomeController', 'index']
-[$controllerClass, $method] = $match['target'];
+$target = $match['target'];
+
+if (isset($target['controller'])) {
+    foreach ($target['middlewares'] ?? [] as $middleware) {
+        $middleware();
+    }
+
+    [$controllerClass, $method] = $target['controller'];
+} else {
+    [$controllerClass, $method] = $target;
+}
+
+$controller = new $controllerClass($renderer);
+
+call_user_func_array([$controller, $method], $match['params']);
 
 // On instancie le contrôleur en lui passant le Renderer.
 $controller = new $controllerClass($renderer);
