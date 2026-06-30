@@ -48,10 +48,6 @@ if (isset($target['controller'])) {
     [$controllerClass, $method] = $target;
 }
 
-$controller = new $controllerClass($renderer);
-
-call_user_func_array([$controller, $method], $match['params']);
-
 // On instancie le contrôleur en lui passant le Renderer.
 $controller = new $controllerClass($renderer);
 

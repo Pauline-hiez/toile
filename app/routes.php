@@ -26,3 +26,25 @@ $router->map('POST', '/register', ['App\Controllers\AuthController', 'register']
 $router->map('GET', '/login', ['App\Controllers\AuthController', 'showLogin']);
 $router->map('POST', '/login', ['App\Controllers\AuthController', 'login']);
 $router->map('GET', '/logout', ['App\Controllers\AuthController', 'logout']);
+
+// Profil
+$router->map('GET', '/profile', [
+    'controller' => ['App\Controllers\UserController', 'showProfile'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/profile', [
+    'controller' => ['App\Controllers\UserController', 'updateProfile'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/profile/password', [
+    'controller' => ['App\Controllers\UserController', 'updatePassword'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
