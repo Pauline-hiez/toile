@@ -4,16 +4,25 @@ namespace App\Controllers;
 
 use App\Core\Renderer;
 use App\Models\Shop;
+use App\Models\Review;
+use App\Models\Service;
+use App\Models\PortfolioImage;
 
 class ShopController
 {
     private Renderer $renderer;
     private Shop $shopModel;
+    private Review $reviewModel;
+    private Service $serviceModel;
+    private PortfolioImage $portfolioModel;
 
     public function __construct(Renderer $renderer)
     {
         $this->renderer = $renderer;
         $this->shopModel = new Shop();
+        $this->reviewModel = new Review();
+        $this->serviceModel = new Service();
+        $this->portfolioModel = new PortfolioImage();
     }
 
     public function manage(): void
@@ -80,6 +89,28 @@ class ShopController
             'shop' => $shop,
             'errors' => [],
             'success' => 'Boutique enregistrée avec succès.',
+        ]);
+    }
+
+    public function show(string $slug): void
+    {
+        $shop = $this->shopModel->findBySlug($slug);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        $services = $this->serviceModel->findActiveByShopId($shop['id']);
+        $portfolioImages = $this->portfolioModel->findByShopId($shop['id']);
+        $ratingStats = $this->reviewModel->getShopRatingStats($shop['id']);
+
+        $this->renderer->render('shop/show', [
+            'shop' => $shop,
+            'services' => $services,
+            'portfolioImages' => $portfolioImages,
+            'ratingStats' => $ratingStats,
         ]);
     }
 }
