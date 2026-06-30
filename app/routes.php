@@ -63,3 +63,20 @@ $router->map('POST', '/become-artist', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Boutique artiste
+$router->map('GET', '/my-shop', [
+    'controller' => ['App\Controllers\ShopController', 'manage'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-shop', [
+    'controller' => ['App\Controllers\ShopController', 'save'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
