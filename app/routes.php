@@ -80,3 +80,44 @@ $router->map('POST', '/my-shop', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Services (côté artiste)
+$router->map('GET', '/my-services', [
+    'controller' => ['App\Controllers\ServiceController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-services/create', [
+    'controller' => ['App\Controllers\ServiceController', 'create'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-services/[i:id]/edit', [
+    'controller' => ['App\Controllers\ServiceController', 'edit'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-services/save', [
+    'controller' => ['App\Controllers\ServiceController', 'save'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-services/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'delete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
