@@ -4,6 +4,9 @@ require __DIR__ . '/../vendor/autoload.php';
 
 session_start();
 
+// Vérifie le token CSRF pour toute requête POST, avant le routage
+\App\Middleware\CsrfMiddleware::handle();
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 

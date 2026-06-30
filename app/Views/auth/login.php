@@ -14,6 +14,7 @@
     <?php endif; ?>
 
     <form method="POST" action="/login">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
         <div>
             <label for="email">Email</label>
             <input type="email" id="email" name="email" required>
