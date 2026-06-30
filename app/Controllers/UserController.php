@@ -41,7 +41,10 @@ class UserController
         $avatarFilename = $user['avatar'];
 
         if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = $this->handleAvatarUpload($_FILES['avatar']);
+            $$uploadResult = \App\Core\FileUploader::upload(
+                $_FILES['avatar'],
+                __DIR__ . '/../../public/uploads/avatars'
+            );
 
             if ($uploadResult['error'] !== null) {
                 $errors['avatar'] = $uploadResult['error'];
