@@ -80,4 +80,62 @@ class AuthController
 
         return $errors;
     }
+
+    public function showLogin(): void
+    {
+        $this->renderer->render('auth/login', [
+            'error' => null,
+        ]);
+    }
+
+    public function login(): void
+    {
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        $user = $this->userModel->findByEmail($email);
+
+        if ($user === null || !password_verify($password, $user['password_hash'])) {
+            $this->renderer->render('auth/login', [
+                'error' => 'Email ou mot de passe incorrect.',
+            ]);
+        }
+
+        if ($user['is_banned']) {
+            $this->renderer->render('auth/login', [
+                'error' => 'Ce compte a été suspendu.',
+            ]);
+            return;
+        }
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_role'] = $user['role'];
+
+        header('Location: /');
+        exit;
+    }
+
+    public function logout(): void
+    {
+        $_SESSION = [];
+
+        if (ini_get('session.use.cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
+
+        session_destroy();
+
+        header('Location: /');
+        exit;
+    }
 }

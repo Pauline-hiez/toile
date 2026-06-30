@@ -22,3 +22,7 @@ $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);
 $router->map('POST', '/register', ['App\Controllers\AuthController', 'register']);
+
+$router->map('GET', '/login', ['App\Controllers\AuthController', 'showLogin']);
+$router->map('POST', '/login', ['App\Controllers\AuthController', 'login']);
+$router->map('GET', '/logout', ['App\Controllers\AuthController', 'logout']);
