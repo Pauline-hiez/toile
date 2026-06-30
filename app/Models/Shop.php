@@ -46,6 +46,16 @@ class Shop extends BaseModel
         return $slug;
     }
 
+    public function findBySlug(string $slug): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM shop WHERE slug = :slug');
+        $stmt->execute(['slug' => $slug]);
+
+        $result = $stmt->fetch();
+
+        return $result ?: null;
+    }
+
     private function slugify(string $text): string
     {
         // Translittère les accents (é -> e, à -> a...).

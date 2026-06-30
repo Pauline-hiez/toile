@@ -10,7 +10,8 @@
  *
  * Syntaxe AltoRouter pour les paramètres dynamiques :
  *   [i:id]   -> un entier,  ex: /commandes/[i:id]
- *   [a:slug] -> alphanumérique + tiret, ex: /boutiques/[a:slug]
+ *   [a:slug] -> alphanumérique uniquement (pas de tiret)
+ *   [*:slug] -> tout caractère (utilisé pour les slugs avec tirets), ex: /boutiques/[*:slug]
  *
  * Ce fichier reçoit la variable $router (instance d'AltoRouter)
  * déjà créée dans public/index.php.
@@ -146,3 +147,6 @@ $router->map('POST', '/my-portfolio/[i:id]/delete', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Boutique
+$router->map('GET', '/boutiques/[*:slug]', ['App\Controllers\ShopController', 'show']);
