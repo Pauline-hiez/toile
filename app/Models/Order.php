@@ -53,4 +53,35 @@ class Order extends BaseModel
 
         return $result ?: null;
     }
+
+    public function getAllowedTransitions(): array
+    {
+        return [
+            'pending' => [
+                'artist' => ['accepted', 'rejected'],
+            ],
+            'quote_requested' => [
+                'artist' => ['accepted', 'rejected'],
+            ],
+            'accepted' => [
+                'artist' => ['in_progress', 'cancelled'],
+                'client' => ['cancelled'],
+            ],
+            'in_progress' => [
+                'artist' => ['delivered', 'cancelled'],
+            ],
+            'delivered' => [
+                'client' => ['completed'],
+                'artist' => ['in_progress']
+            ],
+        ];
+    }
+
+    public function canTransition(string $currentStatus, string $actor, string $newStatus): bool
+    {
+        $transitions = $this->getAllowedTransitions();
+
+        return isset($transitions[$currentStatus][$actor])
+            && in_array($newStatus, $transitions[$currentStatus][$actor], true);
+    }
 }

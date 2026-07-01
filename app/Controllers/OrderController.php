@@ -158,4 +158,66 @@ class OrderController
             'orders' => $orders,
         ]);
     }
+
+    public function transition(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+        $userRole = $_SESSION['user_role'];
+        $newStatus = $_SESSION['status'] ?? '';
+
+        // Détermine le rôle de l'user -> Un artiste devient client s'il passe une commande
+        if ($order['shop_owner_id'] === $userId) {
+            $actor = 'artist';
+        } elseif ($order['client_id'] === $userId) {
+            $actor = 'client';
+        } else {
+            http_response_code(403);
+            echo 'Accès refusé: Vous n\'êtes pas concerné par cette commande.';
+            exit;
+        }
+
+        // Vérifie que la transition demandée est autorisée
+        if (!$this->orderModel->canTransition($order['status'], $actor, $newStatus)) {
+            http_response_code(403);
+            echo 'Transition non autorisée.';
+            exit;
+        }
+
+        $updateData = ['status' => $newStatus];
+
+        // Si l'artiste livre la commande, il doit uploader le fichier livré
+        if ($newStatus === 'delivered') {
+            if (!isset($_FILES['delivery_file']) || $_FILES['delivery_file']['error'] !== UPLOAD_ERR_OK) {
+                http_response_code(400);
+                echo 'Vous devez joindre le fichier livré.';
+                exit;
+            }
+
+            $result = FileUploader::upload(
+                $_FILES['delivery_file'],
+                __DIR__ . '/../../public/assets/images/uploads/deliveries'
+            );
+
+            if ($result['error'] !== null) {
+                http_response_code(400);
+                echo htmlspecialchars($result['error']);
+                exit;
+            }
+
+            $updateData['delivery_file'] = $result['filename'];
+        }
+
+        $this->orderModel->update($order['id'], $updateData);
+
+        header('Location: /commandes/' . $order['id']);
+        exit;
+    }
 }
