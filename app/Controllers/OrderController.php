@@ -171,7 +171,7 @@ class OrderController
 
         $userId = $_SESSION['user_id'];
         $userRole = $_SESSION['user_role'];
-        $newStatus = $_SESSION['status'] ?? '';
+        $newStatus = $_POST['status'] ?? '';
 
         // Détermine le rôle de l'user -> Un artiste devient client s'il passe une commande
         if ($order['shop_owner_id'] === $userId) {
@@ -219,5 +219,49 @@ class OrderController
 
         header('Location: /commandes/' . $order['id']);
         exit;
+    }
+
+    public function show(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+
+        if ($order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
+            http_response_code(403);
+            echo 'Accès refusé.';
+            exit;
+        }
+
+        $actor = $order['shop_owner_id'] === $userId ? 'artist' : 'client';
+
+        $transitions = $this->orderModel->getAllowedTransitions();
+        $allowedStatuses = $transitions[$order['status']][$actor] ?? [];
+
+        $timelineSteps = [
+            'pending'     => 'Demande envoyée',
+            'accepted'    => 'Acceptée',
+            'in_progress' => 'En cours',
+            'delivered'   => 'Livrée',
+            'completed'   => 'Terminée',
+        ];
+
+        $stepKeys = array_keys($timelineSteps);
+        $currentIndex = array_search($order['status'], $stepKeys);
+
+        $this->renderer->render('order/show', [
+            'order' => $order,
+            'actor' => $actor,
+            'allowedStatuses' => $allowedStatuses,
+            'timelineSteps' => $timelineSteps,
+            'stepKeys' => $stepKeys,
+            'currentIndex' => $currentIndex,
+        ]);
     }
 }

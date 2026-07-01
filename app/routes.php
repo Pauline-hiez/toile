@@ -193,3 +193,11 @@ $router->map('POST', '/commandes/[i:id]/transition', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Suivi de commande
+$router->map('GET', '/commandes/[i:id]', [
+    'controller' => ['App\Controllers\OrderController', 'show'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
