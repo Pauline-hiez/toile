@@ -1,3 +1,11 @@
+<?php
+$unreadCount = 0;
+if (isset($_SESSION['user_id'])) {
+    $notificationModel = new \App\Models\Notification();
+    $unreadCount = $notificationModel->countUnread($_SESSION['user_id']);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 
