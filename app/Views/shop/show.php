@@ -47,6 +47,7 @@
                     <?php if (!empty($service['description'])): ?>
                         <p><?= nl2br(htmlspecialchars($service['description'])) ?></p>
                     <?php endif; ?>
+                    <a href="/commander/<?= $service['id'] ?>">Commander</a>
                 </li>
             <?php endforeach; ?>
         </ul>
