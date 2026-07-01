@@ -185,3 +185,11 @@ $router->map('GET', '/commandes-recues', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Etats des commandes
+$router->map('POST', '/commandes/[i:id]/transition', [
+    'controller' => ['App\Controllers\OrderController', 'transition'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
