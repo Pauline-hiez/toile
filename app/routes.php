@@ -209,3 +209,11 @@ $router->map('POST', '/commandes/[i:id]/messages', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Notifications
+$router->map('GET', '/notifications', [
+    'controller' => ['App\Controllers\NotificationController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
