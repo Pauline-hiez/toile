@@ -153,3 +153,35 @@ $router->map('GET', '/boutiques/[*:slug]', ['App\Controllers\ShopController', 's
 
 // Recherche 
 $router->map('GET', '/boutiques', ['App\Controllers\ShopController', 'search']);
+
+// Tunnel de commande
+$router->map('GET', '/commander/[i:serviceId]', [
+    'controller' => ['App\Controllers\OrderController', 'create'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/commander', [
+    'controller' => ['App\Controllers\OrderController', 'store'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Espace client
+$router->map('GET', '/mes-commandes', [
+    'controller' => ['App\Controllers\OrderController', 'myOrders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Espace artiste
+$router->map('GET', '/commandes-recues', [
+    'controller' => ['App\Controllers\OrderController', 'receivedOrders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
