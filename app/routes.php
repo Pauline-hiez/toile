@@ -201,3 +201,11 @@ $router->map('GET', '/commandes/[i:id]', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Messagerie de commande
+$router->map('POST', '/commandes/[i:id]/messages', [
+    'controller' => ['App\Controllers\OrderController', 'sendMessage'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
