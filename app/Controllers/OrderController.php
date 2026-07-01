@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Service;
 use App\Models\ServiceOption;
 use App\Models\Shop;
+use App\Models\OrderMessage;
 
 class OrderController
 {
@@ -16,6 +17,7 @@ class OrderController
     private Service $serviceModel;
     private ServiceOption $optionModel;
     private Shop $shopModel;
+    private OrderMessage $messageModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -24,6 +26,7 @@ class OrderController
         $this->serviceModel = new Service();
         $this->optionModel = new ServiceOption();
         $this->shopModel = new Shop();
+        $this->messageModel = new OrderMessage();
     }
 
     public function create(int $serviceId): void
@@ -244,6 +247,9 @@ class OrderController
         $transitions = $this->orderModel->getAllowedTransitions();
         $allowedStatuses = $transitions[$order['status']][$actor] ?? [];
 
+        // Chargement des messages — nouveau par rapport à avant.
+        $messages = $this->messageModel->findByOrderId($order['id']);
+
         $timelineSteps = [
             'pending'     => 'Demande envoyée',
             'accepted'    => 'Acceptée',
@@ -259,9 +265,47 @@ class OrderController
             'order' => $order,
             'actor' => $actor,
             'allowedStatuses' => $allowedStatuses,
+            'messages' => $messages,
             'timelineSteps' => $timelineSteps,
             'stepKeys' => $stepKeys,
             'currentIndex' => $currentIndex,
+            'pageTitle' => 'Commande #' . $order['id'] . ' — Toile',
         ]);
+    }
+
+    public function sendMessage(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+
+        // Vérification: seul le client et l'artiste ont accès à la messagerie de la commande
+        if ($order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
+            http_response_code(403);
+            echo 'Accès refusé.';
+            exit;
+        }
+
+        $content = trim($_POST['content'] ?? '');
+
+        if (mb_strlen($content) < 1) {
+            header('Location: /commandes/' . $id);
+            exit;
+        }
+
+        $this->messageModel->create([
+            'order_id' => $order['id'],
+            'sender_id' => $userId,
+            'content' => $content,
+        ]);
+
+        header('Location: /commandes/' . $id . '#messages');
+        exit;
     }
 }

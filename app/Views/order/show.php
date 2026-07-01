@@ -100,6 +100,53 @@ $extraHead = '<style>
     <?php endforeach; ?>
 <?php endif; ?>
 
+<hr>
+
+<h2 id="messages">Messages</h2>
+
+<div style="max-width: 600px;">
+    <?php if (empty($messages)): ?>
+        <p>Aucun message pour l'instant.</p>
+    <?php else: ?>
+        <?php foreach ($messages as $message): ?>
+            <?php
+            // On distingue visuellement les messages envoyés
+            // par l'utilisateur connecté de ceux reçus.
+            $isMine = $message['sender_id'] === $_SESSION['user_id'];
+            ?>
+            <div style="
+                    margin-bottom: 0.75rem;
+                    padding: 0.75rem;
+                    border-radius: 8px;
+                    background: <?= $isMine ? '#ede9fe' : '#f3f4f6' ?>;
+                    text-align: <?= $isMine ? 'right' : 'left' ?>;
+                ">
+                <strong><?= htmlspecialchars($message['sender_name']) ?></strong>
+                <span style="font-size: 0.8rem; color: #666;">
+                    — <?= htmlspecialchars($message['created_at']) ?>
+                </span>
+                <p style="margin: 0.25rem 0 0;"><?= nl2br(htmlspecialchars($message['content'])) ?></p>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
+    <?php if (!in_array($order['status'], ['completed', 'cancelled', 'rejected'], true)): ?>
+        <form method="POST" action="/commandes/<?= $order['id'] ?>/messages">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <div>
+                <textarea
+                    name="content"
+                    rows="3"
+                    placeholder="Écrire un message..."
+                    style="width: 100%;"></textarea>
+            </div>
+
+            <button type="submit">Envoyer</button>
+        </form>
+    <?php endif; ?>
+</div>
+
 <p>
     <?php if ($actor === 'client'): ?>
         <a href="/mes-commandes">← Retour à mes commandes</a>
