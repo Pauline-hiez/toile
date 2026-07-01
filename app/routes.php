@@ -150,3 +150,6 @@ $router->map('POST', '/my-portfolio/[i:id]/delete', [
 
 // Boutique
 $router->map('GET', '/boutiques/[*:slug]', ['App\Controllers\ShopController', 'show']);
+
+// Recherche 
+$router->map('GET', '/boutiques', ['App\Controllers\ShopController', 'search']);
