@@ -113,4 +113,23 @@ class ShopController
             'ratingStats' => $ratingStats,
         ]);
     }
+
+    public function search(): void
+    {
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'style' => trim($_GET['style'] ?? ''),
+            'min_price' => $_GET['min_price'] ?? '',
+            'max_price' => $_GET['max_price'] ?? '',
+            'sort' => $_GET['sort'] ?? 'rating',
+        ];
+
+        $shops = $this->shopModel->search($filters);
+
+        $this->renderer->render('shop/search', [
+            'shops' => $shops,
+            'filters' => $filters,
+            'availableStyles' => ['anime', 'réaliste', 'pixel art', 'digital art', 'bande déssinée'],
+        ]);
+    }
 }
