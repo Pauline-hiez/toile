@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\ServiceOption;
 use App\Models\Shop;
 use App\Models\OrderMessage;
+use App\Models\Notification;
 
 class OrderController
 {
@@ -18,6 +19,7 @@ class OrderController
     private ServiceOption $optionModel;
     private Shop $shopModel;
     private OrderMessage $messageModel;
+    private Notification $notificationModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -27,6 +29,7 @@ class OrderController
         $this->optionModel = new ServiceOption();
         $this->shopModel = new Shop();
         $this->messageModel = new OrderMessage();
+        $this->notificationModel = new Notification();
     }
 
     public function create(int $serviceId): void
@@ -132,6 +135,13 @@ class OrderController
             'delivery_file' => $referenceFile,
         ]);
 
+        $this->notificationModel->notify(
+            $shop['user_id'],
+            'new_order',
+            'Nouvelle commande : ' . $title,
+            '/commandes/' . $orderId
+        );
+
         header('Location: /commandes/' . $orderId);
         exit;
     }
@@ -220,6 +230,15 @@ class OrderController
 
         $this->orderModel->update($order['id'], $updateData);
 
+        $recipientId = $actor === 'artist' ? $order['client_id'] : $order['shop_owner_id'];
+
+        $this->notificationModel->notify(
+            $recipientId,
+            'order_status',
+            'Commande #' . $order['id'] . ' : ' . \App\Core\OrderStatus::label($newStatus),
+            '/commandes/' . $order['id']
+        );
+
         header('Location: /commandes/' . $order['id']);
         exit;
     }
@@ -304,6 +323,17 @@ class OrderController
             'sender_id' => $userId,
             'content' => $content,
         ]);
+
+        $recipientId = $userId === $order['client_id']
+            ? $order['shop_owner_id']
+            : $order['client_id'];
+
+        $this->notificationModel->notify(
+            $recipientId,
+            'new_message',
+            'Nouveau message sur la commande #' . $order['id'],
+            '/commandes/' . $order['id'] . '#messages'
+        );
 
         header('Location: /commandes/' . $id . '#messages');
         exit;
