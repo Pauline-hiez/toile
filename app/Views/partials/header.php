@@ -8,6 +8,8 @@
             <a href="/profile">Mon profil</a>
             <a href="/mes-commandes">Mes commandes</a>
 
+            <a href="/mes-favoris">Mes favoris</a>
+
             <?php if (($_SESSION['user_role'] ?? '') === 'artist'): ?>
                 <a href="/my-shop">Ma boutique</a>
                 <a href="/my-services">Mes prestations</a>

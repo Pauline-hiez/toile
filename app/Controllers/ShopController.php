@@ -7,6 +7,7 @@ use App\Models\Shop;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\PortfolioImage;
+use App\Models\Favorite;
 
 class ShopController
 {
@@ -15,6 +16,7 @@ class ShopController
     private Review $reviewModel;
     private Service $serviceModel;
     private PortfolioImage $portfolioModel;
+    private Favorite $favoriteModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -23,6 +25,7 @@ class ShopController
         $this->reviewModel = new Review();
         $this->serviceModel = new Service();
         $this->portfolioModel = new PortfolioImage();
+        $this->favoriteModel = new Favorite();
     }
 
     public function manage(): void
@@ -105,12 +108,17 @@ class ShopController
         $services = $this->serviceModel->findActiveByShopId($shop['id']);
         $portfolioImages = $this->portfolioModel->findByShopId($shop['id']);
         $ratingStats = $this->reviewModel->getShopRatingStats($shop['id']);
+        $isFavorite = isset($_SESSION['user_id'])
+            ? $this->favoriteModel->isFavorite($_SESSION['user_id'], $shop['id'])
+            : false;
 
         $this->renderer->render('shop/show', [
             'shop' => $shop,
             'services' => $services,
             'portfolioImages' => $portfolioImages,
             'ratingStats' => $ratingStats,
+            'isFavorite' => $isFavorite,
+            'pageTitle' => htmlspecialchars($shop['name']) . ' — Toile',
         ]);
     }
 
