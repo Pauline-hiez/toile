@@ -1,10 +1,10 @@
 <?php
 
-use App\Core\OrderStatus;
+use App\Core\OrderStatus; ?>
 
-$pageTitle = 'Commande #' . $order['id'] . ' — Toile';
+<h1>Commande #<?= $order['id'] ?></h1>
 
-$extraHead = '<style>
+<style>
     .timeline {
         display: flex;
         gap: 1rem;
@@ -29,10 +29,7 @@ $extraHead = '<style>
         color: white;
         font-weight: bold;
     }
-</style>';
-?>
-
-<h1>Commande #<?= $order['id'] ?></h1>
+</style>
 
 <p>
     <strong>Prestation :</strong> <?= htmlspecialchars($order['service_title'] ?? $order['title']) ?><br>
@@ -100,6 +97,46 @@ $extraHead = '<style>
     <?php endforeach; ?>
 <?php endif; ?>
 
+<?php if ($order['status'] === 'completed' && $actor === 'client'): ?>
+    <hr>
+    <h2>Mon avis</h2>
+
+    <?php if ($existingReview !== null): ?>
+        <p>
+            <?php for ($i = 1; $i <= 5; $i++): ?>
+                <?= $i <= $existingReview['rating'] ? '⭐' : '☆' ?>
+            <?php endfor; ?>
+        </p>
+        <?php if (!empty($existingReview['comment'])): ?>
+            <p><?= nl2br(htmlspecialchars($existingReview['comment'])) ?></p>
+        <?php endif; ?>
+        <p><em>Avis déjà soumis — merci !</em></p>
+    <?php else: ?>
+        <form method="POST" action="/commandes/<?= $order['id'] ?>/review">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <div>
+                <label>Note</label>
+                <div>
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <label>
+                            <input type="radio" name="rating" value="<?= $i ?>" required>
+                            <?= str_repeat('⭐', $i) ?>
+                        </label>
+                    <?php endfor; ?>
+                </div>
+            </div>
+
+            <div>
+                <label for="comment">Commentaire (optionnel)</label>
+                <textarea id="comment" name="comment" rows="3"></textarea>
+            </div>
+
+            <button type="submit">Laisser mon avis</button>
+        </form>
+    <?php endif; ?>
+<?php endif; ?>
+
 <hr>
 
 <h2 id="messages">Messages</h2>
@@ -109,18 +146,14 @@ $extraHead = '<style>
         <p>Aucun message pour l'instant.</p>
     <?php else: ?>
         <?php foreach ($messages as $message): ?>
-            <?php
-            // On distingue visuellement les messages envoyés
-            // par l'utilisateur connecté de ceux reçus.
-            $isMine = $message['sender_id'] === $_SESSION['user_id'];
-            ?>
+            <?php $isMine = $message['sender_id'] === $_SESSION['user_id']; ?>
             <div style="
-                    margin-bottom: 0.75rem;
-                    padding: 0.75rem;
-                    border-radius: 8px;
-                    background: <?= $isMine ? '#ede9fe' : '#f3f4f6' ?>;
-                    text-align: <?= $isMine ? 'right' : 'left' ?>;
-                ">
+                margin-bottom: 0.75rem;
+                padding: 0.75rem;
+                border-radius: 8px;
+                background: <?= $isMine ? '#ede9fe' : '#f3f4f6' ?>;
+                text-align: <?= $isMine ? 'right' : 'left' ?>;
+            ">
                 <strong><?= htmlspecialchars($message['sender_name']) ?></strong>
                 <span style="font-size: 0.8rem; color: #666;">
                     — <?= htmlspecialchars($message['created_at']) ?>
@@ -133,7 +166,6 @@ $extraHead = '<style>
     <?php if (!in_array($order['status'], ['completed', 'cancelled', 'rejected'], true)): ?>
         <form method="POST" action="/commandes/<?= $order['id'] ?>/messages">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
-
             <div>
                 <textarea
                     name="content"
@@ -141,7 +173,6 @@ $extraHead = '<style>
                     placeholder="Écrire un message..."
                     style="width: 100%;"></textarea>
             </div>
-
             <button type="submit">Envoyer</button>
         </form>
     <?php endif; ?>

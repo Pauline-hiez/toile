@@ -10,6 +10,7 @@ use App\Models\ServiceOption;
 use App\Models\Shop;
 use App\Models\OrderMessage;
 use App\Models\Notification;
+use App\Models\Review;
 
 class OrderController
 {
@@ -20,6 +21,7 @@ class OrderController
     private Shop $shopModel;
     private OrderMessage $messageModel;
     private Notification $notificationModel;
+    private Review $reviewModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -30,6 +32,7 @@ class OrderController
         $this->shopModel = new Shop();
         $this->messageModel = new OrderMessage();
         $this->notificationModel = new Notification();
+        $this->reviewModel = new Review();
     }
 
     public function create(int $serviceId): void
@@ -279,6 +282,7 @@ class OrderController
 
         $stepKeys = array_keys($timelineSteps);
         $currentIndex = array_search($order['status'], $stepKeys);
+        $existingReview = $this->reviewModel->findByOrderId($order['id']);
 
         $this->renderer->render('order/show', [
             'order' => $order,
@@ -288,6 +292,7 @@ class OrderController
             'timelineSteps' => $timelineSteps,
             'stepKeys' => $stepKeys,
             'currentIndex' => $currentIndex,
+            'existingReview' => $existingReview,
             'pageTitle' => 'Commande #' . $order['id'] . ' — Toile',
         ]);
     }

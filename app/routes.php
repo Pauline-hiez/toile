@@ -217,3 +217,11 @@ $router->map('GET', '/notifications', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Avis et commentaires
+$router->map('POST', '/commandes/[i:id]/review', [
+    'controller' => ['App\Controllers\ReviewController', 'store'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
