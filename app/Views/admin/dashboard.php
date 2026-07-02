@@ -40,5 +40,6 @@
         <li><a href="/admin/artist-requests">Demandes artiste</a></li>
         <li><a href="/admin/users">Gestion des utilisateurs</a></li>
         <li><a href="/admin/shops">Modération des boutiques</a></li>
+        <li><a href="/admin/reviews">Modération des avis</a></li>
     </ul>
 </nav>
