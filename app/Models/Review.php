@@ -23,4 +23,14 @@ class Review extends BaseModel
             'count' => (int) $result['count'],
         ];
     }
+
+    public function findByOrderId(int $orderId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM review WHERE order_id = :order_id'
+        );
+        $stmt->execute(['order_id' => $orderId]);
+        $result = $stmt->fetch();
+        return $result ?: null;
+    }
 }
