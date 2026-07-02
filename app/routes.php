@@ -240,3 +240,5 @@ $router->map('GET', '/mes-favoris', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Paiement

@@ -3,7 +3,7 @@
         'name' => 'toile/toile',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '5b4a8c72f3472671054e5783dfe447cd7a7481c6',
+        'reference' => '1a8bfeb75c8bac115176f6c5d148c495ed0f4295',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -37,6 +37,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'stripe/stripe-php' => array(
+            'pretty_version' => 'v20.3.0',
+            'version' => '20.3.0.0',
+            'reference' => '266f0b05890172184cca66a0688abaf1a96b08d8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../stripe/stripe-php',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'symfony/polyfill-ctype' => array(
             'pretty_version' => 'v1.37.0',
             'version' => '1.37.0.0',
@@ -67,7 +76,7 @@
         'toile/toile' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '5b4a8c72f3472671054e5783dfe447cd7a7481c6',
+            'reference' => '1a8bfeb75c8bac115176f6c5d148c495ed0f4295',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
