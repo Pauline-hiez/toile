@@ -6,6 +6,7 @@ use App\Core\Renderer;
 use App\Models\User;
 use App\Models\Shop;
 use App\Models\Order;
+use App\Models\Review;
 
 class AdminController
 {
@@ -13,6 +14,7 @@ class AdminController
     private User $userModel;
     private Shop $shopModel;
     private Order $orderModel;
+    private Review $reviewModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -20,6 +22,7 @@ class AdminController
         $this->userModel = new User();
         $this->shopModel = new Shop();
         $this->orderModel = new Order();
+        $this->reviewModel = new Review();
     }
 
     /**
@@ -132,6 +135,56 @@ class AdminController
         );
 
         header('Location: /admin/artist-requests');
+        exit;
+    }
+
+    public function shops(): void
+    {
+        $shops = $this->shopModel->findAllWithOwner();
+        $this->renderer->render('admin/shops', [
+            'shops' => $shops,
+            'pageTitle' => 'Boutiques - Administration',
+        ]);
+    }
+
+    public function deleteShop(int $id): void
+    {
+        $shop = $this->shopModel->findById($id);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+        $this->shopModel->delete($id);
+
+        header('Location: /admin/shops');
+        exit;
+    }
+
+    public function reviews(): void
+    {
+        $reviews = $this->reviewModel->findAllWithDetails();
+
+        $this->renderer->render('admin/reviews', [
+            'reviews' => $reviews,
+            'pageTitle' => 'Avis - Administration',
+        ]);
+    }
+
+    public function deleteReview(int $id): void
+    {
+        $review = $this->reviewModel->findById($id);
+
+        if ($review === null) {
+            http_response_code(404);
+            echo 'Avis introuvable.';
+            exit;
+        }
+
+        $this->reviewModel->delete($id);
+
+        header('Location: /admin/reviews');
         exit;
     }
 }

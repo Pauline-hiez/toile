@@ -33,4 +33,19 @@ class Review extends BaseModel
         $result = $stmt->fetch();
         return $result ?: null;
     }
+
+    public function findAllWithDetails(): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT r.*, o.title AS order_title, o.shop_id,
+                    u.username AS client_name, s.name AS shop_name
+            FROM review r
+            INNER JOIN orders o ON o.id = r.order_id
+            INNER JOIN users u ON u.id = o.client_id
+            INNER JOIN shop s ON s.id = o.shop_id
+            ORDER BY r.created_at DESC'
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }

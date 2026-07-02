@@ -142,4 +142,16 @@ class Shop extends BaseModel
         // Retire les tirets en début/fin de chaîne.
         return trim($text, '-');
     }
+
+    public function findAllWithOwner(): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT shop.*, u.username AS owner_name, u.email AS owner_email
+            FROM shop
+            INNER JOIN users u ON u.id = shop.user_id
+            ORDER BY shop.created_at DESC'
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }

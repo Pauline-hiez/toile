@@ -281,3 +281,35 @@ $router->map('POST', '/admin/artist-requests/[i:id]/reject', [
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
     ],
 ]);
+
+$router->map('GET', '/admin/shops', [
+    'controller' => ['App\Controllers\AdminController', 'shops'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/shops/[i:id]/delete', [
+    'controller' => ['App\Controllers\AdminController', 'deleteShop'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/reviews', [
+    'controller' => ['App\Controllers\AdminController', 'reviews'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reviews/[i:id]/delete', [
+    'controller' => ['App\Controllers\AdminController', 'deleteReview'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
