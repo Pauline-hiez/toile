@@ -242,3 +242,9 @@ $router->map('GET', '/mes-favoris', [
 ]);
 
 // Paiement
+$router->map('GET', '/commander/confirm', [
+    'controller' => ['App\Controllers\OrderController', 'confirm'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);

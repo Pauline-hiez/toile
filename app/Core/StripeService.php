@@ -66,4 +66,10 @@ class StripeService
         Refund::create($params);
         return true;
     }
+
+    public function getPaymentIntentStatus(string $paymentIntentId): string
+    {
+        $paymentIntent = PaymentIntent::retrieve($paymentIntentId);
+        return $paymentIntent->status;
+    }
 }
