@@ -259,21 +259,18 @@ class OrderController
         }
 
         $userId = $_SESSION['user_id'];
-        $userRole = $_SESSION['user_role'];
         $newStatus = $_POST['status'] ?? '';
 
-        // Détermine le rôle de l'user -> Un artiste devient client s'il passe une commande
         if ($order['shop_owner_id'] === $userId) {
             $actor = 'artist';
         } elseif ($order['client_id'] === $userId) {
             $actor = 'client';
         } else {
             http_response_code(403);
-            echo 'Accès refusé: Vous n\'êtes pas concerné par cette commande.';
+            echo 'Accès refusé.';
             exit;
         }
 
-        // Vérifie que la transition demandée est autorisée
         if (!$this->orderModel->canTransition($order['status'], $actor, $newStatus)) {
             http_response_code(403);
             echo 'Transition non autorisée.';
@@ -282,7 +279,7 @@ class OrderController
 
         $updateData = ['status' => $newStatus];
 
-        // Si l'artiste livre la commande, il doit uploader le fichier livré
+        // Gestion du fichier livré.
         if ($newStatus === 'delivered') {
             if (!isset($_FILES['delivery_file']) || $_FILES['delivery_file']['error'] !== UPLOAD_ERR_OK) {
                 http_response_code(400);
@@ -292,7 +289,7 @@ class OrderController
 
             $result = FileUploader::upload(
                 $_FILES['delivery_file'],
-                __DIR__ . '/../../public/assets/images/uploads/deliveries'
+                __DIR__ . '/../../public/uploads/deliveries'
             );
 
             if ($result['error'] !== null) {
@@ -304,9 +301,67 @@ class OrderController
             $updateData['delivery_file'] = $result['filename'];
         }
 
+        // Appels Stripe selon la transition.
+        if (!empty($order['stripe_payment_intent_id'])) {
+            $stripe = new \App\Core\StripeService();
+
+            try {
+                if ($newStatus === 'accepted') {
+                    // Artiste accepte → on capture (débit effectif).
+                    $stripe->capturePaymentIntent($order['stripe_payment_intent_id']);
+
+                    $this->notificationModel->notify(
+                        $order['client_id'],
+                        'payment_captured',
+                        'Paiement de ' . number_format($order['total_price'] / 100, 2) . ' € débité — commande acceptée.',
+                        '/commandes/' . $order['id']
+                    );
+                } elseif ($newStatus === 'rejected') {
+                    // Artiste refuse → on annule (aucun débit).
+                    $stripe->cancelPaymentIntent($order['stripe_payment_intent_id']);
+
+                    $this->notificationModel->notify(
+                        $order['client_id'],
+                        'payment_cancelled',
+                        'Autorisation de paiement annulée — commande refusée.',
+                        '/commandes/' . $order['id']
+                    );
+                } elseif ($newStatus === 'cancelled') {
+                    if (in_array($order['status'], ['accepted', 'in_progress'], true)) {
+                        // Annulation après acceptation → remboursement.
+                        $stripe->refundPaymentIntent($order['stripe_payment_intent_id']);
+
+                        $recipientId = $actor === 'artist'
+                            ? $order['client_id']
+                            : $order['shop_owner_id'];
+
+                        $this->notificationModel->notify(
+                            $order['client_id'],
+                            'payment_refunded',
+                            'Remboursement de ' . number_format($order['total_price'] / 100, 2) . ' € en cours.',
+                            '/commandes/' . $order['id']
+                        );
+                    } else {
+                        // Annulation avant acceptation → simple annulation.
+                        $stripe->cancelPaymentIntent($order['stripe_payment_intent_id']);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Si Stripe échoue, on n'applique pas la transition —
+                // mieux vaut une commande bloquée qu'un état incohérent
+                // entre la base et Stripe.
+                http_response_code(500);
+                echo 'Erreur de paiement : ' . htmlspecialchars($e->getMessage());
+                exit;
+            }
+        }
+
         $this->orderModel->update($order['id'], $updateData);
 
-        $recipientId = $actor === 'artist' ? $order['client_id'] : $order['shop_owner_id'];
+        // Notifie l'autre partie du changement de statut.
+        $recipientId = $actor === 'artist'
+            ? $order['client_id']
+            : $order['shop_owner_id'];
 
         $this->notificationModel->notify(
             $recipientId,
