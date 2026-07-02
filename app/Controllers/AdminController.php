@@ -77,4 +77,61 @@ class AdminController
             'pending_artist_requests' => $pendingArtistRequests,
         ];
     }
+
+    // Liste des demandes artistes en attente
+    public function artistRequests(): void
+    {
+        $requests = $this->userModel->findPendingArtistRequests();
+
+        $this->renderer->render('admin/artist-requests', [
+            'requests' => $requests,
+            'pageTitle' => 'Demande artiste - Administration',
+        ]);
+    }
+
+    public function approveArtistRequest(int $id): void
+    {
+        $user = $this->userModel->findById($id);
+        if ($user === null || $user['artist_request_status'] !== 'pending') {
+            http_response_code(404);
+            echo 'Demande introuvable.';
+            exit;
+        }
+
+        $this->userModel->approveArtistRequest($id);
+
+        $notificationModel = new \App\Models\Notification();
+        $notificationModel->notify(
+            $id,
+            'artist_approved',
+            'Félicitations ! Ta demande a été acceptée, tu es maintenant un Artiste !',
+            '/my-shop'
+        );
+        header('Location: /admin/artist-requests');
+        exit;
+    }
+
+    public function rejectArtistRequest(int $id): void
+    {
+        $user = $this->userModel->findById($id);
+
+        if ($user === null || $user['artist_request_status'] !== 'pending') {
+            http_response_code(404);
+            echo 'Demande introuvable.';
+            exit;
+        }
+
+        $this->userModel->rejectArtistRequest($id);
+
+        $notificationModel = new \App\Models\Notification();
+        $notificationModel->notify(
+            $id,
+            'artist_rejected',
+            'Ta demande pour devenir artiste n\'a pas été retenue.',
+            '/become-artist'
+        );
+
+        header('Location: /admin/artist-requests');
+        exit;
+    }
 }

@@ -19,4 +19,30 @@ class User extends BaseModel
     {
         return $this->update($userId, ['artist_request_status' => $status]);
     }
+
+    public function findPendingArtistRequests(): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM users
+            WHERE artist_request_status = :status
+            ORDER BY created_at ASC'
+        );
+        $stmt->execute(['status' => 'pending']);
+        return $stmt->fetchAll();
+    }
+
+    public function approveArtistRequest(int $userId): bool
+    {
+        return $this->update($userId, [
+            'role' => 'artist',
+            'artist_request_status' => 'approved',
+        ]);
+    }
+
+    public function rejectArtistRequest(int $userId): bool
+    {
+        return $this->update($userId, [
+            'artist_request_status' => 'rejected',
+        ]);
+    }
 }
