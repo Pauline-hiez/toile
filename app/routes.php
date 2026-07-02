@@ -257,3 +257,27 @@ $router->map('GET', '/admin', [
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
     ],
 ]);
+
+$router->map('GET', '/admin/artist-requests', [
+    'controller' => ['App\Controllers\AdminController', 'artistRequests'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/artist-requests/[i:id]/approve', [
+    'controller' => ['App\Controllers\AdminController', 'approveArtistRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/artist-requests/[i:id]/reject', [
+    'controller' => ['App\Controllers\AdminController', 'rejectArtistRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
