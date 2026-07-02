@@ -48,6 +48,7 @@ if (isset($target['controller'])) {
     [$controllerClass, $method] = $target;
 }
 
+
 // On instancie le contrôleur en lui passant le Renderer.
 $controller = new $controllerClass($renderer);
 

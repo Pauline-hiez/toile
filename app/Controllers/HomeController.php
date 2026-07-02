@@ -30,4 +30,15 @@ class HomeController
             echo 'Erreur de connexion ❌ : ' . htmlspecialchars($e->getMessage());
         }
     }
+
+    public function testStripe(): void
+    {
+        try {
+            $stripe = new \App\Core\StripeService();
+            $result = $stripe->createPaymentIntent(100, 'eur', ['test' => 'ok']);
+            echo 'Stripe OK ✅ — PaymentIntent créé : ' . $result['payment_intent_id'];
+        } catch (\Exception $e) {
+            echo 'Stripe ERROR ❌ : ' . htmlspecialchars($e->getMessage());
+        }
+    }
 }
