@@ -39,3 +39,12 @@ VALUES
     (1, 'Portrait', 'Demi-corps, personnage ou personne.', 3500, 7),
     (1, 'Illustration', 'Un personnage, un décor, une ambiance.', 8000, 14),
     (1, 'Illustration complexe', 'Scène détaillée, plusieurs personnages, décor fouillé.', 15000, 21);
+
+-- Un administrateur
+INSERT INTO users (email, username, password_hash, role)
+VALUES (
+    'admin@test.com',
+    'AdminTest',
+    '$2y$10$pUyfk4n0VLLlNVQ.WMyR9.PVwTl/v8b/8r3HmqsZcOEpr2gN4Q9c2',
+    'admin'
+);

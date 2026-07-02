@@ -248,3 +248,12 @@ $router->map('GET', '/commander/confirm', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Admin
+$router->map('GET', '/admin', [
+    'controller' => ['App\Controllers\AdminController', 'dashboard'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
