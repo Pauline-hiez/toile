@@ -56,6 +56,11 @@ class OrderController
         ]);
     }
 
+    /**
+     * Traite la soumission du formulaire de commande — étape 1.
+     * Valide les données, crée le PaymentIntent, affiche Stripe Elements.
+     * (POST /commander)
+     */
     public function store(): void
     {
         $serviceId = (int) ($_POST['service_id'] ?? 0);
@@ -73,7 +78,6 @@ class OrderController
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $isQuote = isset($_POST['is_quote']);
-
         $selectedOptionIds = array_map('intval', $_POST['options'] ?? []);
 
         $errors = [];
@@ -92,58 +96,127 @@ class OrderController
                 'shop' => $shop,
                 'options' => $options,
                 'errors' => $errors,
+                'pageTitle' => 'Commander — Toile',
             ]);
             return;
         }
 
+        // Calcule le prix total.
         $totalPrice = $service['base_price'];
-
         foreach ($options as $option) {
             if (in_array($option['id'], $selectedOptionIds, true)) {
                 $totalPrice += $option['extra_price'];
             }
         }
 
+        // Gestion du fichier de référence.
         $referenceFile = null;
-
         if (isset($_FILES['reference']) && $_FILES['reference']['error'] === UPLOAD_ERR_OK) {
             $result = FileUploader::upload(
                 $_FILES['reference'],
                 __DIR__ . '/../../public/uploads/references'
             );
-
             if ($result['error'] !== null) {
                 $errors['reference'] = $result['error'];
-
                 $this->renderer->render('order/create', [
                     'service' => $service,
                     'shop' => $shop,
                     'options' => $options,
                     'errors' => $errors,
+                    'pageTitle' => 'Commander — Toile',
                 ]);
                 return;
             }
-
             $referenceFile = $result['filename'];
         }
 
-        $orderId = $this->orderModel->create([
+        // Si demande de devis, pas de paiement — on crée directement la commande.
+        if ($isQuote) {
+            $orderId = $this->orderModel->create([
+                'client_id' => $_SESSION['user_id'],
+                'shop_id' => $shop['id'],
+                'service_id' => $service['id'],
+                'title' => $title,
+                'description' => $description,
+                'total_price' => $totalPrice,
+                'status' => 'quote_requested',
+                'delivery_file' => $referenceFile,
+            ]);
+
+            $this->notificationModel->notify(
+                $shop['user_id'],
+                'new_order',
+                'Nouvelle demande de devis : ' . $title,
+                '/commandes/' . $orderId
+            );
+
+            header('Location: /commandes/' . $orderId);
+            exit;
+        }
+
+        // Crée le PaymentIntent Stripe (autorisation différée).
+        $stripe = new \App\Core\StripeService();
+        $paymentData = $stripe->createPaymentIntent($totalPrice, 'eur', [
+            'service_id' => $service['id'],
+            'client_id' => $_SESSION['user_id'],
+        ]);
+
+        // Stocke les données de commande en session pour les récupérer
+        // après la confirmation Stripe (étape suivante).
+        $_SESSION['pending_order'] = [
             'client_id' => $_SESSION['user_id'],
             'shop_id' => $shop['id'],
             'service_id' => $service['id'],
             'title' => $title,
             'description' => $description,
             'total_price' => $totalPrice,
-            'status' => $isQuote ? 'quote_requested' : 'pending',
             'delivery_file' => $referenceFile,
+            'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
+        ];
+
+        // Affiche la page de paiement Stripe Elements.
+        $this->renderer->render('order/payment', [
+            'service' => $service,
+            'shop' => $shop,
+            'totalPrice' => $totalPrice,
+            'clientSecret' => $paymentData['client_secret'],
+            'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'pageTitle' => 'Paiement — Toile',
         ]);
+    }
+
+    /**
+     * Finalise la commande après confirmation Stripe
+     * (GET /commander/confirm).
+     */
+    public function confirm(): void
+    {
+        $pendingOrder = $_SESSION['pending_order'] ?? null;
+
+        if ($pendingOrder === null) {
+            header('Location: /');
+            exit;
+        }
+
+        $stripe = new \App\Core\StripeService();
+        $status = $stripe->getPaymentIntentStatus($pendingOrder['stripe_payment_intent_id']);
+
+        if ($status !== 'requires_capture') {
+            unset($_SESSION['pending_order']);
+            header('Location: /?payment=failed');
+            exit;
+        }
+
+        $orderId = $this->orderModel->create($pendingOrder);
 
         $this->notificationModel->notify(
-            $shop['user_id'],
+            $pendingOrder['shop_id'],
             'new_order',
-            'Nouvelle commande : ' . $title,
+            'Nouvelle commande : ' . $pendingOrder['title'],
             '/commandes/' . $orderId
         );
+
+        unset($_SESSION['pending_order']);
 
         header('Location: /commandes/' . $orderId);
         exit;
