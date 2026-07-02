@@ -225,3 +225,18 @@ $router->map('POST', '/commandes/[i:id]/review', [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
+
+// Favoris
+$router->map('POST', '/favoris/toggle/[i:shopId]', [
+    'controller' => ['App\Controllers\FavoriteController', 'toggle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('GET', '/mes-favoris', [
+    'controller' => ['App\Controllers\FavoriteController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);

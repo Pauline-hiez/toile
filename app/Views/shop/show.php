@@ -6,6 +6,15 @@
 
 <h1><?= htmlspecialchars($shop['name']) ?></h1>
 
+<?php if (isset($_SESSION['user_id'])): ?>
+    <form method="POST" action="/favoris/toggle/<?= $shop['id'] ?>" style="display: inline;">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+        <button type="submit">
+            <?= $isFavorite ? '❤️ Retirer des favoris' : '🤍 Ajouter aux favoris' ?>
+        </button>
+    </form>
+<?php endif; ?>
+
 <p>
     <?php if ($ratingStats['count'] > 0): ?>
         ⭐ <?= number_format($ratingStats['average'], 1) ?> (<?= $ratingStats['count'] ?> avis)
