@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Renderer;
 use App\Models\User;
+use App\Models\PasswordReset;
 
 class AuthController
 {
@@ -53,6 +54,12 @@ class AuthController
             'password_hash' => password_hash($password, PASSWORD_BCRYPT),
             'provider' => 'credentials',
         ]);
+
+        // Envoi un email de bienvenue
+        $html = \App\Core\Mailer::renderTemplate('welcome', [
+            'username' => $username,
+        ]);
+        \App\Core\Mailer::send($email, 'Bienvenue sur Toile !', $html, 'welcome');
 
         header('Location: /login');
         exit;
@@ -136,6 +143,109 @@ class AuthController
         session_destroy();
 
         header('Location: /');
+        exit;
+    }
+
+    // Affiche le formulaire de demande de reset
+    public function showForgotPassword(): void
+    {
+        $this->renderer->render('auth/forgot-password', [
+            'success' => null,
+            'error' => null,
+            'pageTitle' => 'Mot de passe oublié - Toile',
+        ]);
+    }
+
+    // Traite la demande de Reset
+    public function forgotPassword(): void
+    {
+        $email = trim($_POST['email'] ?? '');
+        $user = $this->userModel->findByEmail($email);
+
+        $successMessage = 'Si un compte existe avec cet email, tu recevras un lien de réinitialisation.';
+
+        if ($user !== null) {
+            $resetModel = new PasswordReset();
+            $token = $resetModel->createToken($user['id']);
+            $resetLink = ($_ENV['APP_URL'] ?? 'http://toile.test') . '/reset-password?token=' . $token;
+
+            $html = \App\Core\Mailer::renderTemplate('reset-password', [
+                'username' => $user['username'],
+                'resetLink' => $resetLink,
+            ]);
+
+            \App\Core\Mailer::send(
+                $user['email'],
+                'Réintialisation de ton mot de passe',
+                $html,
+                'reset-password'
+            );
+        }
+
+        $this->renderer->render('auth/forgot-password', [
+            'success' => $successMessage,
+            'error' => null,
+            'pageTitle' => 'Mot de passe oublié - Toile',
+        ]);
+    }
+
+    // Affiche le formulaire de nouveau mot de passe
+    public function showResetPassword(): void
+    {
+        $token = $_GET['token'] ?? '';
+        $resetModel = new PasswordReset();
+        $resetEntry = $resetModel->findValidToken($token);
+
+        if ($resetEntry === null) {
+            $this->renderer->render('auth/reset-password', [
+                'token' => null,
+                'error' => 'Ce lien est invalide ou expiré.',
+                'pageTitle' => 'Réinitialisation - Toile',
+            ]);
+            return;
+        }
+
+        $this->renderer->render('auth/reset-password', [
+            'token' => $token,
+            'error' => null,
+            'pageTitle' => 'Réinitialisation - Toile',
+        ]);
+    }
+
+    // Traite le nouveau mot de passe
+    public function resetPassword(): void
+    {
+        $token = $_POST['token'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+        $resetModel = new PasswordReset();
+        $resetEntry = $resetModel->findValidToken($token);
+
+        if ($resetEntry === null) {
+            $this->renderer->render('auth/reset-password', [
+                'token' => null,
+                'error' => 'Ce lien est invalide ou expliré.',
+                'pageTitle' => 'Réinitialisation - Toile',
+            ]);
+            return;
+        }
+
+        if (mb_strlen($password) < 8 || $password !== $passwordConfirm) {
+            $this->renderer->render('auth/reset-password', [
+                'token' => $token,
+                'error' => 'Le mot de passe doit faire au moins 8 caractères et les deux champs doivent correspondre.',
+                'pageTitle' => 'Réinitialisation - Toile',
+            ]);
+            return;
+        }
+        $this->userModel->update($resetEntry['user_id'], [
+            'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+        ]);
+
+        $resetModel->markAsUsed($resetEntry['id']);
+
+        header('Location: /login?reset=1');
         exit;
     }
 }

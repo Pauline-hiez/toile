@@ -345,3 +345,9 @@ $router->map('POST', '/admin/users/[i:id]/role', [
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
     ],
 ]);
+
+// Mot de passe oublié
+$router->map('GET', '/forgot-password', ['App\Controllers\AuthController', 'showForgotPassword']);
+$router->map('POST', '/forgot-password', ['App\Controllers\AuthController', 'forgotPassword']);
+$router->map('GET', '/reset-password', ['App\Controllers\AuthController', 'showResetPassword']);
+$router->map('POST', '/reset-password', ['App\Controllers\AuthController', 'resetPassword']);
