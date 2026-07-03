@@ -313,3 +313,35 @@ $router->map('POST', '/admin/reviews/[i:id]/delete', [
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
     ],
 ]);
+
+$router->map('GET', '/admin/users', [
+    'controller' => ['App\Controllers\AdminController', 'users'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/users/[i:id]/ban', [
+    'controller' => ['App\Controllers\AdminController', 'banUser'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/users/[i:id]/unban', [
+    'controller' => ['App\Controllers\AdminController', 'unbanUser'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/users/[i:id]/role', [
+    'controller' => ['App\Controllers\AdminController', 'changeRole'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);

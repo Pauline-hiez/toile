@@ -45,4 +45,31 @@ class User extends BaseModel
             'artist_request_status' => 'rejected',
         ]);
     }
+
+    public function findAllUsers(): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, email, username, role, is_banned,
+                    artist_request_status, created_at
+            FROM users
+            ORDER BY created_at DESC'
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function ban(int $userId): bool
+    {
+        return $this->update($userId, ['is_banned' => 1]);
+    }
+
+    public function unban(int $userId): bool
+    {
+        return $this->update($userId, ['is_banned' => 0]);
+    }
+
+    public function changeRole(int $userId, string $role): bool
+    {
+        return $this->update($userId, ['role' => $role]);
+    }
 }

@@ -187,4 +187,88 @@ class AdminController
         header('Location: /admin/reviews');
         exit;
     }
+
+    public function users(): void
+    {
+        $users = $this->userModel->findAllUsers();
+        $this->renderer->render('admin/users', [
+            'users' => $users,
+            'pageTitle' => 'Utilisateurs - Administration',
+        ]);
+    }
+
+    public function banUser(int $id): void
+    {
+        $user = $this->userModel->findById($id);
+
+        if ($user === null) {
+            http_response_code(404);
+            echo 'Utilisateur introuvable.';
+            exit;
+        }
+
+        if ($user['role'] === 'admin') {
+            http_response_code(403);
+            echo 'Impossible de suspendre un administrateur.';
+            exit;
+        }
+
+        $this->userModel->ban($id);
+
+        if (!isset($_SESSION['banned_users'])) {
+            $_SESSION['banned_users'] = [];
+        }
+
+        $_SESSION['banned_users'][$id] = true;
+
+        header('Location: /admin/users');
+        exit;
+    }
+
+    public function unbanUser(int $id): void
+    {
+        $user = $this->userModel->findById($id);
+
+        if ($user === null) {
+            http_response_code(404);
+            echo 'Utilisateur introuvable.';
+            exit;
+        }
+
+        $this->userModel->unban($id);
+
+        header('Location: /admin/users');
+        exit;
+    }
+
+    public function changeRole(int $id): void
+    {
+        $user =  $this->userModel->findById($id);
+
+        if ($user === null) {
+            http_response_code(404);
+            echo 'Utilisateur introuvable.';
+            exit;
+        }
+
+        $role = $_POST['role'] ?? '';
+        $allowedRoles = ['user', 'artist', 'admin'];
+
+        if (!in_array($role, $allowedRoles, true)) {
+            http_response_code(400);
+            echo 'Rôle invalide.';
+            exit;
+        }
+
+        if ($id === $_SESSION['user_id'] && $role !== 'admin') {
+            http_response_code(403);
+            echo 'Vous ne pouvez pas modifier votre propre rôle.';
+            exit;
+        }
+
+        $this->userModel->changeRole($id, $role);
+
+        header('Location: /admin/users');
+        exit;
+    }
 }
