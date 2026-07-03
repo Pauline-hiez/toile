@@ -27,4 +27,9 @@
     <button type="submit">Se connecter</button>
 </form>
 
+<p><a href="/forgot-password">Mot de passe oublié ?</a></p>
+
+<?php if (isset($_GET['reset'])): ?>
+    <p style="color: green;">Mot de passe modifié avec succès. Tu peux te connecter.</p>
+<?php endif; ?>
 <p><a href="/register">Créer un compte</a></p>

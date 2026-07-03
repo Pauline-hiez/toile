@@ -11,6 +11,7 @@ use App\Models\Shop;
 use App\Models\OrderMessage;
 use App\Models\Notification;
 use App\Models\Review;
+use App\Models\User;
 
 class OrderController
 {
@@ -22,6 +23,7 @@ class OrderController
     private OrderMessage $messageModel;
     private Notification $notificationModel;
     private Review $reviewModel;
+    private User $userModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -33,6 +35,7 @@ class OrderController
         $this->messageModel = new OrderMessage();
         $this->notificationModel = new Notification();
         $this->reviewModel = new Review();
+        $this->userModel = new User();
     }
 
     public function create(int $serviceId): void
@@ -279,7 +282,7 @@ class OrderController
 
         $updateData = ['status' => $newStatus];
 
-        // Gestion du fichier livré.
+        // Gestion du fichier livré
         if ($newStatus === 'delivered') {
             if (!isset($_FILES['delivery_file']) || $_FILES['delivery_file']['error'] !== UPLOAD_ERR_OK) {
                 http_response_code(400);
@@ -301,7 +304,7 @@ class OrderController
             $updateData['delivery_file'] = $result['filename'];
         }
 
-        // Appels Stripe selon la transition.
+        // Appels Stripe selon la transition
         if (!empty($order['stripe_payment_intent_id'])) {
             $stripe = new \App\Core\StripeService();
 
@@ -309,6 +312,24 @@ class OrderController
                 if ($newStatus === 'accepted') {
                     // Artiste accepte → on capture (débit effectif).
                     $stripe->capturePaymentIntent($order['stripe_payment_intent_id']);
+
+                    // Email de confirmation de débit au client.
+                    $client = $this->userModel->findById($order['client_id']);
+                    if ($client) {
+                        $html = \App\Core\Mailer::renderTemplate('payment-event', [
+                            'username' => $client['username'],
+                            'message' => 'Ton paiement a été débité suite à l\'acceptation de ta commande par l\'artiste.',
+                            'orderId' => $order['id'],
+                            'orderTitle' => $order['title'],
+                            'amount' => $order['total_price'],
+                        ]);
+                        \App\Core\Mailer::send(
+                            $client['email'],
+                            'Paiement débité — Commande #' . $order['id'],
+                            $html,
+                            'payment_captured'
+                        );
+                    }
 
                     $this->notificationModel->notify(
                         $order['client_id'],
@@ -330,6 +351,24 @@ class OrderController
                     if (in_array($order['status'], ['accepted', 'in_progress'], true)) {
                         // Annulation après acceptation → remboursement.
                         $stripe->refundPaymentIntent($order['stripe_payment_intent_id']);
+
+                        // Email de confirmation de remboursement au client.
+                        $client = $this->userModel->findById($order['client_id']);
+                        if ($client) {
+                            $html = \App\Core\Mailer::renderTemplate('payment-event', [
+                                'username' => $client['username'],
+                                'message' => 'Un remboursement a été initié suite à l\'annulation de ta commande.',
+                                'orderId' => $order['id'],
+                                'orderTitle' => $order['title'],
+                                'amount' => $order['total_price'],
+                            ]);
+                            \App\Core\Mailer::send(
+                                $client['email'],
+                                'Remboursement en cours — Commande #' . $order['id'],
+                                $html,
+                                'payment_refunded'
+                            );
+                        }
 
                         $recipientId = $actor === 'artist'
                             ? $order['client_id']
@@ -369,6 +408,25 @@ class OrderController
             'Commande #' . $order['id'] . ' : ' . \App\Core\OrderStatus::label($newStatus),
             '/commandes/' . $order['id']
         );
+
+        $recipient = $actor === 'artist'
+            ? $this->userModel->findById($order['client_id'])
+            : $this->userModel->findById($order['shop_owner_id']);
+
+        if ($recipient) {
+            $html = \App\Core\Mailer::renderTemplate('order-status', [
+                'username' => $recipient['username'],
+                'orderId' => $order['id'],
+                'orderTitle' => $order['title'],
+                'statusLabel' => \App\Core\OrderStatus::label($newStatus),
+            ]);
+            \App\Core\Mailer::send(
+                $recipient['email'],
+                'Commande #' . $order['id'] . ' — ' . \App\Core\OrderStatus::label($newStatus),
+                $html,
+                'order_status'
+            );
+        }
 
         header('Location: /commandes/' . $order['id']);
         exit;

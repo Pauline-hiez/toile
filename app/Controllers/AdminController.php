@@ -103,6 +103,11 @@ class AdminController
 
         $this->userModel->approveArtistRequest($id);
 
+        $html = \App\Core\Mailer::renderTemplate('artist-approved', [
+            'username' => $user['username'],
+        ]);
+        \App\Core\Mailer::send($user['email'], 'Ta demande artiste a été acceptée !', $html, 'artist_approved');
+
         $notificationModel = new \App\Models\Notification();
         $notificationModel->notify(
             $id,
@@ -125,6 +130,11 @@ class AdminController
         }
 
         $this->userModel->rejectArtistRequest($id);
+
+        $html = \App\Core\Mailer::renderTemplate('artist-rejected', [
+            'username' => $user['username'],
+        ]);
+        \App\Core\Mailer::send($user['email'], 'Réponse à ta demande artiste', $html, 'artist_rejected');
 
         $notificationModel = new \App\Models\Notification();
         $notificationModel->notify(
