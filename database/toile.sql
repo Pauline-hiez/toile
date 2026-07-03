@@ -277,3 +277,27 @@ CREATE TABLE notification (
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- Table : email_log
+-- Trace tous les emails envoyés par la plateforme.
+-- -----------------------------------------------------
+CREATE TABLE email_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Destinataire.
+    recipient_email VARCHAR(180) NOT NULL,
+
+    -- Type d'email (inscription, reset_password, order_status...).
+    type VARCHAR(50) NOT NULL,
+
+    subject VARCHAR(255) NOT NULL,
+
+    -- Statut d'envoi.
+    status ENUM('sent', 'failed') NOT NULL DEFAULT 'sent',
+
+    -- Message d'erreur en cas d'échec.
+    error_message TEXT NULL,
+
+    sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
