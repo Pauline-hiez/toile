@@ -1,16 +1,32 @@
 <?php
 
+use App\Core\Renderer;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 session_start();
 
-// Vérifie le token CSRF pour toute requête POST, avant le routage
-\App\Middleware\CsrfMiddleware::handle();
-
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
-use App\Core\Renderer;
+if (isset($_SESSION['user_id'])) {
+    $userModel = new \App\Models\User();
+    $currentUser = $userModel->findById($_SESSION['user_id']);
+
+    if ($currentUser && $currentUser['is_banned']) {
+        session_destroy();
+        header('Location: /login?banned=1');
+        exit;
+    }
+
+    // Met à jour le rôle en session si un admin l'a modifié.
+    if ($currentUser && $_SESSION['user_role'] !== $currentUser['role']) {
+        $_SESSION['user_role'] = $currentUser['role'];
+    }
+}
+
+// Vérifie le token CSRF pour toute requête POST, avant le routage
+\App\Middleware\CsrfMiddleware::handle();
 
 // On instancie le routeur AltoRouter.
 $router = new AltoRouter();

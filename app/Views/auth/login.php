@@ -1,5 +1,11 @@
 <?php $pageTitle = 'Connexion — Toile'; ?>
 
+<?php if (isset($_GET['banned'])): ?>
+    <p style="color: red;">
+        Ton compte a été suspendu. Contacte l'administration pour plus d'informations.
+    </p>
+<?php endif; ?>
+
 <h1>Se connecter</h1>
 
 <?php if ($error !== null): ?>
