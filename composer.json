@@ -7,7 +7,8 @@
         "altorouter/altorouter": "^2.0",
         "vlucas/phpdotenv": "^5.6",
         "stripe/stripe-php": "^20.3",
-        "phpmailer/phpmailer": "^7.1"
+        "phpmailer/phpmailer": "^7.1",
+        "google/apiclient": "^2.19"
     },
     "autoload": {
         "psr-4": {

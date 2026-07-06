@@ -1,13 +1,6 @@
 <?php
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 require __DIR__ . '/vendor/autoload.php';
-
-// Charger le .env EN PREMIER, avant tout autre code
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
 
 session_start();
 
@@ -27,6 +20,9 @@ if (isset($_SESSION['user_id'])) {
 }
 
 \App\Middleware\CsrfMiddleware::handle();
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 use App\Core\Renderer;
 

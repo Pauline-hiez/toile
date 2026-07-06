@@ -43,5 +43,10 @@
         <?php endif; ?>
     </div>
 
+    <hr>
+    <a href="/auth/google">
+        <img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png" alt="S'inscrire avec Google">
+    </a>
+
     <button type="submit">S'inscrire</button>
 </form>

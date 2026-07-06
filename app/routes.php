@@ -351,3 +351,7 @@ $router->map('GET', '/forgot-password', ['App\Controllers\AuthController', 'show
 $router->map('POST', '/forgot-password', ['App\Controllers\AuthController', 'forgotPassword']);
 $router->map('GET', '/reset-password', ['App\Controllers\AuthController', 'showResetPassword']);
 $router->map('POST', '/reset-password', ['App\Controllers\AuthController', 'resetPassword']);
+
+// Google OAuth
+$router->map('GET', '/auth/google', ['App\Controllers\AuthController', 'redirectToGoogle']);
+$router->map('GET', '/auth/google/callback', ['App\Controllers\AuthController', 'handleGoogleCallback']);

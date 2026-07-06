@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Renderer;
 use App\Models\User;
 use App\Models\PasswordReset;
+use App\Core\GoogleAuth;
 
 class AuthController
 {
@@ -246,6 +247,79 @@ class AuthController
         $resetModel->markAsUsed($resetEntry['id']);
 
         header('Location: /login?reset=1');
+        exit;
+    }
+
+
+    // Redirige vers Google pour l'authentification
+
+    public function redirectToGoogle(): void
+    {
+        $googleAuth = new GoogleAuth();
+        header('Location: ' . $googleAuth->getAuthUrl());
+        exit;
+    }
+
+    // Traite le retour Google (callback)
+    public function handleGoogleCallback(): void
+    {
+        $code = $_GET['code'] ?? null;
+
+        if ($code === null) {
+            header('Location: /login?error=google_failed');
+            exit;
+        }
+
+        $googleAuth = new GoogleAuth();
+        $userInfo = $googleAuth->getUserInfo($code);
+
+        if ($userInfo === null) {
+            header('Location: /login?error=google_failed');
+            exit;
+        }
+
+        // Cherche si un compte existe déjà avec cet email
+        $existingUser = $this->userModel->findByEmail($userInfo['email']);
+
+        if ($existingUser !== null) {
+            // Le compte existe — on connecte directement
+            if ($existingUser['provider'] === 'credentials') {
+                $this->userModel->update($existingUser['id'], [
+                    'provider_id' => $userInfo['id'],
+                ]);
+            }
+
+            if ($existingUser['is_banned']) {
+                header('Location: /login?banned=1');
+                exit;
+            }
+
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $existingUser['id'];
+            $_SESSION['user_role'] = $existingUser['role'];
+        } else {
+            // Nouveau compte — on le crée automatiquement
+            $userId = $this->userModel->create([
+                'email' => $userInfo['email'],
+                'username' => $userInfo['name'],
+                'provider' => 'google',
+                'provider_id' => $userInfo['id'],
+                'email_verified_at' => date('Y-m-d H:i:s'),
+                // L'email Google est déjà vérifié par Google.
+            ]);
+
+            // Email de bienvenue
+            $html = \App\Core\Mailer::renderTemplate('welcome', [
+                'username' => $userInfo['name'],
+            ]);
+            \App\Core\Mailer::send($userInfo['email'], 'Bienvenue sur Toile !', $html, 'welcome');
+
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['user_role'] = 'user';
+        }
+
+        header('Location: /');
         exit;
     }
 }
