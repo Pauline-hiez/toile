@@ -3,10 +3,10 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 // Charger le .env EN PREMIER, avant tout autre code
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 session_start();
@@ -32,9 +32,9 @@ use App\Core\Renderer;
 
 $router = new AltoRouter();
 
-require __DIR__ . '/app/routes.php';
+require __DIR__ . '/../app/routes.php';
 
-$renderer = new Renderer(__DIR__ . '/app/Views');
+$renderer = new Renderer(__DIR__ . '/../app/Views');
 
 $match = $router->match();
 
