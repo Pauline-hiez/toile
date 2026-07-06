@@ -5,6 +5,8 @@ namespace App\Core;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Refund;
+use Stripe\Subscription;
+use Stripe\Customer;
 
 class StripeService
 {
@@ -71,5 +73,52 @@ class StripeService
     {
         $paymentIntent = PaymentIntent::retrieve($paymentIntentId);
         return $paymentIntent->status;
+    }
+
+    // Crée un client Stripe pour un artiste
+    public function createCustomer(string $email, string $name): string
+    {
+        $customer = Customer::create([
+            'email' => $email,
+            'name' => $name,
+        ]);
+        return $customer->id;
+    }
+
+    /**
+     * Crée un abonnement Stripe Billing pour un artiste.
+     *
+     * @param string $customerId    ID client Stripe.
+     * @param string $stripePriceId ID du tarif Stripe (price_...).
+     *
+     * @return array ['subscription_id' => string, 'status' => string,
+     *               'current_period_start' => int, 'current_period_end' => int,
+     *               'client_secret' => string|null]
+     */
+    public function createSubscription(string $customerId, string $stripePriceId): array
+    {
+        $subscription = Subscription::create([
+            'customer' => $customerId,
+            'items' => [['price' => $stripePriceId]],
+            'payment_behavior' => 'default_incomplete',
+            'payment_settings' => ['save_default_payment_method' => 'on_subscription'],
+            'expend' => ['latest_invoice.payment_intent'],
+        ]);
+        return [
+            'subscription_id' => $subscription->id,
+            'status' => $subscription->status,
+            'current_period_start' => $subscription->current_period_start,
+            'current_period_end' => $subscription->current_period_end,
+            'client_secret' => $subscription->latest_invoice->payment_intent->client_secret ?? null,
+        ];
+    }
+
+    // Annule un abonnement Stripe
+    public function cancelSubscription(string $subscriptionId): bool
+    {
+        $subscription = Subscription::retrieve($subscriptionId);
+        $subscription->cancel();
+
+        return true;
     }
 }

@@ -33,6 +33,9 @@ CREATE TABLE users (
 
     artist_request_status ENUM('pending', 'approved', 'rejected') NULL,
 
+    provider_id VARCHAR(255) NULL,
+    stripe_customer_id VARCHAR(255) NULL,
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -412,5 +415,5 @@ CREATE TABLE raffle_entry (
 -- -----------------------------------------------------
 INSERT INTO subscription_plan (name, price, commission_rate, stripe_price_id)
 VALUES
-    ('Essentiel', 1490, 0.00, NULL),
-    ('Pro', 2990, 0.00, NULL);
+    ('Essentiel', 1490, 0.00, 'price_1TqAUxCHvrrlwjMD7A31tt6O'),
+    ('Pro', 2990, 0.00, 'price_1TqAVUCHvrrlwjMDQd8ZCEbx');
