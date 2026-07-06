@@ -355,3 +355,36 @@ $router->map('POST', '/reset-password', ['App\Controllers\AuthController', 'rese
 // Google OAuth
 $router->map('GET', '/auth/google', ['App\Controllers\AuthController', 'redirectToGoogle']);
 $router->map('GET', '/auth/google/callback', ['App\Controllers\AuthController', 'handleGoogleCallback']);
+
+// Abonnements
+$router->map('GET', '/my-subscription', [
+    'controller' => ['App\Controllers\SubscriptionController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-subscription/subscribe', [
+    'controller' => ['App\Controllers\SubscriptionController', 'subscribe'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-subscription/confirm', [
+    'controller' => ['App\Controllers\SubscriptionController', 'confirm'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-subscription/cancel', [
+    'controller' => ['App\Controllers\SubscriptionController', 'cancel'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);

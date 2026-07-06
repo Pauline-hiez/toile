@@ -55,47 +55,26 @@ class SubscriptionController
             exit;
         }
 
-        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
         $user = $this->userModel->findById($_SESSION['user_id']);
-
         $stripe = new StripeService();
 
-        // Crée ou récupère le customer Stripe
+        // Crée ou récupère le customer Stripe.
         $stripeCustomerId = $user['stripe_customer_id'];
         if (empty($stripeCustomerId)) {
             $stripeCustomerId = $stripe->createCustomer($user['email'], $user['username']);
             $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
         }
 
-        // Crée l'abonnement Stripe
-        $subscriptionData = $stripe->createSubscription($stripeCustomerId, $plan['stripe_price_id']);
+        // Crée un SetupIntent pour collecter la carte.
+        $clientSecret = $stripe->createSetupIntent($stripeCustomerId);
 
-        // Stocke l'abonnement en base (statut "incomplete" jusqu'au paiement)
-        $existingSubscription = $this->subscriptionModel->findActiveByShopId($shop['id']);
+        // Stocke le plan_id en session pour l'utiliser après confirmation.
+        $_SESSION['pending_subscription_plan_id'] = $planId;
+        $_SESSION['pending_stripe_customer_id'] = $stripeCustomerId;
 
-        if ($existingSubscription !== null) {
-            $this->subscriptionModel->update($existingSubscription['id'], [
-                'plan_id' => $plan['id'],
-                'stripe_subscription_id' => $subscriptionData['subscription_id'],
-                'status' => 'active',
-                'current_period_start' => date('Y-m-d H:i:s', $subscriptionData['current_period_start']),
-                'current_period_end' => date('Y-m-d H:i:s', $subscriptionData['current_period_end']),
-            ]);
-        } else {
-            $this->subscriptionModel->create([
-                'shop_id' => $shop['id'],
-                'plan_id' => $plan['id'],
-                'stripe_subscription_id' => $subscriptionData['subscription_id'],
-                'status' => 'active',
-                'current_period_start' => date('Y-m-d H:i:s', $subscriptionData['current_period_start']),
-                'current_period_end' => date('Y-m-d H:i:s', $subscriptionData['current_period_end']),
-            ]);
-        }
-
-        // Affiche la page de paiement Stripe Elements pour l'abonnement
         $this->renderer->render('subscription/payment', [
             'plan' => $plan,
-            'clientSecret' => $subscriptionData['client_secret'],
+            'clientSecret' => $clientSecret,
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
             'pageTitle' => 'Paiement abonnement — Toile',
         ]);
@@ -104,6 +83,41 @@ class SubscriptionController
     // Page de confirmation après paiement
     public function confirm(): void
     {
+        $planId = $_SESSION['pending_subscription_plan_id'] ?? null;
+        $stripeCustomerId = $_SESSION['pending_stripe_customer_id'] ?? null;
+
+        if ($planId === null || $stripeCustomerId === null) {
+            header('Location: /my-subscription');
+            exit;
+        }
+
+        $plan = $this->planModel->findById($planId);
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+        $stripe = new StripeService();
+
+        // Crée l'abonnement maintenant que la carte est attachée.
+        $subscriptionData = $stripe->createSubscription($stripeCustomerId, $plan['stripe_price_id']);
+
+        $existingSubscription = $this->subscriptionModel->findByShopId($shop['id']);
+
+        $subscriptionRecord = [
+            'shop_id' => $shop['id'],
+            'plan_id' => $plan['id'],
+            'stripe_subscription_id' => $subscriptionData['subscription_id'],
+            'status' => 'active',
+            'current_period_start' => date('Y-m-d H:i:s', $subscriptionData['current_period_start']),
+            'current_period_end' => date('Y-m-d H:i:s', $subscriptionData['current_period_end']),
+        ];
+
+        if ($existingSubscription !== null) {
+            $this->subscriptionModel->update($existingSubscription['id'], $subscriptionRecord);
+        } else {
+            $this->subscriptionModel->create($subscriptionRecord);
+        }
+
+        unset($_SESSION['pending_subscription_plan_id']);
+        unset($_SESSION['pending_stripe_customer_id']);
+
         $this->renderer->render('subscription/confirm', [
             'pageTitle' => 'Abonnement activé — Toile',
         ]);
