@@ -129,6 +129,9 @@ CREATE TABLE orders (
     client_id INT NOT NULL,
     shop_id INT NOT NULL,
     service_id INT NULL,
+    total_price INT NOT NULL,
+    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    commission_amount INT NOT NULL DEFAULT 0,
 
     title VARCHAR(150) NOT NULL,
     description TEXT NOT NULL,

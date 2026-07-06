@@ -12,6 +12,7 @@ use App\Models\OrderMessage;
 use App\Models\Notification;
 use App\Models\Review;
 use App\Models\User;
+use App\Models\ShopSubscription;
 
 class OrderController
 {
@@ -24,6 +25,7 @@ class OrderController
     private Notification $notificationModel;
     private Review $reviewModel;
     private User $userModel;
+    private ShopSubscription $subscriptionModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -36,6 +38,7 @@ class OrderController
         $this->notificationModel = new Notification();
         $this->reviewModel = new Review();
         $this->userModel = new User();
+        $this->subscriptionModel = new ShopSubscription();
     }
 
     public function create(int $serviceId): void
@@ -311,6 +314,18 @@ class OrderController
             try {
                 if ($newStatus === 'accepted') {
                     // Artiste accepte → on capture (débit effectif).
+                    // Calcule et enregistre la commission.
+                    $commissionRate = $this->subscriptionModel->getCommissionRate($order['shop_id']);
+                    $commissionAmount = (int) round($order['total_price'] * $commissionRate / 100);
+
+                    // Met à jour la commande avec les infos de commission
+                    // avant la capture — pour avoir une trace même si
+                    // la capture échoue ensuite.
+                    $this->orderModel->update($order['id'], [
+                        'commission_rate' => $commissionRate,
+                        'commission_amount' => $commissionAmount,
+                    ]);
+
                     $stripe->capturePaymentIntent($order['stripe_payment_intent_id']);
 
                     // Email de confirmation de débit au client.
