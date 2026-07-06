@@ -1,5 +1,6 @@
 /vendor/
 /.env
+/.env.infinityfree
 /storage/uploads/*
 !/storage/uploads/.gitkeep
 .DS_Store

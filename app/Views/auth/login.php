@@ -5,6 +5,11 @@
         Ton compte a été suspendu. Contacte l'administration pour plus d'informations.
     </p>
 <?php endif; ?>
+<?php if (isset($_GET['error'])): ?>
+    <p style="color: red;">
+        La connexion avec Google a échoué. Réessaie ou utilise ton email/mot de passe.
+    </p>
+<?php endif; ?>
 
 <h1>Se connecter</h1>
 
@@ -25,6 +30,10 @@
     </div>
 
     <button type="submit">Se connecter</button>
+    <hr>
+    <a href="/auth/google">
+        <img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png" alt="Se connecter avec Google">
+    </a>
 </form>
 
 <p><a href="/forgot-password">Mot de passe oublié ?</a></p>

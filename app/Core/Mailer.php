@@ -89,7 +89,7 @@ class Mailer
      */
     public static function renderTemplate(string $template, array $data = []): string
     {
-        $templateFile = __DIR__ . '/../../app/views/emails/' . $template . '.php';
+        $templateFile = __DIR__ . '/../../app/Views/emails/' . $template . '.php';
 
         if (!file_exists($templateFile)) {
             throw new \RuntimeException("Template email introuvable : {$templateFile}");
