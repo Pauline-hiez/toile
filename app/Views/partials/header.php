@@ -12,6 +12,7 @@
 
             <?php if (($_SESSION['user_role'] ?? '') === 'artist'): ?>
                 <a href="/my-shop">Ma boutique</a>
+                <a href="/my-subscription">Mon abonnement</a>
                 <a href="/my-services">Mes prestations</a>
                 <a href="/my-portfolio">Mon portfolio</a>
                 <a href="/commandes-recues">Commandes reçues</a>

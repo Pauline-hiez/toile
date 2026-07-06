@@ -22,6 +22,17 @@ class ShopSubscription extends BaseModel
         return $result ?: null;
     }
 
+    // Trouve l'abonnement d'une boutique quel que soit son statut (shop_id est unique)
+    public function findByShopId(int $shopId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM shop_subscription WHERE shop_id = :shop_id'
+        );
+        $stmt->execute(['shop_id' => $shopId]);
+        $result = $stmt->fetch();
+        return $result ?: null;
+    }
+
     // Retourne le taux de commission applicable pour une boutique (0% si abonnement actif)
     public function getCommissionRate(int $shopId): float
     {
