@@ -318,3 +318,96 @@ CREATE TABLE password_reset (
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- Table : subscription_plan
+-- Les paliers d'abonnement disponibles (Essentiel, Pro).
+-- -----------------------------------------------------
+CREATE TABLE subscription_plan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    name VARCHAR(100) NOT NULL,
+
+    -- Prix mensuel en centimes.
+    price INT NOT NULL,
+
+    -- Taux de commission appliqué (0 si abonnement actif).
+    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+
+    -- Identifiant du plan côté Stripe Billing.
+    stripe_price_id VARCHAR(255) NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : shop_subscription
+-- Abonnement actif d'une boutique à un palier.
+-- -----------------------------------------------------
+CREATE TABLE shop_subscription (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    shop_id INT NOT NULL UNIQUE,
+    plan_id INT NOT NULL,
+
+    -- Identifiant de l'abonnement côté Stripe Billing.
+    stripe_subscription_id VARCHAR(255) NULL,
+
+    status ENUM('active', 'cancelled', 'past_due') NOT NULL DEFAULT 'active',
+
+    -- Date de début et de fin de la période en cours.
+    current_period_start DATETIME NOT NULL,
+    current_period_end DATETIME NOT NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_shop_subscription_shop
+        FOREIGN KEY (shop_id) REFERENCES shop(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_shop_subscription_plan
+        FOREIGN KEY (plan_id) REFERENCES subscription_plan(id)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : raffle_entry
+-- Inscriptions au tirage au sort mensuel de mise en avant.
+-- -----------------------------------------------------
+CREATE TABLE raffle_entry (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    shop_id INT NOT NULL,
+
+    -- Mois concerné (format YYYY-MM, ex: '2026-07').
+    month VARCHAR(7) NOT NULL,
+
+    -- Identifiant du PaymentIntent Stripe (autorisation sans débit immédiat).
+    stripe_payment_intent_id VARCHAR(255) NULL,
+
+    -- Statut de l'entrée.
+    status ENUM('entered', 'selected', 'not_selected', 'cancelled') NOT NULL DEFAULT 'entered',
+
+    -- Vrai si la boutique est mise en avant aujourd'hui (sélection quotidienne).
+    featured_today BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- Une boutique ne peut s'inscrire qu'une fois par mois.
+    UNIQUE KEY unique_shop_month (shop_id, month),
+
+    CONSTRAINT fk_raffle_entry_shop
+        FOREIGN KEY (shop_id) REFERENCES shop(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Données initiales : paliers d'abonnement
+-- -----------------------------------------------------
+INSERT INTO subscription_plan (name, price, commission_rate, stripe_price_id)
+VALUES
+    ('Essentiel', 1490, 0.00, NULL),
+    ('Pro', 2990, 0.00, NULL);
