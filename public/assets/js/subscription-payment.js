@@ -5,12 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const stripePublicKey = form.dataset.stripePublicKey;
     const clientSecret = form.dataset.clientSecret;
+    const customerSessionClientSecret = form.dataset.customerSessionClientSecret;
 
     const stripe = Stripe(stripePublicKey);
 
     const elements = stripe.elements({
         appearance: { theme: 'stripe' },
         clientSecret: clientSecret,
+        customerSessionClientSecret: customerSessionClientSecret,
     });
 
     const paymentElement = elements.create('payment');

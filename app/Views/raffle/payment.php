@@ -12,6 +12,7 @@
     style="max-width: 500px;"
     data-stripe-public-key="<?= htmlspecialchars($stripePublicKey) ?>"
     data-client-secret="<?= htmlspecialchars($clientSecret) ?>"
+    data-customer-session-client-secret="<?= htmlspecialchars($customerSessionClientSecret) ?>"
     data-total-price="<?= number_format($price / 100, 2, '.', '') ?>"
     data-return-url="<?= htmlspecialchars(($_ENV['APP_URL'] ?? 'http://toile.test') . '/raffle/confirm') ?>">
     <div id="payment-element"></div>

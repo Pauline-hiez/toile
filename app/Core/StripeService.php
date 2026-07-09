@@ -23,7 +23,9 @@ class StripeService
             'currency' => $currency,
             'capture_method' => 'manual',
             'metadata' => $metadata,
-            'automatic_payment_methods' => ['enabled' => true],
+            // Restreint à la carte pour éviter que Stripe Link ne remplace
+            // la case "mémoriser cette carte" par son propre encart e-mail.
+            'payment_method_types' => ['card'],
             // Affiche le bouton "Mémoriser la carte" dans Stripe
             'setup_future_usage' => 'off_session',
         ];
@@ -136,11 +138,18 @@ class StripeService
     }
 
     /**
-     * Récupère l'id de la méthode de paiement par défaut d'un customer.
+     * Récupère l'id d'une carte attachée au customer (pour l'abonnement
+     * qui vient d'être collectée via SetupIntent, pas forcément déjà
+     * marquée comme défaut dans invoice_settings).
      */
     private function getDefaultPaymentMethodId(string $customerId): ?string
     {
-        return $this->getDefaultPaymentMethod($customerId)['id'] ?? null;
+        $paymentMethods = \Stripe\PaymentMethod::all([
+            'customer' => $customerId,
+            'type' => 'card',
+        ]);
+
+        return $paymentMethods->data[0]->id ?? null;
     }
 
     public function cancelSubscription(string $subscriptionId): bool

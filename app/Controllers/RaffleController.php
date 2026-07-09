@@ -72,11 +72,24 @@ class RaffleController
 
         $stripe = new StripeService();
 
+        // Crée ou récupère le customer Stripe pour cet utilisateur.
+        $userModel = new \App\Models\User();
+        $user = $userModel->findById($_SESSION['user_id']);
+        $stripeCustomerId = $user['stripe_customer_id'];
+        if (empty($stripeCustomerId)) {
+            $stripeCustomerId = $stripe->createCustomer($user['email'], $user['username']);
+            $userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
+        }
+
         $paymentData = $stripe->createPaymentIntent($price, 'eur', [
             'type' => 'raffle_' . $type,
             'shop_id' => $shop['id'],
             'period' => $period,
-        ]);
+        ], $stripeCustomerId);
+
+        // Nécessaire pour que le Payment Element affiche la case
+        // "Mémoriser cette carte" et les cartes déjà enregistrées.
+        $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
 
         $this->raffleModel->create([
             'shop_id' => $shop['id'],
@@ -89,18 +102,12 @@ class RaffleController
         // Stocke le type en session pour la page de confirmation
         $_SESSION['pending_raffle_type'] = $type;
 
-        $user = (new \App\Models\User())->findById($_SESSION['user_id']);
-        $savedCard = null;
-        if (!empty($user['stripe_customer_id'])) {
-            $savedCard = $stripe->getDefaultPaymentMethod($user['stripe_customer_id']);
-        }
-
         $this->renderer->render('raffle/payment', [
             'type' => $type,
             'price' => $price,
             'clientSecret' => $paymentData['client_secret'],
+            'customerSessionClientSecret' => $customerSessionClientSecret,
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
-            'savedCard' => $savedCard,
             'pageTitle' => 'Autorisation tirage — Toile',
         ]);
     }
