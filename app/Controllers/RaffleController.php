@@ -20,70 +20,93 @@ class RaffleController
         $this->shopModel = new Shop();
     }
 
-    // Page de tirage au sort
+    // Page index du tirage au sort
     public function index(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
         $currentMonth = date('Y-m');
-        $currentEntry = $shop
-            ? $this->raffleModel->findByShopAndMonth($shop['id'], $currentMonth)
+        $currentMonday = date('Y-m-d', strtotime('monday this week'));
+
+        $boutiqueEntry = $shop
+            ? $this->raffleModel->findByShopTypeAndPeriod($shop['id'], 'boutiques', $currentMonth)
+            : null;
+
+        $homepageEntry = $shop
+            ? $this->raffleModel->findByShopTypeAndPeriod($shop['id'], 'homepage', $currentMonday)
             : null;
 
         $this->renderer->render('raffle/index', [
             'shop' => $shop,
-            'currentEntry' => $currentEntry,
+            'boutiqueEntry' => $boutiqueEntry,
+            'homepageEntry' => $homepageEntry,
             'currentMonth' => $currentMonth,
+            'currentMonday' => $currentMonday,
             'rafflePrice' => (int) ($_ENV['RAFFLE_PRICE'] ?? 500),
-            'maxWinners' => (int) ($_ENV['RAFFLE_MAX_WINNERS'] ?? 3),
-            'pageTitle' => 'Tirage au sort - Toile',
+            'homepagePrice' => (int) ($_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? 700),
+            'pageTitle' => 'Tirages au sort — Toile',
         ]);
     }
 
-    // Inscription au tirage au sort 
+    // Inscription au tirage au sort
     public function enter(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
-        $currentMonth = date('Y-m');
+        $type = $_POST['type'] ?? 'boutiques';
 
-        // Vérifie qu'il qu'il n'y a qu'une inscription par artiste dans le mois
-        $existingEntry = $this->raffleModel->findByShopAndMonth($shop['id'], $currentMonth);
+        // Détermine la période selon le type
+        $period = $type === 'homepage'
+            ? date('Y-m-d', strtotime('monday this week'))
+            : date('Y-m');
+
+        $price = $type === 'homepage'
+            ? (int) ($_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? 700)
+            : (int) ($_ENV['RAFFLE_PRICE'] ?? 500);
+
+        // Vérifie qu'il n'y ait pas déjà une inscription
+        $existingEntry = $this->raffleModel->findByShopTypeAndPeriod($shop['id'], $type, $period);
 
         if ($existingEntry !== null) {
             header('Location: /raffle');
             exit;
         }
 
-        $rafflePrice = (int) ($_ENV['RAFFLE_PRICE'] ?? 500);
         $stripe = new StripeService();
 
-        // Crée une autorisation Stripe sans débit - Capture si sélectionné
-        $paymentData = $stripe->createPaymentIntent($rafflePrice, 'eur', [
-            'type' => 'raffle',
+        $paymentData = $stripe->createPaymentIntent($price, 'eur', [
+            'type' => 'raffle_' . $type,
             'shop_id' => $shop['id'],
-            'month' => $currentMonth,
+            'period' => $period,
         ]);
 
         $this->raffleModel->create([
             'shop_id' => $shop['id'],
-            'month' => $currentMonth,
+            'type' => $type,
+            'period' => $period,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
             'status' => 'entered',
         ]);
 
-        // Affiche la page de paiement pour autoriser la carte
+        // Stocke le type en session pour la page de confirmation
+        $_SESSION['pending_raffle_type'] = $type;
+
         $this->renderer->render('raffle/payment', [
-            'rafflePrice' => $rafflePrice,
+            'type' => $type,
+            'price' => $price,
             'clientSecret' => $paymentData['client_secret'],
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
-            'pageTitle' => 'Autorisation tirage - Toile',
+            'pageTitle' => 'Autorisation tirage — Toile',
         ]);
     }
 
     // Confirmation après autorisation Stripe
     public function confirm(): void
     {
+        $type = $_SESSION['pending_raffle_type'] ?? 'boutiques';
+        unset($_SESSION['pending_raffle_type']);
+
         $this->renderer->render('raffle/confirm', [
-            'pageTitle' => 'Inscription confirmée - Toile'
+            'type' => $type,
+            'pageTitle' => 'Inscription confirmée — Toile',
         ]);
     }
 
@@ -91,25 +114,28 @@ class RaffleController
     public function cancel(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
-        $currentMonth = date('Y-m');
-        $entry = $this->raffleModel->findByShopAndMonth($shop['id'], $currentMonth);
+        $type = $_POST['type'] ?? 'boutiques';
+
+        $period = $type === 'homepage'
+            ? date('Y-m-d', strtotime('monday this week'))
+            : date('Y-m');
+
+        $entry = $this->raffleModel->findByShopTypeAndPeriod($shop['id'], $type, $period);
 
         if ($entry === null || $entry['status'] !== 'entered') {
             header('Location: /raffle');
             exit;
         }
 
-        // Annule l'autorisation Stripe si elle existe
         if (!empty($entry['stripe_payment_intent_id'])) {
             $stripe = new StripeService();
             try {
                 $stripe->cancelPaymentIntent($entry['stripe_payment_intent_id']);
             } catch (\Exception $e) {
-                // Supprime quand même l'entrée même si Stripe échoue
+                // Supprime quand même l'entrée
             }
         }
 
-        // Supprime l'entrée en BDD
         $this->raffleModel->delete($entry['id']);
 
         header('Location: /raffle');

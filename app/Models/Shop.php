@@ -79,12 +79,18 @@ class Shop extends BaseModel
                     FROM review
                     INNER JOIN orders ON orders.id = review.order_id
                     WHERE orders.shop_id = shop.id
-                ) AS avg_rating
+                ) AS avg_rating,
+                CASE WHEN re.status = 'selected' THEN 1 ELSE 0 END AS is_raffle_featured
             FROM shop
+            LEFT JOIN raffle_entry re
+                ON re.shop_id = shop.id
+                AND re.type = 'boutiques'
+                AND re.period = :current_month
+                AND re.status = 'selected'
             WHERE shop.is_open = 1
         ";
 
-        $params = [];
+        $params['current_month'] = date('Y-m');
 
         // Recherche textuelle sur le nom de la boutique.
         if (!empty($filters['q'])) {
@@ -118,8 +124,8 @@ class Shop extends BaseModel
         // Tri.
         $sort = $filters['sort'] ?? 'rating';
         $sql .= match ($sort) {
-            'price' => ' ORDER BY min_price ASC',
-            default => ' ORDER BY avg_rating DESC',
+            'price' => ' ORDER BY is_raffle_featured DESC, min_price ASC',
+            default => ' ORDER BY is_raffle_featured DESC, avg_rating DESC',
         };
 
         $stmt = $this->pdo->prepare($sql);

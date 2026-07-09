@@ -17,12 +17,12 @@ class HomeController
     public function index(): void
     {
         $raffleModel = new \App\Models\RaffleEntry();
-        $featuredShop = $raffleModel->findFeaturedToday();
+        $featuredShops = $raffleModel->findFeaturedHomepageThisWeek();
 
         $this->renderer->render('home', [
             'title' => 'Toile',
             'pageTitle' => 'Accueil — Toile',
-            'featuredShop' => $featuredShop,
+            'featuredShops' => $featuredShops,
         ]);
     }
 

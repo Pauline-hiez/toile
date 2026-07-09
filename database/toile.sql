@@ -6,11 +6,6 @@
 
 -- -----------------------------------------------------
 -- Table : users
--- (nommée au pluriel : "user" est un mot réservé MySQL,
--- utilisé par la fonction native USER())
--- Stocke les comptes (clients, artistes, admins), avec
--- support de l'authentification classique (mot de passe)
--- et OAuth (Google / Pinterest).
 -- -----------------------------------------------------
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,6 +17,7 @@ CREATE TABLE users (
 
     provider ENUM('credentials', 'google', 'pinterest') NOT NULL DEFAULT 'credentials',
     provider_id VARCHAR(255) NULL,
+    stripe_customer_id VARCHAR(255) NULL,
 
     email_verified_at DATETIME NULL,
 
@@ -33,17 +29,12 @@ CREATE TABLE users (
 
     artist_request_status ENUM('pending', 'approved', 'rejected') NULL,
 
-    provider_id VARCHAR(255) NULL,
-    stripe_customer_id VARCHAR(255) NULL,
-
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table : shop
--- Chaque boutique appartient à un seul utilisateur
--- (qui doit avoir le rôle artist).
 -- -----------------------------------------------------
 CREATE TABLE shop (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,8 +47,6 @@ CREATE TABLE shop (
     bio TEXT NULL,
     banner VARCHAR(255) NULL,
 
-    -- Liste des styles artistiques, stockée en JSON.
-    -- Exemple : ["anime", "réaliste", "chibi"]
     styles JSON NULL,
 
     is_open BOOLEAN NOT NULL DEFAULT FALSE,
@@ -74,7 +63,6 @@ CREATE TABLE shop (
 
 -- -----------------------------------------------------
 -- Table : service
--- Une prestation proposée par une boutique.
 -- -----------------------------------------------------
 CREATE TABLE service (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -84,10 +72,6 @@ CREATE TABLE service (
     title VARCHAR(150) NOT NULL,
     description TEXT NULL,
 
-    -- Prix de base en centimes (ex: 3500 = 35,00 €).
-    -- On évite les nombres décimaux pour les montants d'argent :
-    -- les flottants (FLOAT/DOUBLE) peuvent introduire des erreurs
-    -- d'arrondi imperceptibles mais réelles sur des calculs financiers.
     base_price INT NOT NULL,
 
     delivery_days INT NOT NULL,
@@ -104,8 +88,6 @@ CREATE TABLE service (
 
 -- -----------------------------------------------------
 -- Table : service_option
--- Options de prix cumulables pour une prestation
--- (ex: "+ couleur" : +1000 centimes).
 -- -----------------------------------------------------
 CREATE TABLE service_option (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -123,8 +105,6 @@ CREATE TABLE service_option (
 
 -- -----------------------------------------------------
 -- Table : orders
--- Une commande passée par un client auprès d'une boutique,
--- pour une prestation donnée.
 -- -----------------------------------------------------
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -132,14 +112,13 @@ CREATE TABLE orders (
     client_id INT NOT NULL,
     shop_id INT NOT NULL,
     service_id INT NULL,
-    total_price INT NOT NULL,
-    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
-    commission_amount INT NOT NULL DEFAULT 0,
 
     title VARCHAR(150) NOT NULL,
     description TEXT NOT NULL,
 
     total_price INT NOT NULL,
+    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    commission_amount INT NOT NULL DEFAULT 0,
 
     status ENUM(
         'quote_requested',
@@ -173,7 +152,6 @@ CREATE TABLE orders (
 
 -- -----------------------------------------------------
 -- Table : order_message
--- Messages échangés entre client et artiste sur une commande.
 -- -----------------------------------------------------
 CREATE TABLE order_message (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -197,12 +175,10 @@ CREATE TABLE order_message (
 
 -- -----------------------------------------------------
 -- Table : review
--- Avis laissé par un client sur une commande terminée.
 -- -----------------------------------------------------
 CREATE TABLE review (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    -- UNIQUE : un seul avis possible par commande.
     order_id INT NOT NULL UNIQUE,
 
     rating TINYINT NOT NULL,
@@ -214,14 +190,12 @@ CREATE TABLE review (
         FOREIGN KEY (order_id) REFERENCES orders(id)
         ON DELETE CASCADE,
 
-    -- Contrainte au niveau base de données : la note doit être entre 1 et 5.
     CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table : portfolio_image
--- Images de portfolio affichées sur la fiche boutique.
 -- -----------------------------------------------------
 CREATE TABLE portfolio_image (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -240,7 +214,6 @@ CREATE TABLE portfolio_image (
 
 -- -----------------------------------------------------
 -- Table : favorite
--- Association utilisateur <-> boutique mise en favori.
 -- -----------------------------------------------------
 CREATE TABLE favorite (
     user_id INT NOT NULL,
@@ -248,8 +221,6 @@ CREATE TABLE favorite (
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    -- Clé primaire composite : empêche qu'un même utilisateur
-    -- mette deux fois la même boutique en favori.
     PRIMARY KEY (user_id, shop_id),
 
     CONSTRAINT fk_favorite_user
@@ -264,7 +235,6 @@ CREATE TABLE favorite (
 
 -- -----------------------------------------------------
 -- Table : notification
--- Notifications internes pour un utilisateur.
 -- -----------------------------------------------------
 CREATE TABLE notification (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -284,40 +254,35 @@ CREATE TABLE notification (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
 -- -----------------------------------------------------
 -- Table : email_log
--- Trace tous les emails envoyés par la plateforme.
 -- -----------------------------------------------------
 CREATE TABLE email_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    -- Destinataire.
     recipient_email VARCHAR(180) NOT NULL,
-
-    -- Type d'email (inscription, reset_password, order_status...).
     type VARCHAR(50) NOT NULL,
-
     subject VARCHAR(255) NOT NULL,
 
-    -- Statut d'envoi.
     status ENUM('sent', 'failed') NOT NULL DEFAULT 'sent',
-
-    -- Message d'erreur en cas d'échec.
     error_message TEXT NULL,
 
     sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
 -- -----------------------------------------------------
 -- Table : password_reset
--- Tokens de réinitialisation de mot de passe.
 -- -----------------------------------------------------
 CREATE TABLE password_reset (
     id INT AUTO_INCREMENT PRIMARY KEY,
+
     user_id INT NOT NULL,
     token VARCHAR(64) NOT NULL UNIQUE,
     expires_at DATETIME NOT NULL,
     used BOOLEAN NOT NULL DEFAULT FALSE,
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_password_reset_user
@@ -325,22 +290,27 @@ CREATE TABLE password_reset (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
 -- -----------------------------------------------------
 -- Table : subscription_plan
--- Les paliers d'abonnement disponibles (Essentiel, Pro).
+-- Les paliers d'abonnement (Commission gratuit, Essentiel, Pro).
+-- commission_rate  : taux prélevé sur chaque commande.
+-- max_services     : nombre max de prestations actives (9999 = illimité).
+-- max_portfolio    : nombre max d'images portfolio (9999 = illimité).
+-- max_options      : nombre max d'options par prestation (9999 = illimité).
 -- -----------------------------------------------------
 CREATE TABLE subscription_plan (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     name VARCHAR(100) NOT NULL,
-
-    -- Prix mensuel en centimes.
     price INT NOT NULL,
 
-    -- Taux de commission appliqué (0 si abonnement actif).
-    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    commission_rate DECIMAL(5,2) NOT NULL DEFAULT 10.00,
 
-    -- Identifiant du plan côté Stripe Billing.
+    max_services INT NOT NULL DEFAULT 3,
+    max_portfolio_images INT NOT NULL DEFAULT 5,
+    max_options_per_service INT NOT NULL DEFAULT 2,
+
     stripe_price_id VARCHAR(255) NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -349,7 +319,6 @@ CREATE TABLE subscription_plan (
 
 -- -----------------------------------------------------
 -- Table : shop_subscription
--- Abonnement actif d'une boutique à un palier.
 -- -----------------------------------------------------
 CREATE TABLE shop_subscription (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -357,12 +326,10 @@ CREATE TABLE shop_subscription (
     shop_id INT NOT NULL UNIQUE,
     plan_id INT NOT NULL,
 
-    -- Identifiant de l'abonnement côté Stripe Billing.
     stripe_subscription_id VARCHAR(255) NULL,
 
     status ENUM('active', 'cancelled', 'past_due') NOT NULL DEFAULT 'active',
 
-    -- Date de début et de fin de la période en cours.
     current_period_start DATETIME NOT NULL,
     current_period_end DATETIME NOT NULL,
 
@@ -380,29 +347,34 @@ CREATE TABLE shop_subscription (
 
 -- -----------------------------------------------------
 -- Table : raffle_entry
--- Inscriptions au tirage au sort mensuel de mise en avant.
+-- Inscriptions aux tirages au sort de mise en avant.
+-- type 'boutiques' : tirage mensuel, mise en avant page /boutiques.
+-- type 'homepage'  : tirage hebdomadaire, mise en avant page d'accueil.
 -- -----------------------------------------------------
 CREATE TABLE raffle_entry (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     shop_id INT NOT NULL,
 
-    -- Mois concerné (format YYYY-MM, ex: '2026-07').
-    month VARCHAR(7) NOT NULL,
+    -- Type de tirage.
+    type ENUM('boutiques', 'homepage') NOT NULL DEFAULT 'boutiques',
 
-    -- Identifiant du PaymentIntent Stripe (autorisation sans débit immédiat).
+    -- Période concernée.
+    -- Pour 'boutiques' : format YYYY-MM (ex: '2026-07').
+    -- Pour 'homepage'  : date du lundi de la semaine (ex: '2026-07-07').
+    period VARCHAR(10) NOT NULL,
+
     stripe_payment_intent_id VARCHAR(255) NULL,
 
-    -- Statut de l'entrée.
     status ENUM('entered', 'selected', 'not_selected', 'cancelled') NOT NULL DEFAULT 'entered',
 
-    -- Vrai si la boutique est mise en avant aujourd'hui (sélection quotidienne).
-    featured_today BOOLEAN NOT NULL DEFAULT FALSE,
+    -- Pour le tirage homepage : date de fin de mise en avant (7 jours).
+    featured_until DATE NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    -- Une boutique ne peut s'inscrire qu'une fois par mois.
-    UNIQUE KEY unique_shop_month (shop_id, month),
+    -- Une boutique ne peut s'inscrire qu'une fois par type et par période.
+    UNIQUE KEY unique_shop_type_period (shop_id, type, period),
 
     CONSTRAINT fk_raffle_entry_shop
         FOREIGN KEY (shop_id) REFERENCES shop(id)
@@ -413,7 +385,7 @@ CREATE TABLE raffle_entry (
 -- -----------------------------------------------------
 -- Données initiales : paliers d'abonnement
 -- -----------------------------------------------------
-INSERT INTO subscription_plan (name, price, commission_rate, stripe_price_id)
+INSERT INTO subscription_plan (name, price, commission_rate, max_services, max_portfolio_images, max_options_per_service, stripe_price_id)
 VALUES
-    ('Essentiel', 1490, 0.00, 'price_1TqAUxCHvrrlwjMD7A31tt6O'),
-    ('Pro', 2990, 0.00, 'price_1TqAVUCHvrrlwjMDQd8ZCEbx');
+    ('Essentiel', 1490, 5.00, 10, 15, 5, 'price_1TqAUxCHvrrlwjMD7A31tt6O'),
+    ('Pro', 2990, 0.00, 9999, 9999, 9999, 'price_1TqAVUCHvrrlwjMDQd8ZCEbx');
