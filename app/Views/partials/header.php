@@ -1,46 +1,93 @@
-<header>
-    <nav>
-        <a href="/"><strong>Toile</strong></a>
+<header class="site-header">
+    <div class="site-header__inner">
 
-        <a href="/boutiques">Découvrir les artistes</a>
+        <a href="/" class="site-header__logo">
+            <img src="/assets/images/site/logo-toile.png" alt="Toile">
+        </a>
 
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="/profile">Mon profil</a>
-            <a href="/mes-commandes">Mes commandes</a>
+        <nav class="site-header__nav">
+            <a href="/boutiques">Boutiques</a>
 
-            <a href="/mes-favoris">Mes favoris</a>
-
-            <?php if (($_SESSION['user_role'] ?? '') === 'artist'): ?>
-                <a href="/my-shop">Ma boutique</a>
-                <a href="/my-subscription">Mon abonnement</a>
-                <a href="/raffle">Tirage au sort</a>
-                <a href="/my-services">Mes prestations</a>
-                <a href="/my-portfolio">Mon portfolio</a>
-                <a href="/commandes-recues">Commandes reçues</a>
+            <?php if (($_SESSION['user_role'] ?? '') !== 'artist'): ?>
+                <a href="/become-artist">Devenir artiste</a>
             <?php endif; ?>
 
-            <?php if (($_SESSION['user_role'] ?? '') === 'admin'): ?>
-                <a href="/admin">Administration</a>
+            <a href="/comment-ca-marche">Comment ça marche&nbsp;?</a>
+        </nav>
+
+        <div class="site-header__icons">
+            <div class="site-header__search">
+                <form action="/boutiques" method="GET" class="site-header__search-form">
+                    <input type="text" name="q" placeholder="Rechercher...">
+                    <button type="submit" class="site-header__icon-btn" aria-label="Rechercher" title="Rechercher">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="/mes-favoris" class="site-header__icon-btn" aria-label="Favoris" title="Favoris">
+                    <img src="/assets/images/icones/favoris.png" alt="">
+                </a>
+
+                <a href="/mes-commandes" class="site-header__icon-btn" aria-label="Mes commandes" title="Mes commandes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                        <path d="M3 6h18"></path>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                </a>
+
+                <a href="/notifications" class="site-header__icon-btn site-header__notif" aria-label="Notifications" title="Notifications">
+                    <img src="/assets/images/icones/notifications.png" alt="">
+                    <?php if ($unreadCount > 0): ?>
+                        <span class="site-header__notif-badge"><?= $unreadCount ?></span>
+                    <?php endif; ?>
+                </a>
+
+                <div class="site-header__account">
+                    <a href="/profile" class="site-header__profile" aria-label="Mon compte" title="Mon compte">
+                        <?php if (!empty($_SESSION['user_avatar'])): ?>
+                            <img src="/uploads/avatars/<?= htmlspecialchars($_SESSION['user_avatar']) ?>" alt="Profil" class="site-header__avatar">
+                        <?php else: ?>
+                            <img src="/assets/images/icones/new-user.png" alt="Profil" class="site-header__avatar">
+                        <?php endif; ?>
+                        <svg class="site-header__account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </a>
+
+                    <div class="site-header__account-menu">
+                        <div class="site-header__account-menu-inner">
+                            <?php if (($_SESSION['user_role'] ?? '') === 'admin'): ?>
+                                <a href="/admin">Administration</a>
+                                <a href="/profile">Profil</a>
+                                <?php if ($userShop): ?>
+                                    <a href="/boutiques/<?= htmlspecialchars($userShop['slug']) ?>">Ma boutique</a>
+                                <?php endif; ?>
+                            <?php elseif (($_SESSION['user_role'] ?? '') === 'artist'): ?>
+                                <a href="/profile">Profil</a>
+                                <?php if ($userShop): ?>
+                                    <a href="/boutiques/<?= htmlspecialchars($userShop['slug']) ?>">Voir ma boutique</a>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <a href="/profile">Profil</a>
+                            <?php endif; ?>
+
+                            <hr>
+                            <a href="/logout">Se déconnecter</a>
+                        </div>
+                    </div>
+                </div>
+
+            <?php else: ?>
+                <a href="/login" class="btn btn--outline">Se connecter</a>
+                <a href="/register" class="btn btn--primary">S'inscrire</a>
             <?php endif; ?>
+        </div>
 
-            <a href="/notifications">
-                🔔 Notifications
-                <?php if ($unreadCount > 0): ?>
-                    <span style="
-                        background: #078113;
-                        color: white;
-                        border-radius: 50%;
-                        padding: 0.1rem 0.4rem;
-                        font-size: 0.75rem;
-                        font-weight: bold;
-                    "><?= $unreadCount ?></span>
-                <?php endif; ?>
-            </a>
-
-            <a href="/logout">Se déconnecter</a>
-        <?php else: ?>
-            <a href="/login">Se connecter</a>
-            <a href="/register">S'inscrire</a>
-        <?php endif; ?>
-    </nav>
+    </div>
 </header>
