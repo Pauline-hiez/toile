@@ -9,7 +9,8 @@
     id="subscription-payment-form"
     style="max-width: 500px;"
     data-stripe-public-key="<?= htmlspecialchars($stripePublicKey) ?>"
-    data-client-secret="<?= htmlspecialchars($clientSecret) ?>">
+    data-client-secret="<?= htmlspecialchars($clientSecret) ?>"
+    data-customer-session-client-secret="<?= htmlspecialchars($customerSessionClientSecret) ?>">
     <div id="payment-element"></div>
     <div id="payment-errors" style="color: red; margin-top: 0.5rem;"></div>
     <button id="submit-btn" style="margin-top: 1rem; display: none;">

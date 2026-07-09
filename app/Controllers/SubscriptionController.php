@@ -68,17 +68,19 @@ class SubscriptionController
         // Crée un SetupIntent pour collecter la carte.
         $clientSecret = $stripe->createSetupIntent($stripeCustomerId);
 
+        // Nécessaire pour que le Payment Element affiche la case
+        // "Mémoriser cette carte" et les cartes déjà enregistrées.
+        $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
+
         // Stocke le plan_id en session pour l'utiliser après confirmation.
         $_SESSION['pending_subscription_plan_id'] = $planId;
         $_SESSION['pending_stripe_customer_id'] = $stripeCustomerId;
 
-        $savedCard = $stripe->getDefaultPaymentMethod($stripeCustomerId);
-
         $this->renderer->render('subscription/payment', [
             'plan' => $plan,
             'clientSecret' => $clientSecret,
+            'customerSessionClientSecret' => $customerSessionClientSecret,
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
-            'savedCard' => $savedCard,
             'pageTitle' => 'Paiement abonnement — Toile',
         ]);
     }
