@@ -1,26 +1,27 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('payment-form');
-
     if (!form) return;
 
     const stripePublicKey = form.dataset.stripePublicKey;
     const clientSecret = form.dataset.clientSecret;
+    const customerSessionClientSecret = form.dataset.customerSessionClientSecret;
     const totalPrice = form.dataset.totalPrice;
+    const returnUrl = form.dataset.returnUrl || (window.location.origin + '/commander/confirm');
 
     const stripe = Stripe(stripePublicKey);
 
     const elements = stripe.elements({
         appearance: { theme: 'stripe' },
         clientSecret: clientSecret,
+        customerSessionClientSecret: customerSessionClientSecret,
     });
 
+    // La CustomerSession (payment_method_redisplay) fait afficher nativement
+    // les cartes déjà enregistrées comme options sélectionnables ici.
     const paymentElement = elements.create('payment');
     paymentElement.mount('#payment-element');
-
-    // On affiche le bouton seulement une fois Stripe Elements prêt.
     paymentElement.on('ready', () => {
-        const btn = document.getElementById('submit-btn');
-        btn.style.display = 'block';
+        document.getElementById('submit-btn').style.display = 'block';
     });
 
     document.getElementById('submit-btn').addEventListener('click', async () => {
@@ -31,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: window.location.origin + '/commander/confirm',
+                return_url: returnUrl,
+                // Si carte enregistrée utilisée, Stripe la détecte automatiquement
+                // via le customer attaché au PaymentIntent.
             },
         });
 

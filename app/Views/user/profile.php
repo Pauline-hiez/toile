@@ -14,6 +14,8 @@
 <form method="POST" action="/profile" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
 
+    <p><a href="/profile/payment-methods">💳 Gérer mes moyens de paiement</a></p>
+
     <div>
         <label for="username">Nom d'utilisateur</label>
         <input type="text" id="username" name="username" value="<?= htmlspecialchars($user['username']) ?>" required>

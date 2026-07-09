@@ -388,3 +388,51 @@ $router->map('POST', '/my-subscription/cancel', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Tirage au sort
+$router->map('GET', '/raffle', [
+    'controller' => ['App\Controllers\RaffleController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/raffle/enter', [
+    'controller' => ['App\Controllers\RaffleController', 'enter'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/raffle/confirm', [
+    'controller' => ['App\Controllers\RaffleController', 'confirm'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/raffle/cancel', [
+    'controller' => ['App\Controllers\RaffleController', 'cancel'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+// Méthodes de paiement
+$router->map('GET', '/profile/payment-methods', [
+    'controller' => ['App\Controllers\UserController', 'paymentMethods'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/profile/payment-methods/delete', [
+    'controller' => ['App\Controllers\UserController', 'deletePaymentMethod'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);

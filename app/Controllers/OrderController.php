@@ -160,12 +160,25 @@ class OrderController
             exit;
         }
 
-        // Crée le PaymentIntent Stripe (autorisation différée).
+        // Crée ou récupère le customer Stripe pour cet utilisateur
+        $user = $this->userModel->findById($_SESSION['user_id']);
         $stripe = new \App\Core\StripeService();
+
+        $stripeCustomerId = $user['stripe_customer_id'];
+        if (empty($stripeCustomerId)) {
+            $stripeCustomerId = $stripe->createCustomer($user['email'], $user['username']);
+            $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
+        }
+
+        // Crée le PaymentIntent Stripe (autorisation différée).
         $paymentData = $stripe->createPaymentIntent($totalPrice, 'eur', [
             'service_id' => $service['id'],
             'client_id' => $_SESSION['user_id'],
-        ]);
+        ], $stripeCustomerId);
+
+        // Nécessaire pour que le Payment Element affiche la case
+        // "Mémoriser cette carte" et les cartes déjà enregistrées.
+        $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
 
         // Stocke les données de commande en session pour les récupérer
         // après la confirmation Stripe (étape suivante).
@@ -179,13 +192,12 @@ class OrderController
             'delivery_file' => $referenceFile,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
         ];
-
-        // Affiche la page de paiement Stripe Elements.
         $this->renderer->render('order/payment', [
             'service' => $service,
             'shop' => $shop,
             'totalPrice' => $totalPrice,
             'clientSecret' => $paymentData['client_secret'],
+            'customerSessionClientSecret' => $customerSessionClientSecret,
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
             'pageTitle' => 'Paiement — Toile',
         ]);
