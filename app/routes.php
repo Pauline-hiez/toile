@@ -421,3 +421,18 @@ $router->map('POST', '/raffle/cancel', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Méthodes de paiement
+$router->map('GET', '/profile/payment-methods', [
+    'controller' => ['App\Controllers\UserController', 'paymentMethods'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/profile/payment-methods/delete', [
+    'controller' => ['App\Controllers\UserController', 'deletePaymentMethod'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);

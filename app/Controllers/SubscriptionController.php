@@ -72,10 +72,13 @@ class SubscriptionController
         $_SESSION['pending_subscription_plan_id'] = $planId;
         $_SESSION['pending_stripe_customer_id'] = $stripeCustomerId;
 
+        $savedCard = $stripe->getDefaultPaymentMethod($stripeCustomerId);
+
         $this->renderer->render('subscription/payment', [
             'plan' => $plan,
             'clientSecret' => $clientSecret,
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'savedCard' => $savedCard,
             'pageTitle' => 'Paiement abonnement — Toile',
         ]);
     }

@@ -16,6 +16,7 @@
     style="max-width: 500px;"
     data-stripe-public-key="<?= htmlspecialchars($stripePublicKey) ?>"
     data-client-secret="<?= htmlspecialchars($clientSecret) ?>"
+    data-customer-session-client-secret="<?= htmlspecialchars($customerSessionClientSecret) ?>"
     data-total-price="<?= number_format($totalPrice / 100, 2, '.', '') ?>">
     <div id="payment-element"></div>
     <div id="payment-errors" style="color: red; margin-top: 0.5rem;"></div>

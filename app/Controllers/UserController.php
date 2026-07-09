@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Renderer;
 use App\Models\User;
+use App\Core\StripeService;
 
 class UserController
 {
@@ -147,5 +148,39 @@ class UserController
         }
 
         return ['filename' => $filename, 'error' => null];
+    }
+
+    // Affiche les cartes enregistrées 
+    public function paymentMethods(): void
+    {
+        $user = $this->userModel->findById($_SESSION['user_id']);
+        $savedCards = [];
+
+        if (!empty($user['stripe_customer_id'])) {
+            $stripe = new StripeService();
+            $savedCards = $stripe->listPaymentMethods($user['stripe_customer_id']);
+        }
+
+        $this->renderer->render('user/payment-methods', [
+            'savedCards' => $savedCards,
+            'pageTitle' => 'Mes moyens de paiement — Toile',
+        ]);
+    }
+
+    // Supprime une carte enregistrée 
+    public function deletePaymentMethod(): void
+    {
+        $paymentMethodId = $_POST['payment_method_id'] ?? '';
+
+        if (empty($paymentMethodId)) {
+            header('Location: /profile/payment-methods');
+            exit;
+        }
+
+        $stripe = new StripeService();
+        $stripe->detachPaymentMethod($paymentMethodId);
+
+        header('Location: /profile/payment-methods');
+        exit;
     }
 }

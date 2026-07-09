@@ -89,11 +89,18 @@ class RaffleController
         // Stocke le type en session pour la page de confirmation
         $_SESSION['pending_raffle_type'] = $type;
 
+        $user = (new \App\Models\User())->findById($_SESSION['user_id']);
+        $savedCard = null;
+        if (!empty($user['stripe_customer_id'])) {
+            $savedCard = $stripe->getDefaultPaymentMethod($user['stripe_customer_id']);
+        }
+
         $this->renderer->render('raffle/payment', [
             'type' => $type,
             'price' => $price,
             'clientSecret' => $paymentData['client_secret'],
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'savedCard' => $savedCard,
             'pageTitle' => 'Autorisation tirage — Toile',
         ]);
     }
