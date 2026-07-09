@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const stripePublicKey = form.dataset.stripePublicKey;
     const clientSecret = form.dataset.clientSecret;
     const totalPrice = form.dataset.totalPrice;
+    // URL de retour configurable via data-return-url,
+    // avec fallback vers /commander/confirm.
+    const returnUrl = form.dataset.returnUrl || (window.location.origin + '/commander/confirm');
 
     const stripe = Stripe(stripePublicKey);
 
@@ -17,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const paymentElement = elements.create('payment');
     paymentElement.mount('#payment-element');
 
-    // On affiche le bouton seulement une fois Stripe Elements prêt.
     paymentElement.on('ready', () => {
         const btn = document.getElementById('submit-btn');
         btn.style.display = 'block';
@@ -31,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: window.location.origin + '/commander/confirm',
+                return_url: returnUrl,
             },
         });
 

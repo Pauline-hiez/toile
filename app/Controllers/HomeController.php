@@ -16,8 +16,13 @@ class HomeController
     // Page d'accueil
     public function index(): void
     {
+        $raffleModel = new \App\Models\RaffleEntry();
+        $featuredShop = $raffleModel->findFeaturedToday();
+
         $this->renderer->render('home', [
             'title' => 'Toile',
+            'pageTitle' => 'Accueil — Toile',
+            'featuredShop' => $featuredShop,
         ]);
     }
 
