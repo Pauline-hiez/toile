@@ -34,8 +34,14 @@ class AdminController
 
         $this->renderer->render('admin/dashboard', [
             'stats' => $stats,
+            'recentArtists' => $this->getRecentArtists(),
+            'recentOrders' => $this->getRecentOrders(),
+            'recentSignups' => $this->getRecentSignups(),
+            'activityChart' => $this->getActivityChartData(),
             'pageTitle' => 'Administration — Toile',
-        ]);
+            'pageHeading' => 'Dashboard',
+            'pageSubtitle' => "Bienvenue sur l'administration de Toile.\nVoici un aperçu global de votre plateforme.",
+        ], 'layouts/admin');
     }
 
     /**
@@ -44,15 +50,25 @@ class AdminController
     private function getStats(): array
     {
         $pdo = \App\Core\Database::getInstance()->getConnection();
+        $capturedStatuses = "'accepted', 'in_progress', 'delivered', 'completed'";
 
         // Nombre total d'utilisateurs.
         $totalUsers = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+        $newUsers = (int) $pdo->query(
+            'SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
 
-        // Nombre total de boutiques.
+        // Nombre total de boutiques (artistes).
         $totalShops = (int) $pdo->query('SELECT COUNT(*) FROM shop')->fetchColumn();
+        $newShops = (int) $pdo->query(
+            'SELECT COUNT(*) FROM shop WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
 
         // Nombre total de commandes.
         $totalOrders = (int) $pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn();
+        $newOrders = (int) $pdo->query(
+            'SELECT COUNT(*) FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
 
         // Commandes en cours (non terminées, non annulées, non refusées).
         $activeOrders = (int) $pdo->query(
@@ -63,7 +79,23 @@ class AdminController
         // Volume total des paiements capturés (commandes acceptées ou plus).
         $totalRevenue = (int) $pdo->query(
             "SELECT COALESCE(SUM(total_price), 0) FROM orders
-             WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')"
+             WHERE status IN ({$capturedStatuses})"
+        )->fetchColumn();
+        $newRevenue = (int) $pdo->query(
+            "SELECT COALESCE(SUM(total_price), 0) FROM orders
+             WHERE status IN ({$capturedStatuses})
+             AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+        )->fetchColumn();
+
+        // Commissions perçues par la plateforme.
+        $totalCommissions = (int) $pdo->query(
+            "SELECT COALESCE(SUM(commission_amount), 0) FROM orders
+             WHERE status IN ({$capturedStatuses})"
+        )->fetchColumn();
+        $newCommissions = (int) $pdo->query(
+            "SELECT COALESCE(SUM(commission_amount), 0) FROM orders
+             WHERE status IN ({$capturedStatuses})
+             AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
         )->fetchColumn();
 
         // Demandes artiste en attente.
@@ -73,12 +105,115 @@ class AdminController
 
         return [
             'total_users' => $totalUsers,
+            'new_users' => $newUsers,
             'total_shops' => $totalShops,
+            'new_shops' => $newShops,
             'total_orders' => $totalOrders,
+            'new_orders' => $newOrders,
             'active_orders' => $activeOrders,
             'total_revenue' => $totalRevenue,
+            'new_revenue' => $newRevenue,
+            'total_commissions' => $totalCommissions,
+            'new_commissions' => $newCommissions,
             'pending_artist_requests' => $pendingArtistRequests,
         ];
+    }
+
+    /**
+     * Derniers artistes (boutiques) inscrits, avec leur nombre de prestations.
+     */
+    private function getRecentArtists(int $limit = 5): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT shop.name, shop.slug, shop.is_open, shop.created_at,
+                    u.username, u.avatar,
+                    (SELECT COUNT(*) FROM service WHERE service.shop_id = shop.id) AS service_count
+             FROM shop
+             INNER JOIN users u ON u.id = shop.user_id
+             ORDER BY shop.created_at DESC
+             LIMIT :limit"
+        );
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Dernières commandes passées sur la plateforme.
+     */
+    private function getRecentOrders(int $limit = 5): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT o.id, o.title, o.status, o.created_at,
+                    u.username AS client_name,
+                    s.name AS shop_name
+             FROM orders o
+             INNER JOIN users u ON u.id = o.client_id
+             INNER JOIN shop s ON s.id = o.shop_id
+             ORDER BY o.created_at DESC
+             LIMIT :limit"
+        );
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Utilisateurs inscrits durant les 7 derniers jours.
+     */
+    private function getRecentSignups(int $limit = 6): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT username, avatar, created_at
+             FROM users
+             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+             ORDER BY created_at DESC
+             LIMIT :limit"
+        );
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Nombre de commandes par jour sur les 14 derniers jours (pour le
+     * graphique "Aperçu de l'activité"), avec les jours sans commande
+     * comblés à 0.
+     */
+    private function getActivityChartData(int $days = 14): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $stmt = $pdo->prepare(
+            "SELECT DATE(created_at) AS day, COUNT(*) AS total
+             FROM orders
+             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)"
+        );
+        $stmt->bindValue('days', $days - 1, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $countsByDay = array_column($stmt->fetchAll(), 'total', 'day');
+
+        $labels = [];
+        $values = [];
+
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $labels[] = date('d/m', strtotime($date));
+            $values[] = (int) ($countsByDay[$date] ?? 0);
+        }
+
+        return ['labels' => $labels, 'values' => $values];
     }
 
     // Liste des demandes artistes en attente
