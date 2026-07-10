@@ -1,4 +1,14 @@
-<?php $pageTitle = 'Ma boutique — Toile'; ?>
+<?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir ShopController::manage()/save()).
+ *
+ * @var array|null $shop
+ * @var array<string, string> $errors
+ * @var string|null $success
+ */
+$pageTitle = 'Ma boutique — Toile';
+?>
 
 <h1>Ma boutique</h1>
 

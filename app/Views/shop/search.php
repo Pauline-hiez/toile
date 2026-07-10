@@ -1,4 +1,14 @@
-<?php $pageTitle = 'Découvrir les artistes — Toile'; ?>
+<?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir ShopController::search()).
+ *
+ * @var array $shops
+ * @var array{q: string, style: string, min_price: string, max_price: string, sort: string} $filters
+ * @var array<int, string> $availableStyles
+ */
+$pageTitle = 'Découvrir les artistes — Toile';
+?>
 
 <h1>Découvrir les artistes</h1>
 

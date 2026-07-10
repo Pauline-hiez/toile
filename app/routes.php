@@ -314,6 +314,30 @@ $router->map('POST', '/admin/shops/[i:id]/toggle', [
     ],
 ]);
 
+$router->map('GET', '/admin/orders', [
+    'controller' => ['App\Controllers\AdminController', 'orders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/orders/[i:id]/toggle-archive', [
+    'controller' => ['App\Controllers\AdminController', 'toggleOrderArchive'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/orders/bulk-archive', [
+    'controller' => ['App\Controllers\AdminController', 'bulkArchiveOrders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/reviews', [
     'controller' => ['App\Controllers\AdminController', 'reviews'],
     'middlewares' => [
@@ -340,6 +364,14 @@ $router->map('GET', '/admin/users', [
 
 $router->map('POST', '/admin/users/[i:id]/ban', [
     'controller' => ['App\Controllers\AdminController', 'banUser'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/users/bulk-ban', [
+    'controller' => ['App\Controllers\AdminController', 'bulkBanUsers'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

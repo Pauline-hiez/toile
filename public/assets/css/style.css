@@ -880,6 +880,14 @@ body::before {
     flex-wrap: wrap;
 }
 
+/* ---- Action groupée (sélection multiple dans l'en-tête) ---- */
+
+.admin-th-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .admin-table-filters select {
     border: 1px solid var(--color-border);
     border-radius: 999px;
@@ -966,7 +974,8 @@ table.admin-table tr:hover td {
 }
 
 .table-actions a,
-.table-actions button {
+.table-actions button,
+.admin-bulk-trigger {
     background: none;
     border: none;
     cursor: pointer;
@@ -979,7 +988,8 @@ table.admin-table tr:hover td {
 }
 
 .table-actions a:hover,
-.table-actions button:hover {
+.table-actions button:hover,
+.admin-bulk-trigger:hover {
     color: var(--color-primary);
     background: var(--color-primary-light);
 }
@@ -990,10 +1000,15 @@ table.admin-table tr:hover td {
 }
 
 .table-actions svg,
-.table-actions img {
+.table-actions img,
+.admin-bulk-trigger svg {
     width: 16px;
     height: 16px;
     object-fit: contain;
+}
+
+.admin-bulk-trigger {
+    display: inline-flex;
 }
 
 .table-actions a[aria-disabled="true"] {

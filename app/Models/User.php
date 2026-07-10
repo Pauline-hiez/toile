@@ -126,6 +126,31 @@ class User extends BaseModel
         return $this->update($userId, ['is_banned' => 1]);
     }
 
+    /**
+     * Suspend plusieurs utilisateurs en une requête. Exclut toujours
+     * les admins et l'utilisateur courant, quels que soient les ids
+     * fournis (filet de sécurité côté modèle, en plus du contrôleur).
+     *
+     * @param int[] $userIds
+     */
+    public function banMany(array $userIds, int $excludeUserId): int
+    {
+        $userIds = array_values(array_unique(array_filter(array_map('intval', $userIds))));
+        $userIds = array_diff($userIds, [$excludeUserId]);
+
+        if ($userIds === []) {
+            return 0;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+        $stmt = $this->pdo->prepare(
+            "UPDATE users SET is_banned = 1 WHERE role != 'admin' AND id IN ({$placeholders})"
+        );
+        $stmt->execute(array_values($userIds));
+
+        return $stmt->rowCount();
+    }
+
     public function unban(int $userId): bool
     {
         return $this->update($userId, ['is_banned' => 0]);

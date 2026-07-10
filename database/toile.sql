@@ -134,6 +134,8 @@ CREATE TABLE orders (
     stripe_payment_intent_id VARCHAR(255) NULL,
     delivery_file VARCHAR(255) NULL,
 
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_order_client

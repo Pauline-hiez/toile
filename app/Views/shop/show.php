@@ -1,4 +1,16 @@
-<?php $pageTitle = htmlspecialchars($shop['name']) . ' — Toile'; ?>
+<?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir ShopController::show()).
+ *
+ * @var array $shop
+ * @var array $services
+ * @var array $portfolioImages
+ * @var array{average: float, count: int} $ratingStats
+ * @var bool $isFavorite
+ */
+$pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
+?>
 
 <?php if (!empty($shop['banner'])): ?>
     <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" style="width: 100%; max-height: 250px; object-fit: cover;">

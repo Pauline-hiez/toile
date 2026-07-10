@@ -10,16 +10,7 @@
  * @var array{labels: array, values: array} $activityChart
  */
 
-$orderStatusLabels = [
-    'quote_requested' => ['label' => 'Devis demandé', 'class' => 'badge--neutral'],
-    'pending' => ['label' => 'En attente', 'class' => 'badge--warning'],
-    'accepted' => ['label' => 'Acceptée', 'class' => 'badge--info'],
-    'rejected' => ['label' => 'Refusée', 'class' => 'badge--danger'],
-    'in_progress' => ['label' => 'En cours', 'class' => 'badge--info'],
-    'delivered' => ['label' => 'Livrée', 'class' => 'badge--info'],
-    'completed' => ['label' => 'Terminée', 'class' => 'badge--success'],
-    'cancelled' => ['label' => 'Annulée', 'class' => 'badge--danger'],
-];
+$orderStatusLabels = \App\Models\Order::statusLabels();
 ?>
 
 <?php if ($stats['pending_artist_requests'] > 0): ?>

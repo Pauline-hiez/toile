@@ -96,14 +96,28 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         </select>
     </form>
 
+    <form method="POST" action="/admin/users/bulk-ban" id="usersBulkForm" data-bulk-form data-confirm="Suspendre les %d utilisateur(s) sélectionné(s) ?" hidden>
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+    </form>
+
     <?php if (empty($users)): ?>
         <p class="admin-panel__empty" style="padding: 1.5rem;">Aucun utilisateur ne correspond à ces filtres.</p>
     <?php else: ?>
         <div class="admin-table-scroll">
-            <table class="admin-table">
+            <table class="admin-table" data-bulk-table data-bulk-form="usersBulkForm">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" aria-label="Tout sélectionner"></th>
+                        <th>
+                            <span class="admin-th-select">
+                                <input type="checkbox" data-select-all aria-label="Tout sélectionner">
+                                <button type="submit" form="usersBulkForm" class="admin-bulk-trigger" data-bulk-trigger hidden title="Suspendre la sélection">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="9"></circle>
+                                        <line x1="5.5" y1="5.5" x2="18.5" y2="18.5"></line>
+                                    </svg>
+                                </button>
+                            </span>
+                        </th>
                         <th>Utilisateur</th>
                         <th>Email</th>
                         <th>Rôle</th>
@@ -121,7 +135,11 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                         $shopSlug = $shopSlugsByUserId[$user['id']] ?? null;
                         ?>
                         <tr>
-                            <td><input type="checkbox" aria-label="Sélectionner <?= htmlspecialchars($user['username']) ?>"></td>
+                            <td>
+                                <?php if (!$isSelf && $user['role'] !== 'admin'): ?>
+                                    <input type="checkbox" class="js-row-select" value="<?= $user['id'] ?>" aria-label="Sélectionner <?= htmlspecialchars($user['username']) ?>">
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                                     <?php if (!empty($user['avatar'])): ?>
@@ -213,3 +231,5 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     <?php $entityLabel = 'utilisateurs'; ?>
     <?php require __DIR__ . '/../components/pagination.php'; ?>
 </div>
+
+<script src="/assets/js/admin-table-select.js"></script>

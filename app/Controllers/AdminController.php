@@ -382,6 +382,110 @@ class AdminController
         exit;
     }
 
+    public function orders(): void
+    {
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'status' => $_GET['status'] ?? '',
+            'registered' => $_GET['registered'] ?? '',
+            'archived' => $_GET['archived'] ?? '',
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $result = $this->orderModel->adminSearch($filters);
+
+        $this->renderer->render('admin/orders', [
+            'orders' => $result['orders'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'filters' => $filters,
+            'stats' => $this->getOrderStats(),
+            'pageTitle' => 'Commandes - Administration',
+            'pageHeading' => 'Commandes',
+            'pageSubtitle' => "Consultez et gérez l'ensemble des commandes de la plateforme.",
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Indicateurs clés pour les cartes de la page Commandes.
+     */
+    private function getOrderStats(): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn();
+
+        $pending = (int) $pdo->query(
+            "SELECT COUNT(*) FROM orders WHERE status IN ('quote_requested', 'pending')"
+        )->fetchColumn();
+
+        $inProgress = (int) $pdo->query(
+            "SELECT COUNT(*) FROM orders WHERE status IN ('accepted', 'in_progress', 'delivered')"
+        )->fetchColumn();
+
+        $completed = (int) $pdo->query(
+            "SELECT COUNT(*) FROM orders WHERE status = 'completed'"
+        )->fetchColumn();
+
+        $cancelled = (int) $pdo->query(
+            "SELECT COUNT(*) FROM orders WHERE status IN ('cancelled', 'rejected')"
+        )->fetchColumn();
+
+        $newThisWeek = (int) $pdo->query(
+            'SELECT COUNT(*) FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
+
+        $totalRevenue = (int) $pdo->query(
+            'SELECT COALESCE(SUM(total_price), 0) FROM orders'
+        )->fetchColumn();
+
+        $newRevenueThisWeek = (int) $pdo->query(
+            "SELECT COALESCE(SUM(total_price), 0) FROM orders
+             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+        )->fetchColumn();
+
+        return [
+            'total' => $total,
+            'pending' => $pending,
+            'in_progress' => $inProgress,
+            'completed' => $completed,
+            'cancelled' => $cancelled,
+            'new_this_week' => $newThisWeek,
+            'total_revenue' => $totalRevenue,
+            'new_revenue_this_week' => $newRevenueThisWeek,
+        ];
+    }
+
+    public function toggleOrderArchive(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        $this->orderModel->toggleArchived($id);
+
+        header('Location: /admin/orders');
+        exit;
+    }
+
+    public function bulkArchiveOrders(): void
+    {
+        $ids = array_map('intval', $_POST['ids'] ?? []);
+        $this->orderModel->setArchivedMany($ids, true);
+
+        header('Location: /admin/orders');
+        exit;
+    }
+
     public function reviews(): void
     {
         $reviews = $this->reviewModel->findAllWithDetails();
@@ -529,6 +633,15 @@ class AdminController
         }
 
         $_SESSION['banned_users'][$id] = true;
+
+        header('Location: /admin/users');
+        exit;
+    }
+
+    public function bulkBanUsers(): void
+    {
+        $ids = array_map('intval', $_POST['ids'] ?? []);
+        $this->userModel->banMany($ids, (int) $_SESSION['user_id']);
 
         header('Location: /admin/users');
         exit;

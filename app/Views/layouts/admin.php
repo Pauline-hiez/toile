@@ -40,7 +40,7 @@ $navItems = [
     ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard.png', 'match' => 'exact'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users.png', 'match' => 'prefix'],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'artiste.png', 'match' => 'prefix'],
-    ['label' => 'Commandes', 'href' => '#', 'icon' => 'commandes.png', 'match' => 'none'],
+    ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'commandes.png', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '#', 'icon' => 'commissions.png', 'match' => 'none'],
     ['label' => 'Tirage au sort', 'href' => '#', 'icon' => 'abonnements.png', 'match' => 'none'],
     ['label' => 'Signalements', 'href' => '/admin/reviews', 'icon' => 'avertissements.png', 'match' => 'prefix'],
