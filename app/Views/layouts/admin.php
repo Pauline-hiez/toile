@@ -1,4 +1,13 @@
 <?php
+/**
+ * Layout admin. Variables injectées par App\Core\Renderer::render()
+ * via extract($data) avant l'inclusion de ce fichier :
+ *
+ * @var string $content Rendu HTML de la vue admin/* englobée.
+ * @var string|null $pageTitle Titre de l'onglet navigateur.
+ * @var string|null $pageHeading Titre affiché dans le bandeau (ex: "Dashboard").
+ * @var string|null $pageSubtitle Sous-titre affiché sous le titre.
+ */
 
 use App\Models\Notification;
 use App\Models\Shop;
@@ -95,17 +104,12 @@ $navItems = [
                 </div>
 
                 <div class="admin-header__actions">
-                    <div class="site-header__search">
-                        <form action="/admin/users" method="GET" class="site-header__search-form">
-                            <input type="text" name="q" placeholder="Rechercher...">
-                            <button type="submit" class="site-header__icon-btn" aria-label="Rechercher" title="Rechercher">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="7"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                            </button>
-                        </form>
-                    </div>
+                    <?php
+                    $searchAction = '/admin/users';
+                    $searchStandalone = true;
+                    $searchValue = '';
+                    ?>
+                    <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
                     <a href="/notifications" class="admin-header__bell" aria-label="Notifications" title="Notifications">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

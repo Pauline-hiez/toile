@@ -335,11 +335,100 @@ class AdminController
 
     public function users(): void
     {
-        $users = $this->userModel->findAllUsers();
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'role' => $_GET['role'] ?? '',
+            'status' => $_GET['status'] ?? '',
+            'registered' => $_GET['registered'] ?? '',
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $result = $this->userModel->search($filters);
+        $users = $result['users'];
+
+        // Boutiques des artistes affichés, pour le lien "voir".
+        $artistIds = array_column(
+            array_filter($users, fn($u) => $u['role'] === 'artist'),
+            'id'
+        );
+        $shopSlugsByUserId = $artistIds !== [] ? $this->shopModel->findSlugsByUserIds($artistIds) : [];
+
         $this->renderer->render('admin/users', [
             'users' => $users,
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'filters' => $filters,
+            'shopSlugsByUserId' => $shopSlugsByUserId,
+            'stats' => $this->getUserStats(),
             'pageTitle' => 'Utilisateurs - Administration',
-        ]);
+            'pageHeading' => 'Utilisateurs',
+            'pageSubtitle' => "Consultez et gérez l'ensemble des utilisateurs de la plateforme.",
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Construit une liste de numéros de page avec des '...' pour les
+     * séquences non affichées (ex: 1 2 3 ... 12).
+     *
+     * @return array<int, int|string>
+     */
+    private function buildPageNumbers(int $currentPage, int $totalPages): array
+    {
+        $totalPages = max(1, $totalPages);
+        $pages = [];
+
+        for ($p = 1; $p <= $totalPages; $p++) {
+            if ($p === 1 || $p === $totalPages || abs($p - $currentPage) <= 1) {
+                $pages[] = $p;
+            } elseif (end($pages) !== '...') {
+                $pages[] = '...';
+            }
+        }
+
+        return $pages;
+    }
+
+    /**
+     * Indicateurs clés pour les cartes de la page Utilisateurs.
+     */
+    private function getUserStats(): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+        $active = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE is_banned = 0')->fetchColumn();
+        $suspended = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE is_banned = 1')->fetchColumn();
+        $artists = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'artist'")->fetchColumn();
+
+        $newThisWeek = (int) $pdo->query(
+            'SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
+
+        $newPrevWeek = (int) $pdo->query(
+            'SELECT COUNT(*) FROM users
+             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+             AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
+
+        $newArtistsThisWeek = (int) $pdo->query(
+            "SELECT COUNT(*) FROM users
+             WHERE role = 'artist' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+        )->fetchColumn();
+
+        return [
+            'total' => $total,
+            'active' => $active,
+            'suspended' => $suspended,
+            'artists' => $artists,
+            'new_this_week' => $newThisWeek,
+            'new_vs_prev_week' => $newThisWeek - $newPrevWeek,
+            'new_artists_this_week' => $newArtistsThisWeek,
+        ];
     }
 
     public function banUser(int $id): void

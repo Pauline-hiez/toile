@@ -1,4 +1,15 @@
 <?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir AdminController::dashboard()).
+ *
+ * @var array $stats
+ * @var array $recentArtists
+ * @var array $recentOrders
+ * @var array $recentSignups
+ * @var array{labels: array, values: array} $activityChart
+ */
+
 $orderStatusLabels = [
     'quote_requested' => ['label' => 'Devis demandé', 'class' => 'badge--neutral'],
     'pending' => ['label' => 'En attente', 'class' => 'badge--warning'],

@@ -160,4 +160,21 @@ class Shop extends BaseModel
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    /**
+     * Slugs de boutique indexés par user_id, pour un lot d'utilisateurs.
+     *
+     * @param int[] $userIds
+     * @return array<int, string>
+     */
+    public function findSlugsByUserIds(array $userIds): array
+    {
+        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT user_id, slug FROM shop WHERE user_id IN ({$placeholders})"
+        );
+        $stmt->execute(array_values($userIds));
+
+        return array_column($stmt->fetchAll(), 'slug', 'user_id');
+    }
 }

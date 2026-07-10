@@ -1,3 +1,12 @@
+<?php
+/**
+ * Header public. Variables définies par layouts/default.php avant
+ * l'inclusion de ce partial (require, pas de scope isolé).
+ *
+ * @var int $unreadCount Nombre de notifications non lues.
+ * @var array|null $userShop Boutique de l'utilisateur connecté (artiste/admin), ou null.
+ */
+?>
 <header class="site-header">
     <div class="site-header__inner">
 
@@ -16,17 +25,12 @@
         </nav>
 
         <div class="site-header__icons">
-            <div class="site-header__search">
-                <form action="/boutiques" method="GET" class="site-header__search-form">
-                    <input type="text" name="q" placeholder="Rechercher...">
-                    <button type="submit" class="site-header__icon-btn" aria-label="Rechercher" title="Rechercher">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="7"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
-                </form>
-            </div>
+            <?php
+            $searchAction = '/boutiques';
+            $searchStandalone = true;
+            $searchValue = '';
+            ?>
+            <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="/mes-favoris" class="site-header__icon-btn" aria-label="Favoris" title="Favoris">
