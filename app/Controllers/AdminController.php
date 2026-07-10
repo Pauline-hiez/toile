@@ -285,11 +285,70 @@ class AdminController
 
     public function shops(): void
     {
-        $shops = $this->shopModel->findAllWithOwner();
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'status' => $_GET['status'] ?? '',
+            'registered' => $_GET['registered'] ?? '',
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $result = $this->shopModel->adminSearch($filters);
+
         $this->renderer->render('admin/shops', [
-            'shops' => $shops,
+            'shops' => $result['shops'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'filters' => $filters,
+            'stats' => $this->getShopStats(),
             'pageTitle' => 'Boutiques - Administration',
-        ]);
+            'pageHeading' => 'Boutiques',
+            'pageSubtitle' => "Consultez et gérez l'ensemble des boutiques de la plateforme.",
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Indicateurs clés pour les cartes de la page Artistes.
+     */
+    private function getShopStats(): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM shop')->fetchColumn();
+
+        $pending = (int) $pdo->query(
+            "SELECT COUNT(*) FROM shop
+             INNER JOIN users u ON u.id = shop.user_id
+             WHERE shop.is_open = 0 AND u.is_banned = 0"
+        )->fetchColumn();
+
+        $active = (int) $pdo->query(
+            "SELECT COUNT(*) FROM shop
+             INNER JOIN users u ON u.id = shop.user_id
+             WHERE shop.is_open = 1 AND u.is_banned = 0"
+        )->fetchColumn();
+
+        $suspended = (int) $pdo->query(
+            "SELECT COUNT(*) FROM shop
+             INNER JOIN users u ON u.id = shop.user_id
+             WHERE u.is_banned = 1"
+        )->fetchColumn();
+
+        $newThisWeek = (int) $pdo->query(
+            'SELECT COUNT(*) FROM shop WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
+
+        return [
+            'total' => $total,
+            'pending' => $pending,
+            'active' => $active,
+            'suspended' => $suspended,
+            'new_this_week' => $newThisWeek,
+        ];
     }
 
     public function deleteShop(int $id): void
@@ -302,6 +361,22 @@ class AdminController
             exit;
         }
         $this->shopModel->delete($id);
+
+        header('Location: /admin/shops');
+        exit;
+    }
+
+    public function toggleShopOpen(int $id): void
+    {
+        $shop = $this->shopModel->findById($id);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        $this->shopModel->toggleOpen($id);
 
         header('Location: /admin/shops');
         exit;

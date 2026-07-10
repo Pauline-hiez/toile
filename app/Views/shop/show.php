@@ -49,7 +49,11 @@ $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
                 <?php if (!empty($service['description'])): ?>
                     <p><?= nl2br(htmlspecialchars($service['description'])) ?></p>
                 <?php endif; ?>
-                <a href="/commander/<?= $service['id'] ?>">Commander</a>
+                <?php if ($shop['is_open']): ?>
+                    <a href="/commander/<?= $service['id'] ?>">Commander</a>
+                <?php else: ?>
+                    <em>Boutique actuellement fermée aux commandes</em>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ul>

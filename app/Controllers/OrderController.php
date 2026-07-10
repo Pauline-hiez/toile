@@ -52,6 +52,13 @@ class OrderController
         }
 
         $shop = $this->shopModel->findById($service['shop_id']);
+
+        if ($shop === null || !$shop['is_open']) {
+            http_response_code(403);
+            echo 'Cette boutique est actuellement fermée aux commandes.';
+            exit;
+        }
+
         $options = $this->optionModel->findByServiceId($service['id']);
 
         $this->renderer->render('order/create', [
@@ -79,6 +86,13 @@ class OrderController
         }
 
         $shop = $this->shopModel->findById($service['shop_id']);
+
+        if ($shop === null || !$shop['is_open']) {
+            http_response_code(403);
+            echo 'Cette boutique est actuellement fermée aux commandes.';
+            exit;
+        }
+
         $options = $this->optionModel->findByServiceId($service['id']);
 
         $title = trim($_POST['title'] ?? '');

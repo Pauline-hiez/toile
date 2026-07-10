@@ -82,6 +82,14 @@ $router->map('POST', '/my-shop', [
     ],
 ]);
 
+$router->map('POST', '/my-shop/toggle', [
+    'controller' => ['App\Controllers\ShopController', 'toggleOpen'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Services (côté artiste)
 $router->map('GET', '/my-services', [
     'controller' => ['App\Controllers\ServiceController', 'index'],
@@ -292,6 +300,14 @@ $router->map('GET', '/admin/shops', [
 
 $router->map('POST', '/admin/shops/[i:id]/delete', [
     'controller' => ['App\Controllers\AdminController', 'deleteShop'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/shops/[i:id]/toggle', [
+    'controller' => ['App\Controllers\AdminController', 'toggleShopOpen'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

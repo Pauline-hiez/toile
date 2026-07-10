@@ -87,7 +87,7 @@ class Shop extends BaseModel
                 AND re.type = 'boutiques'
                 AND re.period = :current_month
                 AND re.status = 'selected'
-            WHERE shop.is_open = 1
+            WHERE 1 = 1
         ";
 
         $params['current_month'] = date('Y-m');
@@ -124,8 +124,8 @@ class Shop extends BaseModel
         // Tri.
         $sort = $filters['sort'] ?? 'rating';
         $sql .= match ($sort) {
-            'price' => ' ORDER BY is_raffle_featured DESC, min_price ASC',
-            default => ' ORDER BY is_raffle_featured DESC, avg_rating DESC',
+            'price' => ' ORDER BY shop.is_open DESC, is_raffle_featured DESC, min_price ASC',
+            default => ' ORDER BY shop.is_open DESC, is_raffle_featured DESC, avg_rating DESC',
         };
 
         $stmt = $this->pdo->prepare($sql);
@@ -176,5 +176,87 @@ class Shop extends BaseModel
         $stmt->execute(array_values($userIds));
 
         return array_column($stmt->fetchAll(), 'slug', 'user_id');
+    }
+
+    /**
+     * Recherche paginée de boutiques avec filtres combinables (page
+     * Artistes de l'admin).
+     *
+     * @param array $filters q, status ('active'|'pending'|'suspended'),
+     *                       registered ('week'|'month'), page, per_page
+     * @return array{shops: array, total: int}
+     */
+    public function adminSearch(array $filters): array
+    {
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['q'])) {
+            $where[] = '(shop.name LIKE :q1 OR u.username LIKE :q2)';
+            $params['q1'] = '%' . $filters['q'] . '%';
+            $params['q2'] = '%' . $filters['q'] . '%';
+        }
+
+        if (($filters['status'] ?? '') === 'active') {
+            $where[] = 'shop.is_open = 1 AND u.is_banned = 0';
+        } elseif (($filters['status'] ?? '') === 'pending') {
+            $where[] = 'shop.is_open = 0 AND u.is_banned = 0';
+        } elseif (($filters['status'] ?? '') === 'suspended') {
+            $where[] = 'u.is_banned = 1';
+        }
+
+        if (($filters['registered'] ?? '') === 'week') {
+            $where[] = 'shop.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)';
+        } elseif (($filters['registered'] ?? '') === 'month') {
+            $where[] = 'shop.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)';
+        }
+
+        $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+        $countStmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM shop INNER JOIN users u ON u.id = shop.user_id {$whereSql}"
+        );
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $perPage = max(1, (int) ($filters['per_page'] ?? 10));
+        $page = max(1, (int) ($filters['page'] ?? 1));
+        $offset = ($page - 1) * $perPage;
+
+        $stmt = $this->pdo->prepare(
+            "SELECT shop.id, shop.name, shop.slug, shop.banner, shop.styles,
+                    shop.is_open, shop.monetization_type, shop.created_at,
+                    u.username, u.avatar, u.is_banned,
+                    (SELECT COUNT(*) FROM orders WHERE orders.shop_id = shop.id) AS order_count,
+                    (SELECT AVG(review.rating) FROM review
+                        INNER JOIN orders ON orders.id = review.order_id
+                        WHERE orders.shop_id = shop.id) AS avg_rating,
+                    (SELECT COUNT(*) FROM review
+                        INNER JOIN orders ON orders.id = review.order_id
+                        WHERE orders.shop_id = shop.id) AS review_count,
+                    (SELECT COUNT(*) FROM favorite WHERE favorite.shop_id = shop.id) AS favorite_count,
+                    sp.name AS plan_name
+             FROM shop
+             INNER JOIN users u ON u.id = shop.user_id
+             LEFT JOIN shop_subscription ss ON ss.shop_id = shop.id AND ss.status = 'active'
+             LEFT JOIN subscription_plan sp ON sp.id = ss.plan_id
+             {$whereSql}
+             ORDER BY shop.created_at DESC
+             LIMIT :limit OFFSET :offset"
+        );
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['shops' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    public function toggleOpen(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE shop SET is_open = NOT is_open WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
     }
 }

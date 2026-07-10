@@ -39,7 +39,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
 $navItems = [
     ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard.png', 'match' => 'exact'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users.png', 'match' => 'prefix'],
-    ['label' => 'Artistes', 'href' => '/admin/shops', 'icon' => 'artiste.png', 'match' => 'prefix'],
+    ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'artiste.png', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '#', 'icon' => 'commandes.png', 'match' => 'none'],
     ['label' => 'Abonnements', 'href' => '#', 'icon' => 'commissions.png', 'match' => 'none'],
     ['label' => 'Tirage au sort', 'href' => '#', 'icon' => 'abonnements.png', 'match' => 'none'],

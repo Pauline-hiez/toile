@@ -49,6 +49,10 @@
             <div style="border: 1px solid #ccc; padding: 1rem; width: 250px;">
                 <h3><a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>"><?= htmlspecialchars($shop['name']) ?></a></h3>
 
+                <?php if (!$shop['is_open']): ?>
+                    <p style="color: #92400e;">Fermée actuellement</p>
+                <?php endif; ?>
+
                 <p>
                     <?php if ($shop['avg_rating'] !== null): ?>
                         ⭐ <?= number_format($shop['avg_rating'], 1) ?>

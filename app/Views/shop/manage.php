@@ -16,6 +16,23 @@ $availableStyles = ['anime', 'réaliste', 'chibi', 'pixel art', 'concept art'];
 
 <?php if ($shop !== null): ?>
     <p>URL publique de ta boutique : <code>/boutiques/<?= htmlspecialchars($shop['slug']) ?></code></p>
+
+    <p>
+        Statut actuel :
+        <strong><?= $shop['is_open'] ? 'Ouverte aux commandes' : 'Fermée aux commandes' ?></strong>
+    </p>
+
+    <form method="POST" action="/my-shop/toggle" style="display: inline;">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+        <button type="submit" class="btn <?= $shop['is_open'] ? 'btn--outline' : 'btn--primary' ?>">
+            <?= $shop['is_open'] ? 'Fermer la boutique' : 'Ouvrir la boutique' ?>
+        </button>
+    </form>
+
+    <p style="color: #6b7280; font-size: 0.85rem;">
+        Ferme temporairement ta boutique si tu ne peux pas honorer de nouvelles commandes (vacances, surcharge...).
+        Elle reste visible dans la recherche mais les clients ne pourront plus commander tant qu'elle n'est pas rouverte.
+    </p>
 <?php endif; ?>
 
 <form method="POST" action="/my-shop">
