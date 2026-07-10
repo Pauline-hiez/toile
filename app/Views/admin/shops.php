@@ -7,7 +7,7 @@
  * @var int $total
  * @var int $page
  * @var int $perPage
- * @var array{q: string, status: string, registered: string} $filters
+ * @var array{q: string, status: string, registered: string} $filters status: 'active'|'pending'|'closed'|'suspended'
  * @var array $stats
  * @var array<int, int|string> $pageNumbers
  */
@@ -37,7 +37,8 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     <div class="admin-stat-card">
         <img class="admin-stat-card__icon" src="/assets/images/icones/artiste.png" alt="">
         <div class="admin-stat-card__value"><?= number_format($stats['pending'], 0, ',', ' ') ?></div>
-        <div class="admin-stat-card__label">Boutiques fermées</div>
+        <div class="admin-stat-card__label">En attente de choix</div>
+        <div class="admin-stat-card__trend">Formule d'abonnement pas encore choisie</div>
     </div>
 
     <div class="admin-stat-card">
@@ -64,7 +65,8 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <select name="status" onchange="this.form.submit()">
             <option value="">Statuts : Tous</option>
             <option value="active" <?= $filters['status'] === 'active' ? 'selected' : '' ?>>Ouverte</option>
-            <option value="pending" <?= $filters['status'] === 'pending' ? 'selected' : '' ?>>Fermée</option>
+            <option value="pending" <?= $filters['status'] === 'pending' ? 'selected' : '' ?>>En attente de choix</option>
+            <option value="closed" <?= $filters['status'] === 'closed' ? 'selected' : '' ?>>Fermée temporairement</option>
             <option value="suspended" <?= $filters['status'] === 'suspended' ? 'selected' : '' ?>>Suspendue</option>
         </select>
 
@@ -83,7 +85,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 <?php
                 $styles = json_decode($shop['styles'] ?? '[]', true) ?: [];
                 $rating = $shop['avg_rating'] !== null ? number_format((float) $shop['avg_rating'], 1) : null;
-                $planLabel = $shop['plan_name'] ?? ($shop['monetization_type'] === 'commission' ? 'Commission' : 'Sans abonnement');
+                $planLabel = $shop['plan_selected'] ? ($shop['plan_name'] ?? 'Commission') : null;
                 ?>
                 <div class="admin-shop-card">
                     <div class="admin-shop-card__cover">
@@ -96,6 +98,8 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                 <span class="badge badge--danger">Suspendue</span>
                             <?php elseif ($shop['is_open']): ?>
                                 <span class="badge badge--success">Ouverte</span>
+                            <?php elseif (!$shop['plan_selected']): ?>
+                                <span class="badge badge--warning">En attente de choix</span>
                             <?php else: ?>
                                 <span class="badge badge--warning">Fermée</span>
                             <?php endif; ?>
@@ -110,7 +114,10 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 
                     <div class="admin-shop-card__body">
                         <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>" class="admin-shop-card__name"><?= htmlspecialchars($shop['name']) ?></a>
-                        <div class="admin-shop-card__plan">Par <?= htmlspecialchars($shop['username']) ?> · Abonnement <?= htmlspecialchars($planLabel) ?></div>
+                        <div class="admin-shop-card__plan">
+                            Par <?= htmlspecialchars($shop['username']) ?>
+                            · <?= $planLabel !== null ? 'Abonnement ' . htmlspecialchars($planLabel) : 'Aucune formule choisie' ?>
+                        </div>
 
                         <?php if (!empty($styles)): ?>
                             <div class="admin-shop-card__tags">

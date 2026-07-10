@@ -338,6 +338,22 @@ $router->map('POST', '/admin/orders/bulk-archive', [
     ],
 ]);
 
+$router->map('GET', '/admin/subscriptions', [
+    'controller' => ['App\Controllers\AdminController', 'subscriptions'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/raffle', [
+    'controller' => ['App\Controllers\AdminController', 'raffle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/reviews', [
     'controller' => ['App\Controllers\AdminController', 'reviews'],
     'middlewares' => [
@@ -431,6 +447,14 @@ $router->map('GET', '/my-subscription/confirm', [
 
 $router->map('POST', '/my-subscription/cancel', [
     'controller' => ['App\Controllers\SubscriptionController', 'cancel'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-subscription/confirm-free', [
+    'controller' => ['App\Controllers\SubscriptionController', 'confirmFree'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),

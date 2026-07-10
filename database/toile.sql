@@ -50,6 +50,7 @@ CREATE TABLE shop (
     styles JSON NULL,
 
     is_open BOOLEAN NOT NULL DEFAULT FALSE,
+    plan_selected BOOLEAN NOT NULL DEFAULT FALSE,
 
     monetization_type ENUM('subscription', 'commission') NOT NULL DEFAULT 'commission',
 
@@ -389,5 +390,6 @@ CREATE TABLE raffle_entry (
 -- -----------------------------------------------------
 INSERT INTO subscription_plan (name, price, commission_rate, max_services, max_portfolio_images, max_options_per_service, stripe_price_id)
 VALUES
+    ('Commission', 0, 10.00, 3, 5, 2, NULL),
     ('Essentiel', 1490, 5.00, 10, 15, 5, 'price_1TqAUxCHvrrlwjMD7A31tt6O'),
     ('Pro', 2990, 0.00, 9999, 9999, 9999, 'price_1TqAVUCHvrrlwjMDQd8ZCEbx');

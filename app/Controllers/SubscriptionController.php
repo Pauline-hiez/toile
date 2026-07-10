@@ -26,13 +26,27 @@ class SubscriptionController
         $this->userModel = new User();
     }
 
-    // Choix d'abonnement 
+    // Choix d'abonnement
     public function index(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
-        $plans = $this->planModel->findAll();
-        $currentSubscription = $shop
+
+        // "Commission" est le palier gratuit par défaut, pas une offre à
+        // souscrire via Stripe (elle n'a pas de stripe_price_id) — on ne
+        // la propose donc pas dans la liste des plans payants.
+        $plans = array_values(array_filter(
+            $this->planModel->findAll(),
+            fn($plan) => $plan['name'] !== 'Commission'
+        ));
+
+        $activeSubscription = $shop
             ? $this->subscriptionModel->findActiveByShopId($shop['id'])
+            : null;
+
+        // Une boutique sur le palier gratuit a bien une ligne shop_subscription
+        // active, mais ce n'est pas un abonnement payant à afficher/annuler.
+        $currentSubscription = ($activeSubscription !== null && $activeSubscription['plan_name'] !== 'Commission')
+            ? $activeSubscription
             : null;
 
         $this->renderer->render('subscription/index', [
@@ -41,6 +55,31 @@ class SubscriptionController
             'shop' => $shop,
             'pageTitle' => 'Mon abonnement — Toile',
         ]);
+    }
+
+    // Confirme le choix du palier gratuit "Commission" — ouvre la boutique
+    // sans passer par Stripe (pas de facturation pour ce palier).
+    public function confirmFree(): void
+    {
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+
+        if ($shop === null) {
+            header('Location: /my-shop');
+            exit;
+        }
+
+        $freePlan = $this->planModel->findByName('Commission');
+        if ($freePlan !== null) {
+            $this->subscriptionModel->assignFreePlan($shop['id'], $freePlan['id']);
+        }
+
+        $this->shopModel->update($shop['id'], [
+            'plan_selected' => 1,
+            'is_open' => 1,
+        ]);
+
+        header('Location: /my-shop');
+        exit;
     }
 
     // Lance la souscription d'un plan
@@ -120,6 +159,13 @@ class SubscriptionController
             $this->subscriptionModel->create($subscriptionRecord);
         }
 
+        // La boutique s'ouvre dès qu'un abonnement (gratuit ou payant) a
+        // été choisi pour la première fois.
+        $this->shopModel->update($shop['id'], [
+            'plan_selected' => 1,
+            'is_open' => 1,
+        ]);
+
         unset($_SESSION['pending_subscription_plan_id']);
         unset($_SESSION['pending_stripe_customer_id']);
 
@@ -134,7 +180,9 @@ class SubscriptionController
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
         $subscription = $this->subscriptionModel->findActiveByShopId($shop['id']);
 
-        if ($subscription === null) {
+        // Rien à annuler si pas d'abonnement, ou déjà sur le palier gratuit
+        // (pas de stripe_subscription_id à annuler dans ce cas).
+        if ($subscription === null || $subscription['plan_name'] === 'Commission') {
             header('Location: /my-subscription');
             exit;
         }
@@ -142,9 +190,17 @@ class SubscriptionController
         $stripe = new StripeService();
         $stripe->cancelSubscription($subscription['stripe_subscription_id']);
 
-        $this->subscriptionModel->update($subscription['id'], [
-            'status' => 'cancelled',
-        ]);
+        // Repasse la boutique sur le palier gratuit "Commission" plutôt que
+        // de laisser une ligne "cancelled" sur un plan payant — chaque
+        // boutique a toujours un palier actif, gratuit ou payant.
+        $freePlan = $this->planModel->findByName('Commission');
+        if ($freePlan !== null) {
+            $this->subscriptionModel->assignFreePlan($shop['id'], $freePlan['id']);
+        } else {
+            $this->subscriptionModel->update($subscription['id'], [
+                'status' => 'cancelled',
+            ]);
+        }
 
         header('Location: /my-subscription');
         exit;

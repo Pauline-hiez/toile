@@ -13,4 +13,12 @@ class SubscriptionPlan extends BaseModel
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    public function findByName(string $name): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM subscription_plan WHERE name = :name');
+        $stmt->execute(['name' => $name]);
+        $result = $stmt->fetch();
+        return $result ?: null;
+    }
 }

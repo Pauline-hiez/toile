@@ -182,7 +182,7 @@ class Shop extends BaseModel
      * Recherche paginée de boutiques avec filtres combinables (page
      * Artistes de l'admin).
      *
-     * @param array $filters q, status ('active'|'pending'|'suspended'),
+     * @param array $filters q, status ('active'|'pending'|'closed'|'suspended'),
      *                       registered ('week'|'month'), page, per_page
      * @return array{shops: array, total: int}
      */
@@ -200,7 +200,11 @@ class Shop extends BaseModel
         if (($filters['status'] ?? '') === 'active') {
             $where[] = 'shop.is_open = 1 AND u.is_banned = 0';
         } elseif (($filters['status'] ?? '') === 'pending') {
-            $where[] = 'shop.is_open = 0 AND u.is_banned = 0';
+            // N'a jamais choisi de formule d'abonnement (jamais ouverte).
+            $where[] = 'shop.plan_selected = 0 AND u.is_banned = 0';
+        } elseif (($filters['status'] ?? '') === 'closed') {
+            // A choisi une formule, mais fermée volontairement pour l'instant.
+            $where[] = 'shop.plan_selected = 1 AND shop.is_open = 0 AND u.is_banned = 0';
         } elseif (($filters['status'] ?? '') === 'suspended') {
             $where[] = 'u.is_banned = 1';
         }
@@ -225,7 +229,7 @@ class Shop extends BaseModel
 
         $stmt = $this->pdo->prepare(
             "SELECT shop.id, shop.name, shop.slug, shop.banner, shop.styles,
-                    shop.is_open, shop.monetization_type, shop.created_at,
+                    shop.is_open, shop.plan_selected, shop.monetization_type, shop.created_at,
                     u.username, u.avatar, u.is_banned,
                     (SELECT COUNT(*) FROM orders WHERE orders.shop_id = shop.id) AS order_count,
                     (SELECT AVG(review.rating) FROM review

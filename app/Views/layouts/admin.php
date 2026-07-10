@@ -41,8 +41,8 @@ $navItems = [
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users.png', 'match' => 'prefix'],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'artiste.png', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'commandes.png', 'match' => 'prefix'],
-    ['label' => 'Abonnements', 'href' => '#', 'icon' => 'commissions.png', 'match' => 'none'],
-    ['label' => 'Tirage au sort', 'href' => '#', 'icon' => 'abonnements.png', 'match' => 'none'],
+    ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'commissions.png', 'match' => 'prefix'],
+    ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'abonnements.png', 'match' => 'prefix'],
     ['label' => 'Signalements', 'href' => '/admin/reviews', 'icon' => 'avertissements.png', 'match' => 'prefix'],
     ['label' => 'Paramètres', 'href' => '#', 'icon' => 'parametres.png', 'match' => 'none'],
 ];

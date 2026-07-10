@@ -66,6 +66,16 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <div class="admin-stat-card__label">Revenu total</div>
         <div class="admin-stat-card__trend">↗ +<?= number_format($stats['new_revenue_this_week'] / 100, 2, ',', ' ') ?>€ cette semaine</div>
     </div>
+
+    <a href="/admin/orders?archived=only" class="admin-stat-card" title="Voir les commandes archivées">
+        <svg class="admin-stat-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary-muted);">
+            <rect x="3" y="4" width="18" height="4" rx="1"></rect>
+            <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"></path>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+        </svg>
+        <div class="admin-stat-card__value"><?= number_format($stats['archived'], 0, ',', ' ') ?></div>
+        <div class="admin-stat-card__label">Archivées</div>
+    </a>
 </div>
 
 <div class="admin-table-wrapper">
@@ -144,7 +154,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                             <td><?= number_format($order['total_price'] / 100, 2, ',', ' ') ?> €</td>
                             <td><?= number_format($order['commission_amount'] / 100, 2, ',', ' ') ?> €</td>
                             <td><span class="badge <?= $statusInfo['class'] ?>"><?= htmlspecialchars($statusInfo['label']) ?></span></td>
-                            <td><?= date('d M Y', strtotime($order['created_at'])) ?></td>
+                            <td><?= \App\Core\FrenchDate::format('d MMM y', $order['created_at']) ?></td>
                             <td>
                                 <div class="table-actions">
                                     <a href="/commandes/<?= (int) $order['id'] ?>" title="Voir la commande">

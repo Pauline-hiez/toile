@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\Review;
+use App\Models\ShopSubscription;
+use App\Models\RaffleEntry;
 
 class AdminController
 {
@@ -15,6 +17,8 @@ class AdminController
     private Shop $shopModel;
     private Order $orderModel;
     private Review $reviewModel;
+    private ShopSubscription $subscriptionModel;
+    private RaffleEntry $raffleModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -23,6 +27,8 @@ class AdminController
         $this->shopModel = new Shop();
         $this->orderModel = new Order();
         $this->reviewModel = new Review();
+        $this->subscriptionModel = new ShopSubscription();
+        $this->raffleModel = new RaffleEntry();
     }
 
     /**
@@ -323,7 +329,7 @@ class AdminController
         $pending = (int) $pdo->query(
             "SELECT COUNT(*) FROM shop
              INNER JOIN users u ON u.id = shop.user_id
-             WHERE shop.is_open = 0 AND u.is_banned = 0"
+             WHERE shop.plan_selected = 0 AND u.is_banned = 0"
         )->fetchColumn();
 
         $active = (int) $pdo->query(
@@ -449,6 +455,10 @@ class AdminController
              WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
         )->fetchColumn();
 
+        $archived = (int) $pdo->query(
+            'SELECT COUNT(*) FROM orders WHERE is_archived = 1'
+        )->fetchColumn();
+
         return [
             'total' => $total,
             'pending' => $pending,
@@ -458,6 +468,7 @@ class AdminController
             'new_this_week' => $newThisWeek,
             'total_revenue' => $totalRevenue,
             'new_revenue_this_week' => $newRevenueThisWeek,
+            'archived' => $archived,
         ];
     }
 
@@ -484,6 +495,159 @@ class AdminController
 
         header('Location: /admin/orders');
         exit;
+    }
+
+    public function subscriptions(): void
+    {
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'status' => $_GET['status'] ?? '',
+            'registered' => $_GET['registered'] ?? '',
+            'plan' => $_GET['plan'] ?? '',
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $result = $this->subscriptionModel->adminSearch($filters);
+
+        $this->renderer->render('admin/subscriptions', [
+            'subscriptions' => $result['subscriptions'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'filters' => $filters,
+            'stats' => $this->getSubscriptionStats(),
+            'pageTitle' => 'Abonnements - Administration',
+            'pageHeading' => 'Abonnements',
+            'pageSubtitle' => "Consultez et gérez l'ensemble des abonnements de la plateforme.",
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Indicateurs clés pour les cartes de la page Abonnements : répartition
+     * par formule (une boutique n'a qu'une seule ligne shop_subscription,
+     * donc ces trois compteurs correspondent aux trois paliers réels).
+     */
+    private function getSubscriptionStats(): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $commission = (int) $pdo->query(
+            "SELECT COUNT(*) FROM shop_subscription ss
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id AND sp.name = 'Commission'"
+        )->fetchColumn();
+
+        $essentiel = (int) $pdo->query(
+            "SELECT COUNT(*) FROM shop_subscription ss
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id AND sp.name = 'Essentiel'"
+        )->fetchColumn();
+
+        $pro = (int) $pdo->query(
+            "SELECT COUNT(*) FROM shop_subscription ss
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id AND sp.name = 'Pro'"
+        )->fetchColumn();
+
+        // Boutiques créées mais qui n'ont pas encore choisi de formule —
+        // donc pas encore ouvertes, et sans ligne shop_subscription.
+        $pendingChoice = (int) $pdo->query(
+            'SELECT COUNT(*) FROM shop WHERE plan_selected = 0'
+        )->fetchColumn();
+
+        $mrr = (int) $pdo->query(
+            "SELECT COALESCE(SUM(sp.price), 0)
+             FROM shop_subscription ss
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id AND sp.name != 'Commission'
+             WHERE ss.status = 'active' AND ss.current_period_end > NOW()"
+        )->fetchColumn();
+
+        return [
+            'commission' => $commission,
+            'essentiel' => $essentiel,
+            'pro' => $pro,
+            'pending_choice' => $pendingChoice,
+            'mrr' => $mrr,
+        ];
+    }
+
+    public function raffle(): void
+    {
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'type' => $_GET['type'] ?? '',
+            'status' => $_GET['status'] ?? '',
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $result = $this->raffleModel->adminSearch($filters);
+
+        $this->renderer->render('admin/raffle', [
+            'entries' => $result['entries'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'filters' => $filters,
+            'stats' => $this->getRaffleStats(),
+            'boutiquesWinners' => $this->raffleModel->findSelectedBoutiquesThisMonth(),
+            'nextBoutiquesDraw' => date('Y-m-d 00:00:00', strtotime('first day of next month')),
+            'nextHomepageDraw' => date('Y-m-d 00:00:00', strtotime('next monday')),
+            'pageTitle' => 'Tirage au sort - Administration',
+            'pageHeading' => 'Tirage au sort',
+            'pageSubtitle' => "Consultez et gérez les tirages au sort de la plateforme.",
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Indicateurs clés pour les cartes de la page Tirage au sort.
+     */
+    private function getRaffleStats(): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $currentMonth = date('Y-m');
+        $currentMonday = date('Y-m-d', strtotime('monday this week'));
+        $rafflePrice = (int) ($_ENV['RAFFLE_PRICE'] ?? 500);
+        $homepagePrice = (int) ($_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? 700);
+
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM raffle_entry WHERE type = 'boutiques' AND period = :period AND status = 'entered'"
+        );
+        $stmt->execute(['period' => $currentMonth]);
+        $entriesBoutiques = (int) $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM raffle_entry WHERE type = 'homepage' AND period = :period AND status = 'entered'"
+        );
+        $stmt->execute(['period' => $currentMonday]);
+        $entriesHomepage = (int) $stmt->fetchColumn();
+
+        // Même logique que RaffleEntry::findSelectedBoutiquesThisMonth(),
+        // pour rester cohérent avec le panneau "Gagnants" de la vue.
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM raffle_entry WHERE type = 'boutiques' AND status = 'selected' AND period = :period"
+        );
+        $stmt->execute(['period' => $currentMonth]);
+        $winnersBoutiques = (int) $stmt->fetchColumn();
+
+        $winnersHomepage = (int) $pdo->query(
+            "SELECT COUNT(*) FROM raffle_entry WHERE type = 'homepage' AND status = 'selected'
+             AND featured_until >= CURDATE()"
+        )->fetchColumn();
+
+        return [
+            'entries_boutiques' => $entriesBoutiques,
+            'entries_homepage' => $entriesHomepage,
+            'revenue_boutiques' => $entriesBoutiques * $rafflePrice,
+            'revenue_homepage' => $entriesHomepage * $homepagePrice,
+            'winners_boutiques' => $winnersBoutiques,
+            'winners_homepage' => $winnersHomepage,
+        ];
     }
 
     public function reviews(): void

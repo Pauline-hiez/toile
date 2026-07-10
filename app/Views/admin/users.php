@@ -159,7 +159,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <span class="badge badge--success">Actif</span>
                                 <?php endif; ?>
                             </td>
-                            <td><?= date('d M Y', strtotime($user['created_at'])) ?></td>
+                            <td><?= \App\Core\FrenchDate::format('d MMM y', $user['created_at']) ?></td>
                             <td>—</td>
                             <td>
                                 <div class="table-actions">

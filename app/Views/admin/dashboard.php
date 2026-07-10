@@ -87,7 +87,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                         <?php endif; ?>
                         <div>
                             <span class="admin-signup-item__name"><?= htmlspecialchars($signup['username']) ?></span>
-                            <span class="admin-signup-item__date"><?= date('d M Y', strtotime($signup['created_at'])) ?></span>
+                            <span class="admin-signup-item__date"><?= \App\Core\FrenchDate::format('d MMM y', $signup['created_at']) ?></span>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -127,7 +127,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                                     <?php endif; ?>
                                 </td>
                                 <td><a href="/boutiques/<?= htmlspecialchars($artist['slug']) ?>"><?= htmlspecialchars($artist['username']) ?></a></td>
-                                <td><?= date('d M Y', strtotime($artist['created_at'])) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $artist['created_at']) ?></td>
                                 <td><?= (int) $artist['service_count'] ?></td>
                                 <td>
                                     <?php if ($artist['is_open']): ?>
@@ -179,7 +179,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                                 <td><?= htmlspecialchars($order['shop_name']) ?></td>
                                 <td><?= htmlspecialchars($order['title']) ?></td>
                                 <td><span class="badge <?= $statusInfo['class'] ?>"><?= htmlspecialchars($statusInfo['label']) ?></span></td>
-                                <td><?= date('d M Y', strtotime($order['created_at'])) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $order['created_at']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

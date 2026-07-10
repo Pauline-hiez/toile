@@ -552,6 +552,17 @@ body::before {
     box-shadow: var(--shadow-sm);
 }
 
+a.admin-stat-card {
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+a.admin-stat-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .admin-stat-card svg {
     width: 32px;
     height: 32px;
@@ -859,6 +870,100 @@ body::before {
     margin-top: auto;
     padding-top: 0.65rem;
     border-top: 1px solid var(--color-border);
+}
+
+/* ---- Tirage au sort ---- */
+
+.admin-raffle-draws {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-raffle-draw {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    flex-wrap: wrap;
+}
+
+.admin-raffle-draw__icon {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.admin-raffle-draw__info {
+    flex: 1;
+    min-width: 180px;
+}
+
+.admin-raffle-draw__label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.admin-raffle-draw__date {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.admin-raffle-draw__countdown {
+    font-family: var(--font-cursive);
+    font-size: 1.4rem;
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.admin-winners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.admin-winner {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+}
+
+.admin-winner__rank {
+    font-weight: 700;
+    color: var(--color-primary);
+    width: 1.2rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.admin-winner__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.admin-winner__name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: block;
+}
+
+.admin-winner__slug {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
 }
 
 /* ---- Tableaux ---- */
