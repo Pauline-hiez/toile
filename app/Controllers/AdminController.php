@@ -3,12 +3,15 @@
 namespace App\Controllers;
 
 use App\Core\Renderer;
+use App\Core\FileUploader;
 use App\Models\User;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\ShopSubscription;
 use App\Models\RaffleEntry;
+use App\Models\Report;
+use App\Models\Setting;
 
 class AdminController
 {
@@ -19,6 +22,8 @@ class AdminController
     private Review $reviewModel;
     private ShopSubscription $subscriptionModel;
     private RaffleEntry $raffleModel;
+    private Report $reportModel;
+    private Setting $settingModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -29,6 +34,8 @@ class AdminController
         $this->reviewModel = new Review();
         $this->subscriptionModel = new ShopSubscription();
         $this->raffleModel = new RaffleEntry();
+        $this->reportModel = new Report();
+        $this->settingModel = new Setting();
     }
 
     /**
@@ -612,8 +619,8 @@ class AdminController
 
         $currentMonth = date('Y-m');
         $currentMonday = date('Y-m-d', strtotime('monday this week'));
-        $rafflePrice = (int) ($_ENV['RAFFLE_PRICE'] ?? 500);
-        $homepagePrice = (int) ($_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? 700);
+        $rafflePrice = (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '500');
+        $homepagePrice = (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '700');
 
         $stmt = $pdo->prepare(
             "SELECT COUNT(*) FROM raffle_entry WHERE type = 'boutiques' AND period = :period AND status = 'entered'"
@@ -648,6 +655,116 @@ class AdminController
             'winners_boutiques' => $winnersBoutiques,
             'winners_homepage' => $winnersHomepage,
         ];
+    }
+
+    public function reports(): void
+    {
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 10;
+        $filters = [
+            'q' => trim($_GET['q'] ?? ''),
+            'type' => $_GET['type'] ?? '',
+            'status' => $_GET['status'] ?? '',
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $result = $this->reportModel->adminSearch($filters);
+
+        $this->renderer->render('admin/reports', [
+            'reports' => $result['reports'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'filters' => $filters,
+            'stats' => $this->getReportStats(),
+            'pageTitle' => 'Signalements - Administration',
+            'pageHeading' => 'Signalements',
+            'pageSubtitle' => "Consultez et traitez les signalements des utilisateurs.",
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Indicateurs clés pour les cartes de la page Signalements.
+     */
+    private function getReportStats(): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM report')->fetchColumn();
+
+        $pending = (int) $pdo->query(
+            "SELECT COUNT(*) FROM report WHERE status = 'pending'"
+        )->fetchColumn();
+
+        $resolved = (int) $pdo->query(
+            "SELECT COUNT(*) FROM report WHERE status = 'resolved'"
+        )->fetchColumn();
+
+        $dismissed = (int) $pdo->query(
+            "SELECT COUNT(*) FROM report WHERE status = 'dismissed'"
+        )->fetchColumn();
+
+        $newThisWeek = (int) $pdo->query(
+            'SELECT COUNT(*) FROM report WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
+        )->fetchColumn();
+
+        return [
+            'total' => $total,
+            'pending' => $pending,
+            'resolved' => $resolved,
+            'dismissed' => $dismissed,
+            'new_this_week' => $newThisWeek,
+        ];
+    }
+
+    public function resolveReport(int $id): void
+    {
+        $report = $this->reportModel->findById($id);
+
+        if ($report === null) {
+            http_response_code(404);
+            echo 'Signalement introuvable.';
+            exit;
+        }
+
+        $this->reportModel->markResolved($id, (int) $_SESSION['user_id']);
+
+        header('Location: /admin/reports');
+        exit;
+    }
+
+    public function dismissReport(int $id): void
+    {
+        $report = $this->reportModel->findById($id);
+
+        if ($report === null) {
+            http_response_code(404);
+            echo 'Signalement introuvable.';
+            exit;
+        }
+
+        $this->reportModel->markDismissed($id, (int) $_SESSION['user_id']);
+
+        header('Location: /admin/reports');
+        exit;
+    }
+
+    public function deleteReport(int $id): void
+    {
+        $report = $this->reportModel->findById($id);
+
+        if ($report === null) {
+            http_response_code(404);
+            echo 'Signalement introuvable.';
+            exit;
+        }
+
+        $this->reportModel->delete($id);
+
+        header('Location: /admin/reports');
+        exit;
     }
 
     public function reviews(): void
@@ -855,6 +972,94 @@ class AdminController
         $this->userModel->changeRole($id, $role);
 
         header('Location: /admin/users');
+        exit;
+    }
+
+    public function settings(): void
+    {
+        $this->renderer->render('admin/settings', [
+            'settings' => $this->settingModel->all(),
+            'section' => $_GET['section'] ?? '',
+            'success' => isset($_GET['success']),
+            'pageTitle' => 'Paramètres - Administration',
+            'pageHeading' => 'Paramètres',
+            'pageSubtitle' => "Configure les informations générales, les réseaux sociaux et les réglages de la plateforme.",
+        ], 'layouts/admin');
+    }
+
+    public function updateGeneralSettings(): void
+    {
+        $this->settingModel->setMany([
+            'site_name' => trim($_POST['site_name'] ?? '') ?: 'Toile',
+            'site_description' => trim($_POST['site_description'] ?? ''),
+            'contact_email' => trim($_POST['contact_email'] ?? ''),
+        ]);
+
+        if (!empty($_FILES['site_logo']['name'])) {
+            $result = FileUploader::upload(
+                $_FILES['site_logo'],
+                __DIR__ . '/../../public/uploads/branding',
+                ['image/png', 'image/jpeg', 'image/webp'],
+                2 * 1024 * 1024
+            );
+            if ($result['filename'] !== null) {
+                $this->settingModel->set('site_logo', $result['filename']);
+            }
+        }
+
+        if (!empty($_FILES['site_favicon']['name'])) {
+            $result = FileUploader::upload(
+                $_FILES['site_favicon'],
+                __DIR__ . '/../../public/uploads/branding',
+                ['image/png', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon'],
+                512 * 1024
+            );
+            if ($result['filename'] !== null) {
+                $this->settingModel->set('site_favicon', $result['filename']);
+            }
+        }
+
+        header('Location: /admin/settings?section=general&success=1');
+        exit;
+    }
+
+    public function updateSocialSettings(): void
+    {
+        $this->settingModel->setMany([
+            'social_instagram' => trim($_POST['social_instagram'] ?? ''),
+            'social_facebook' => trim($_POST['social_facebook'] ?? ''),
+            'social_pinterest' => trim($_POST['social_pinterest'] ?? ''),
+            'social_tiktok' => trim($_POST['social_tiktok'] ?? ''),
+        ]);
+
+        header('Location: /admin/settings?section=social&success=1');
+        exit;
+    }
+
+    public function updateRaffleSettings(): void
+    {
+        $rafflePrice = (float) str_replace(',', '.', $_POST['raffle_price'] ?? '5');
+        $homepagePrice = (float) str_replace(',', '.', $_POST['raffle_homepage_price'] ?? '7');
+
+        $this->settingModel->setMany([
+            'raffle_price' => (string) max(0, (int) round($rafflePrice * 100)),
+            'raffle_max_winners' => (string) max(1, (int) ($_POST['raffle_max_winners'] ?? 10)),
+            'raffle_homepage_price' => (string) max(0, (int) round($homepagePrice * 100)),
+            'raffle_homepage_winners' => (string) max(1, (int) ($_POST['raffle_homepage_winners'] ?? 5)),
+        ]);
+
+        header('Location: /admin/settings?section=raffle&success=1');
+        exit;
+    }
+
+    public function updateMaintenanceSettings(): void
+    {
+        $this->settingModel->setMany([
+            'maintenance_mode' => isset($_POST['maintenance_mode']) ? '1' : '0',
+            'maintenance_message' => trim($_POST['maintenance_message'] ?? ''),
+        ]);
+
+        header('Location: /admin/settings?section=maintenance&success=1');
         exit;
     }
 }

@@ -18,6 +18,10 @@ $pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
 
 <h1><?= htmlspecialchars($shop['name']) ?></h1>
 
+<?php if (isset($_GET['reported'])): ?>
+    <p style="color: green;">Merci, ton signalement a bien été envoyé à notre équipe.</p>
+<?php endif; ?>
+
 <?php if (isset($_SESSION['user_id'])): ?>
     <form method="POST" action="/favoris/toggle/<?= $shop['id'] ?>" style="display: inline;">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
@@ -25,6 +29,19 @@ $pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
             <?= $isFavorite ? '❤️ Retirer des favoris' : '🤍 Ajouter aux favoris' ?>
         </button>
     </form>
+
+    <?php if ($_SESSION['user_id'] !== (int) $shop['user_id']): ?>
+        <button
+            type="button"
+            class="report-trigger"
+            data-report-trigger
+            data-report-type="shop"
+            data-report-id="<?= $shop['id'] ?>"
+            data-report-reason="autre"
+            data-report-redirect="/boutiques/<?= htmlspecialchars($shop['slug']) ?>?reported=1">
+            🚩 Signaler cette boutique
+        </button>
+    <?php endif; ?>
 <?php endif; ?>
 
 <p>
@@ -84,3 +101,6 @@ $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<?php require __DIR__ . '/../components/report-modal.php'; ?>
+<script src="/assets/js/report-modal.js"></script>

@@ -218,6 +218,14 @@ $router->map('POST', '/commandes/[i:id]/messages', [
     ],
 ]);
 
+// Signalements (avis / images de portfolio)
+$router->map('POST', '/reports', [
+    'controller' => ['App\Controllers\ReportController', 'store'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
 // Notifications
 $router->map('GET', '/notifications', [
     'controller' => ['App\Controllers\NotificationController', 'index'],
@@ -354,6 +362,38 @@ $router->map('GET', '/admin/raffle', [
     ],
 ]);
 
+$router->map('GET', '/admin/reports', [
+    'controller' => ['App\Controllers\AdminController', 'reports'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reports/[i:id]/resolve', [
+    'controller' => ['App\Controllers\AdminController', 'resolveReport'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reports/[i:id]/dismiss', [
+    'controller' => ['App\Controllers\AdminController', 'dismissReport'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reports/[i:id]/delete', [
+    'controller' => ['App\Controllers\AdminController', 'deleteReport'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/reviews', [
     'controller' => ['App\Controllers\AdminController', 'reviews'],
     'middlewares' => [
@@ -364,6 +404,46 @@ $router->map('GET', '/admin/reviews', [
 
 $router->map('POST', '/admin/reviews/[i:id]/delete', [
     'controller' => ['App\Controllers\AdminController', 'deleteReview'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/settings', [
+    'controller' => ['App\Controllers\AdminController', 'settings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/general', [
+    'controller' => ['App\Controllers\AdminController', 'updateGeneralSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/social', [
+    'controller' => ['App\Controllers\AdminController', 'updateSocialSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/raffle', [
+    'controller' => ['App\Controllers\AdminController', 'updateRaffleSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/maintenance', [
+    'controller' => ['App\Controllers\AdminController', 'updateMaintenanceSettings'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

@@ -12,10 +12,12 @@
 use App\Models\Notification;
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\Setting;
 
 $adminUsername = 'Admin';
 $adminAvatar = null;
 $adminShop = null;
+$settingModel = new Setting();
 
 if (isset($_SESSION['user_id'])) {
     $notificationModel = new Notification();
@@ -43,8 +45,8 @@ $navItems = [
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'commandes.png', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'commissions.png', 'match' => 'prefix'],
     ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'abonnements.png', 'match' => 'prefix'],
-    ['label' => 'Signalements', 'href' => '/admin/reviews', 'icon' => 'avertissements.png', 'match' => 'prefix'],
-    ['label' => 'Paramètres', 'href' => '#', 'icon' => 'parametres.png', 'match' => 'none'],
+    ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'avertissements.png', 'match' => 'prefix'],
+    ['label' => 'Paramètres', 'href' => '/admin/settings', 'icon' => 'parametres.png', 'match' => 'prefix'],
 ];
 ?>
 <!DOCTYPE html>
@@ -54,6 +56,7 @@ $navItems = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? 'Administration — Toile') ?></title>
+    <link rel="icon" href="<?= ($favicon = $settingModel->get('site_favicon')) ? '/uploads/branding/' . htmlspecialchars($favicon) : '/assets/images/site/favicon-logo.png' ?>">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../../../public/assets/css/style.css') ?>">
 </head>
 
@@ -63,7 +66,7 @@ $navItems = [
 
         <aside class="admin-sidebar" id="adminSidebar">
             <a href="/admin" class="admin-sidebar__logo">
-                <img src="/assets/images/site/logo-toile.png" alt="Toile">
+                <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
             </a>
 
             <nav class="admin-sidebar__nav">

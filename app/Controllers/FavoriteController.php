@@ -38,8 +38,10 @@ class FavoriteController
             $this->favoriteModel->add($userId, $shopId);
         }
 
-        // Redirige vers la page boutique après toggle
-        header('Location: /boutiques/' . $shop['slug']);
+        // Redirige vers la page d'origine si fournie (et sûre), sinon vers la boutique.
+        $redirect = $_POST['redirect'] ?? '';
+        $isSafeRedirect = str_starts_with($redirect, '/') && !str_starts_with($redirect, '//');
+        header('Location: ' . ($isSafeRedirect ? $redirect : '/boutiques/' . $shop['slug']));
         exit;
     }
 

@@ -263,4 +263,41 @@ class Shop extends BaseModel
         $stmt = $this->pdo->prepare('UPDATE shop SET is_open = NOT is_open WHERE id = :id');
         return $stmt->execute(['id' => $id]);
     }
+
+    /**
+     * Boutiques mises en avant sur la page d'accueil ("Nos artistes du
+     * jour") : priorité aux gagnantes du tirage au sort "page d'accueil"
+     * de la semaine en cours, complétées par les boutiques ouvertes les
+     * mieux notées pour toujours remplir la grille.
+     */
+    public function findFeaturedForHomepage(int $limit = 5): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                shop.id, shop.name, shop.slug, shop.bio, shop.styles, shop.banner,
+                (SELECT filename FROM portfolio_image
+                    WHERE portfolio_image.shop_id = shop.id
+                    ORDER BY created_at ASC LIMIT 1) AS cover_image,
+                (SELECT AVG(review.rating) FROM review
+                    INNER JOIN orders ON orders.id = review.order_id
+                    WHERE orders.shop_id = shop.id) AS avg_rating,
+                (SELECT COUNT(*) FROM review
+                    INNER JOIN orders ON orders.id = review.order_id
+                    WHERE orders.shop_id = shop.id) AS review_count,
+                CASE WHEN re.status = 'selected' THEN 1 ELSE 0 END AS is_featured
+             FROM shop
+             LEFT JOIN raffle_entry re
+                ON re.shop_id = shop.id
+                AND re.type = 'homepage'
+                AND re.status = 'selected'
+                AND re.featured_until >= CURDATE()
+             WHERE shop.is_open = 1
+             ORDER BY is_featured DESC, avg_rating DESC, shop.created_at DESC
+             LIMIT :limit"
+        );
+        $stmt->bindValue('limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
 }

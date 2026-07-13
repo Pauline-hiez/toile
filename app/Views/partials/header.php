@@ -5,13 +5,14 @@
  *
  * @var int $unreadCount Nombre de notifications non lues.
  * @var array|null $userShop Boutique de l'utilisateur connecté (artiste/admin), ou null.
+ * @var \App\Models\Setting $settingModel
  */
 ?>
 <header class="site-header">
     <div class="site-header__inner">
 
         <a href="/" class="site-header__logo">
-            <img src="/assets/images/site/logo-toile.png" alt="Toile">
+            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
         </a>
 
         <nav class="site-header__nav">

@@ -1,8 +1,24 @@
+<?php
+/**
+ * Footer partagé (public + admin). Variable définie par
+ * layouts/default.php ou layouts/admin.php avant l'inclusion de ce
+ * partial (require, pas de scope isolé).
+ *
+ * @var \App\Models\Setting $settingModel
+ */
+$footerLogo = ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png';
+$socialLinks = [
+    'instagram' => $settingModel->get('social_instagram'),
+    'facebook' => $settingModel->get('social_facebook'),
+    'pinterest' => $settingModel->get('social_pinterest'),
+    'tiktok' => $settingModel->get('social_tiktok'),
+];
+?>
 <footer class="site-footer">
     <div class="site-footer__inner">
         <div class="site-footer__logo">
             <a href="/">
-                <img src="/assets/images/site/logo-toile.png" alt="Toile">
+                <img src="<?= $footerLogo ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
             </a>
         </div>
 
@@ -30,16 +46,16 @@
         <div class="site-footer__col">
             <h4>Suivez-nous</h4>
             <div class="site-footer__social">
-                <a href="#" aria-label="Instagram">
+                <a href="<?= htmlspecialchars($socialLinks['instagram'] ?: '#') ?>" aria-label="Instagram">
                     <img src="/assets/images/reseaux/instagram.png" alt="Instagram">
                 </a>
-                <a href="#" aria-label="Facebook">
+                <a href="<?= htmlspecialchars($socialLinks['facebook'] ?: '#') ?>" aria-label="Facebook">
                     <img src="/assets/images/reseaux/facebook.png" alt="Facebook">
                 </a>
-                <a href="#" aria-label="Pinterest">
+                <a href="<?= htmlspecialchars($socialLinks['pinterest'] ?: '#') ?>" aria-label="Pinterest">
                     <img src="/assets/images/reseaux/pinterest.png" alt="Pinterest">
                 </a>
-                <a href="#" aria-label="TikTok">
+                <a href="<?= htmlspecialchars($socialLinks['tiktok'] ?: '#') ?>" aria-label="TikTok">
                     <img src="/assets/images/reseaux/tiktok.png" alt="TikTok">
                 </a>
             </div>
@@ -47,6 +63,6 @@
     </div>
 
     <div class="site-footer__bottom">
-        <p>&copy; <?= date('Y') ?> Toile — La marketplace de commissions artistiques.</p>
+        <p>&copy; <?= date('Y') ?> <?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?> — La marketplace de commissions artistiques.</p>
     </div>
 </footer>

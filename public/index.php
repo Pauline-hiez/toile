@@ -30,6 +30,22 @@ if (isset($_SESSION['user_id'])) {
 
 use App\Core\Renderer;
 
+$settingModel = new \App\Models\Setting();
+if ($settingModel->get('maintenance_mode', '0') === '1') {
+    $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+    $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
+    $isExemptPath = in_array($requestPath, ['/login', '/logout'], true) || str_starts_with($requestPath, '/admin');
+
+    if (!$isAdmin && !$isExemptPath) {
+        http_response_code(503);
+        (new Renderer(__DIR__ . '/../app/Views'))->render('errors/maintenance', [
+            'message' => $settingModel->get('maintenance_message') ?: 'Le site est actuellement en maintenance, merci de revenir un peu plus tard.',
+            'pageTitle' => 'Maintenance — ' . $settingModel->get('site_name', 'Toile'),
+        ], false);
+        exit;
+    }
+}
+
 $router = new AltoRouter();
 
 require __DIR__ . '/../app/routes.php';
