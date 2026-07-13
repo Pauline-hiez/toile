@@ -1466,7 +1466,6 @@ table.admin-table input[type="checkbox"] {
 
 .site-header {
     background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
     z-index: 200;
@@ -1475,22 +1474,42 @@ table.admin-table input[type="checkbox"] {
 .site-header__inner {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0.85rem 2.5rem;
+    padding: 3rem 2.5rem;
     display: flex;
     align-items: center;
     gap: 2rem;
 }
 
 .site-header__logo {
-    display: flex;
-    align-items: center;
+    display: block;
     flex-shrink: 0;
 }
 
 .site-header__logo img {
-    height: 54px;
-    width: auto;
+    height: 120px;
+    width: 120px;
+    margin-top: -39px;
+    margin-bottom: -39px;
     display: block;
+}
+
+.site-header__menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-white);
+    color: var(--color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.site-header__menu-btn svg {
+    width: 20px;
+    height: 20px;
 }
 
 .site-header__nav {
@@ -1777,15 +1796,35 @@ table.admin-table input[type="checkbox"] {
 
 @media (max-width: 900px) {
     .site-header__inner {
-        flex-wrap: wrap;
-        padding: 0.75rem 1.25rem;
+        padding: 3rem 1.25rem;
+    }
+
+    .site-header__menu-btn {
+        display: flex;
     }
 
     .site-header__nav {
-        order: 3;
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+        padding: 0.5rem 1.25rem 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .site-header__nav.is-open {
+        display: flex;
+    }
+
+    .site-header__nav a {
         width: 100%;
-        gap: 1rem;
-        padding-top: 0.5rem;
+        padding: 0.65rem 0;
     }
 
     .site-footer__inner {
@@ -1895,7 +1934,7 @@ table.admin-table input[type="checkbox"] {
 
 /* ---- Sections communes ---- */
 
-.home-quicklinks,
+.home-styles,
 .home-artists,
 .home-steps {
     max-width: 1400px;
@@ -1903,7 +1942,7 @@ table.admin-table input[type="checkbox"] {
     padding: 2.5rem;
 }
 
-.home-quicklinks h2,
+.home-styles h2,
 .home-artists h2,
 .home-steps h2 {
     text-align: center;
@@ -1914,66 +1953,61 @@ table.admin-table input[type="checkbox"] {
     margin-bottom: 2rem;
 }
 
-/* ---- Explorer (icônes rapides) ---- */
+/* ---- Explorer (styles artistiques) ---- */
 
-.home-quicklinks__grid {
+.home-styles__grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1.5rem;
 }
 
-.home-quicklink {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    color: var(--color-text);
-    text-align: center;
-}
-
-.home-quicklink__icon {
+.home-style-tile {
     position: relative;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 84px;
-    height: 84px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--color-primary-light) 0%, transparent 72%);
-    transition: background 0.15s;
+    align-items: flex-end;
+    height: 200px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-primary-light);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.15s, transform 0.15s;
 }
 
-.home-quicklink:hover .home-quicklink__icon {
-    background: radial-gradient(circle, var(--color-primary-light) 0%, var(--color-title-bg) 72%);
+.home-style-tile:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
-.home-quicklink__icon img {
-    width: 42px;
-    height: 42px;
-    object-fit: contain;
-}
-
-.home-quicklink__badge {
+.home-style-tile img {
     position: absolute;
-    top: 4px;
-    right: 8px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: var(--color-danger);
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s ease;
 }
 
-.home-quicklink__label {
-    font-size: 0.85rem;
-    font-weight: 500;
+.home-style-tile:hover img {
+    transform: scale(1.05);
+}
+
+.home-style-tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.home-style-tile__label {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 1rem;
+    font-family: var(--font-cursive);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
 }
 
 /* ---- Nos artistes du jour ---- */
@@ -2108,8 +2142,8 @@ table.admin-table input[type="checkbox"] {
 }
 
 .home-step__icon img {
-    width: 38px;
-    height: 38px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
 }
 
@@ -2136,9 +2170,9 @@ table.admin-table input[type="checkbox"] {
         order: -1;
     }
 
-    .home-quicklinks__grid {
+    .home-styles__grid {
         grid-template-columns: repeat(3, 1fr);
-        row-gap: 2rem;
+        row-gap: 1.5rem;
     }
 
     .home-steps__grid {
@@ -2155,13 +2189,13 @@ table.admin-table input[type="checkbox"] {
         font-size: 2.3rem;
     }
 
-    .home-quicklinks,
+    .home-styles,
     .home-artists,
     .home-steps {
         padding: 2rem 1.25rem;
     }
 
-    .home-quicklinks__grid {
+    .home-styles__grid {
         grid-template-columns: repeat(2, 1fr);
     }
 

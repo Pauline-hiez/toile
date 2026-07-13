@@ -157,7 +157,7 @@ class ShopController
         $this->renderer->render('shop/search', [
             'shops' => $shops,
             'filters' => $filters,
-            'availableStyles' => ['anime', 'réaliste', 'pixel art', 'digital art', 'bande déssinée'],
+            'availableStyles' => Shop::STYLES,
         ]);
     }
 }

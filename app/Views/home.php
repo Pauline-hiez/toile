@@ -4,9 +4,9 @@
  * Variables injectées par App\Core\Renderer::render() via
  * extract($data) (voir HomeController::index()).
  *
- * @var array $featuredShops Boutiques mises en avant ("Nos artistes du jour").
+ * @var array $featuredShops Boutiques mises en avant ("Nos artistes de la semaine").
  * @var array<int, true> $favoriteShopIds Favoris de l'utilisateur, indexés par shop_id.
- * @var int $unreadCount Nombre de notifications non lues.
+ * @var array<int, array{name: string, image: string|null}> $styleTiles Styles artistiques avec une image de portfolio représentative.
  */
 $pageTitle = 'Accueil — Toile';
 ?>
@@ -37,44 +37,21 @@ $pageTitle = 'Accueil — Toile';
     </div>
 </section>
 
-<section class="home-quicklinks">
+<section class="home-styles">
     <h2>Explorez l'univers de la création</h2>
 
-    <div class="home-quicklinks__grid">
-        <a href="/boutiques" class="home-quicklink">
-            <span class="home-quicklink__icon"><img src="/assets/images/icones/search.png" alt=""></span>
-            <span class="home-quicklink__label">Rechercher</span>
-        </a>
-
-        <a href="/boutiques?sort=rating" class="home-quicklink">
-            <span class="home-quicklink__icon"><img src="/assets/images/icones/voir.png" alt=""></span>
-            <span class="home-quicklink__label">Découvrir</span>
-        </a>
-
-        <a href="/mes-commandes" class="home-quicklink">
-            <span class="home-quicklink__icon"><img src="/assets/images/icones/messages.png" alt=""></span>
-            <span class="home-quicklink__label">Messages</span>
-        </a>
-
-        <a href="/mes-commandes" class="home-quicklink">
-            <span class="home-quicklink__icon"><img src="/assets/images/icones/commandes.png" alt=""></span>
-            <span class="home-quicklink__label">Commandes</span>
-        </a>
-
-        <a href="/notifications" class="home-quicklink">
-            <span class="home-quicklink__icon">
-                <img src="/assets/images/icones/notifications.png" alt="">
-                <?php if (!empty($unreadCount)): ?>
-                    <span class="home-quicklink__badge"><?= $unreadCount ?></span>
-                <?php endif; ?>
-            </span>
-            <span class="home-quicklink__label">Notifications</span>
-        </a>
-
-        <a href="/mes-favoris" class="home-quicklink">
-            <span class="home-quicklink__icon"><img src="/assets/images/icones/favoris.png" alt=""></span>
-            <span class="home-quicklink__label">Favoris</span>
-        </a>
+    <div class="home-styles__grid">
+        <?php foreach ($styleTiles as $tile): ?>
+            <?php
+            $tileImage = $tile['image']
+                ? '/uploads/portfolio/' . htmlspecialchars($tile['image'])
+                : '/assets/images/default/style.png';
+            ?>
+            <a href="/boutiques?style=<?= urlencode($tile['name']) ?>" class="home-style-tile">
+                <img src="<?= $tileImage ?>" alt="">
+                <span class="home-style-tile__label"><?= htmlspecialchars(ucfirst($tile['name'])) ?></span>
+            </a>
+        <?php endforeach; ?>
     </div>
 </section>
 

@@ -6,6 +6,12 @@ class Shop extends BaseModel
 {
     protected string $table = 'shop';
 
+    /**
+     * Styles artistiques disponibles à la sélection (formulaire boutique)
+     * et au filtrage (recherche, page d'accueil). Source canonique unique.
+     */
+    public const STYLES = ['anime', 'réaliste', 'chibi', 'pixel art', 'concept art'];
+
     public function findByUserId(int $userId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM shop WHERE user_id = :user_id');

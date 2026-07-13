@@ -15,7 +15,15 @@
             <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
         </a>
 
-        <nav class="site-header__nav">
+        <button type="button" class="site-header__menu-btn" id="siteMenuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="siteNav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+        </button>
+
+        <nav class="site-header__nav" id="siteNav">
             <a href="/boutiques">Boutiques</a>
 
             <?php if (($_SESSION['user_role'] ?? '') !== 'artist'): ?>
@@ -96,3 +104,15 @@
 
     </div>
 </header>
+
+<script>
+    (function () {
+        var menuBtn = document.getElementById('siteMenuBtn');
+        var nav = document.getElementById('siteNav');
+
+        menuBtn.addEventListener('click', function () {
+            var isOpen = nav.classList.toggle('is-open');
+            menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    })();
+</script>

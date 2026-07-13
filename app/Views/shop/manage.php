@@ -21,7 +21,7 @@ $currentStyles = $shop !== null && $shop['styles']
     ? json_decode($shop['styles'], true)
     : [];
 
-$availableStyles = ['anime', 'réaliste', 'chibi', 'pixel art', 'concept art'];
+$availableStyles = \App\Models\Shop::STYLES;
 ?>
 
 <?php if ($shop !== null): ?>
