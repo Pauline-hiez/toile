@@ -1,10 +1,26 @@
-<?php $pageTitle = htmlspecialchars($shop['name']) . ' — Toile'; ?>
+<?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir ShopController::show()).
+ *
+ * @var array $shop
+ * @var array $services
+ * @var array $portfolioImages
+ * @var array{average: float, count: int} $ratingStats
+ * @var bool $isFavorite
+ */
+$pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
+?>
 
 <?php if (!empty($shop['banner'])): ?>
     <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" style="width: 100%; max-height: 250px; object-fit: cover;">
 <?php endif; ?>
 
 <h1><?= htmlspecialchars($shop['name']) ?></h1>
+
+<?php if (isset($_GET['reported'])): ?>
+    <p style="color: green;">Merci, ton signalement a bien été envoyé à notre équipe.</p>
+<?php endif; ?>
 
 <?php if (isset($_SESSION['user_id'])): ?>
     <form method="POST" action="/favoris/toggle/<?= $shop['id'] ?>" style="display: inline;">
@@ -13,6 +29,19 @@
             <?= $isFavorite ? '❤️ Retirer des favoris' : '🤍 Ajouter aux favoris' ?>
         </button>
     </form>
+
+    <?php if ($_SESSION['user_id'] !== (int) $shop['user_id']): ?>
+        <button
+            type="button"
+            class="report-trigger"
+            data-report-trigger
+            data-report-type="shop"
+            data-report-id="<?= $shop['id'] ?>"
+            data-report-reason="autre"
+            data-report-redirect="/boutiques/<?= htmlspecialchars($shop['slug']) ?>?reported=1">
+            🚩 Signaler cette boutique
+        </button>
+    <?php endif; ?>
 <?php endif; ?>
 
 <p>
@@ -49,7 +78,11 @@ $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
                 <?php if (!empty($service['description'])): ?>
                     <p><?= nl2br(htmlspecialchars($service['description'])) ?></p>
                 <?php endif; ?>
-                <a href="/commander/<?= $service['id'] ?>">Commander</a>
+                <?php if ($shop['is_open']): ?>
+                    <a href="/commander/<?= $service['id'] ?>">Commander</a>
+                <?php else: ?>
+                    <em>Boutique actuellement fermée aux commandes</em>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ul>
@@ -68,3 +101,6 @@ $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<?php require __DIR__ . '/../components/report-modal.php'; ?>
+<script src="/assets/js/report-modal.js"></script>

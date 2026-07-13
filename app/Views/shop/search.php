@@ -1,4 +1,14 @@
-<?php $pageTitle = 'Découvrir les artistes — Toile'; ?>
+<?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir ShopController::search()).
+ *
+ * @var array $shops
+ * @var array{q: string, style: string, min_price: string, max_price: string, sort: string} $filters
+ * @var array<int, string> $availableStyles
+ */
+$pageTitle = 'Découvrir les artistes — Toile';
+?>
 
 <h1>Découvrir les artistes</h1>
 
@@ -48,6 +58,10 @@
         <?php foreach ($shops as $shop): ?>
             <div style="border: 1px solid #ccc; padding: 1rem; width: 250px;">
                 <h3><a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>"><?= htmlspecialchars($shop['name']) ?></a></h3>
+
+                <?php if (!$shop['is_open']): ?>
+                    <p style="color: #92400e;">Fermée actuellement</p>
+                <?php endif; ?>
 
                 <p>
                     <?php if ($shop['avg_rating'] !== null): ?>

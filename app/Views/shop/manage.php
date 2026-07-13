@@ -1,4 +1,14 @@
-<?php $pageTitle = 'Ma boutique — Toile'; ?>
+<?php
+/**
+ * Variables injectées par App\Core\Renderer::render() via
+ * extract($data) (voir ShopController::manage()/save()).
+ *
+ * @var array|null $shop
+ * @var array<string, string> $errors
+ * @var string|null $success
+ */
+$pageTitle = 'Ma boutique — Toile';
+?>
 
 <h1>Ma boutique</h1>
 
@@ -11,11 +21,36 @@ $currentStyles = $shop !== null && $shop['styles']
     ? json_decode($shop['styles'], true)
     : [];
 
-$availableStyles = ['anime', 'réaliste', 'chibi', 'pixel art', 'concept art'];
+$availableStyles = \App\Models\Shop::STYLES;
 ?>
 
 <?php if ($shop !== null): ?>
     <p>URL publique de ta boutique : <code>/boutiques/<?= htmlspecialchars($shop['slug']) ?></code></p>
+
+    <?php if (!$shop['plan_selected']): ?>
+        <div style="border: 2px solid #92400e; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; max-width: 500px;">
+            <p><strong>Ta boutique n'est pas encore ouverte.</strong></p>
+            <p>Choisis ta formule d'abonnement (gratuite ou payante) pour l'activer.</p>
+            <p><a href="/my-subscription">Choisir ma formule →</a></p>
+        </div>
+    <?php else: ?>
+        <p>
+            Statut actuel :
+            <strong><?= $shop['is_open'] ? 'Ouverte aux commandes' : 'Fermée aux commandes' ?></strong>
+        </p>
+
+        <form method="POST" action="/my-shop/toggle" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+            <button type="submit" class="btn <?= $shop['is_open'] ? 'btn--outline' : 'btn--primary' ?>">
+                <?= $shop['is_open'] ? 'Fermer la boutique' : 'Ouvrir la boutique' ?>
+            </button>
+        </form>
+
+        <p style="color: #6b7280; font-size: 0.85rem;">
+            Ferme temporairement ta boutique si tu ne peux pas honorer de nouvelles commandes (vacances, surcharge...).
+            Elle reste visible dans la recherche mais les clients ne pourront plus commander tant qu'elle n'est pas rouverte.
+        </p>
+    <?php endif; ?>
 <?php endif; ?>
 
 <form method="POST" action="/my-shop">
@@ -51,16 +86,6 @@ $availableStyles = ['anime', 'réaliste', 'chibi', 'pixel art', 'concept art'];
                 <?= htmlspecialchars($style) ?>
             </label>
         <?php endforeach; ?>
-    </div>
-
-    <div>
-        <label>
-            <input
-                type="checkbox"
-                name="is_open"
-                <?= ($shop['is_open'] ?? false) ? 'checked' : '' ?>>
-            Boutique ouverte aux commandes
-        </label>
     </div>
 
     <button type="submit">Enregistrer</button>

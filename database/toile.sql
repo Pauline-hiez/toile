@@ -50,6 +50,7 @@ CREATE TABLE shop (
     styles JSON NULL,
 
     is_open BOOLEAN NOT NULL DEFAULT FALSE,
+    plan_selected BOOLEAN NOT NULL DEFAULT FALSE,
 
     monetization_type ENUM('subscription', 'commission') NOT NULL DEFAULT 'commission',
 
@@ -133,6 +134,8 @@ CREATE TABLE orders (
 
     stripe_payment_intent_id VARCHAR(255) NULL,
     delivery_file VARCHAR(255) NULL,
+
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -383,9 +386,61 @@ CREATE TABLE raffle_entry (
 
 
 -- -----------------------------------------------------
+-- Table : report
+-- Signalement d'une boutique (dans son ensemble) ou d'un avis.
+-- Association polymorphe (reportable_type + reportable_id), pas de
+-- FK directe sur la cible — intégrité vérifiée côté application.
+-- -----------------------------------------------------
+CREATE TABLE report (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    reporter_id INT NOT NULL,
+
+    reportable_type ENUM('shop', 'review') NOT NULL,
+    reportable_id INT NOT NULL,
+
+    reason ENUM(
+        'plagiat',
+        'contenu_inapproprie',
+        'arnaque',
+        'commentaire_inapproprie',
+        'spam',
+        'autre'
+    ) NOT NULL DEFAULT 'autre',
+    message TEXT NULL,
+
+    status ENUM('pending', 'resolved', 'dismissed') NOT NULL DEFAULT 'pending',
+    resolved_by INT NULL,
+    resolved_at DATETIME NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_report_reporter
+        FOREIGN KEY (reporter_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_report_resolved_by
+        FOREIGN KEY (resolved_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : setting
+-- Paramètres du site, en clé/valeur pour rester extensible.
+-- -----------------------------------------------------
+CREATE TABLE setting (
+    `key` VARCHAR(100) PRIMARY KEY,
+    `value` TEXT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
 -- Données initiales : paliers d'abonnement
 -- -----------------------------------------------------
 INSERT INTO subscription_plan (name, price, commission_rate, max_services, max_portfolio_images, max_options_per_service, stripe_price_id)
 VALUES
+    ('Commission', 0, 10.00, 3, 5, 2, NULL),
     ('Essentiel', 1490, 5.00, 10, 15, 5, 'price_1TqAUxCHvrrlwjMD7A31tt6O'),
     ('Pro', 2990, 0.00, 9999, 9999, 9999, 'price_1TqAVUCHvrrlwjMDQd8ZCEbx');

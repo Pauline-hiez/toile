@@ -52,6 +52,13 @@ class OrderController
         }
 
         $shop = $this->shopModel->findById($service['shop_id']);
+
+        if ($shop === null || !$shop['is_open']) {
+            http_response_code(403);
+            echo 'Cette boutique est actuellement fermée aux commandes.';
+            exit;
+        }
+
         $options = $this->optionModel->findByServiceId($service['id']);
 
         $this->renderer->render('order/create', [
@@ -79,6 +86,13 @@ class OrderController
         }
 
         $shop = $this->shopModel->findById($service['shop_id']);
+
+        if ($shop === null || !$shop['is_open']) {
+            http_response_code(403);
+            echo 'Cette boutique est actuellement fermée aux commandes.';
+            exit;
+        }
+
         $options = $this->optionModel->findByServiceId($service['id']);
 
         $title = trim($_POST['title'] ?? '');
@@ -470,14 +484,19 @@ class OrderController
         }
 
         $userId = $_SESSION['user_id'];
+        $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
 
-        if ($order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
+        if (!$isAdmin && $order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
             http_response_code(403);
             echo 'Accès refusé.';
             exit;
         }
 
-        $actor = $order['shop_owner_id'] === $userId ? 'artist' : 'client';
+        if ($isAdmin && $order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
+            $actor = 'admin';
+        } else {
+            $actor = $order['shop_owner_id'] === $userId ? 'artist' : 'client';
+        }
 
         $transitions = $this->orderModel->getAllowedTransitions();
         $allowedStatuses = $transitions[$order['status']][$actor] ?? [];

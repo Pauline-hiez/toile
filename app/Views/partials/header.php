@@ -1,11 +1,29 @@
+<?php
+/**
+ * Header public. Variables définies par layouts/default.php avant
+ * l'inclusion de ce partial (require, pas de scope isolé).
+ *
+ * @var int $unreadCount Nombre de notifications non lues.
+ * @var array|null $userShop Boutique de l'utilisateur connecté (artiste/admin), ou null.
+ * @var \App\Models\Setting $settingModel
+ */
+?>
 <header class="site-header">
     <div class="site-header__inner">
 
         <a href="/" class="site-header__logo">
-            <img src="/assets/images/site/logo-toile.png" alt="Toile">
+            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
         </a>
 
-        <nav class="site-header__nav">
+        <button type="button" class="site-header__menu-btn" id="siteMenuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="siteNav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+        </button>
+
+        <nav class="site-header__nav" id="siteNav">
             <a href="/boutiques">Boutiques</a>
 
             <?php if (($_SESSION['user_role'] ?? '') !== 'artist'): ?>
@@ -16,17 +34,12 @@
         </nav>
 
         <div class="site-header__icons">
-            <div class="site-header__search">
-                <form action="/boutiques" method="GET" class="site-header__search-form">
-                    <input type="text" name="q" placeholder="Rechercher...">
-                    <button type="submit" class="site-header__icon-btn" aria-label="Rechercher" title="Rechercher">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="7"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
-                </form>
-            </div>
+            <?php
+            $searchAction = '/boutiques';
+            $searchStandalone = true;
+            $searchValue = '';
+            ?>
+            <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="/mes-favoris" class="site-header__icon-btn" aria-label="Favoris" title="Favoris">
@@ -91,3 +104,15 @@
 
     </div>
 </header>
+
+<script>
+    (function () {
+        var menuBtn = document.getElementById('siteMenuBtn');
+        var nav = document.getElementById('siteNav');
+
+        menuBtn.addEventListener('click', function () {
+            var isOpen = nav.classList.toggle('is-open');
+            menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    })();
+</script>

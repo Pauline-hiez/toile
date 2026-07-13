@@ -4,6 +4,10 @@ use App\Core\OrderStatus; ?>
 
 <h1>Commande #<?= $order['id'] ?></h1>
 
+<?php if (isset($_GET['reported'])): ?>
+    <p style="color: green;">Merci, ton signalement a bien été envoyé à notre équipe.</p>
+<?php endif; ?>
+
 <style>
     .timeline {
         display: flex;
@@ -136,6 +140,33 @@ use App\Core\OrderStatus; ?>
         </form>
     <?php endif; ?>
 <?php endif; ?>
+
+<?php if ($actor === 'artist' && $existingReview !== null): ?>
+    <hr>
+    <h2>Avis du client</h2>
+    <p>
+        <?php for ($i = 1; $i <= 5; $i++): ?>
+            <?= $i <= $existingReview['rating'] ? '⭐' : '☆' ?>
+        <?php endfor; ?>
+    </p>
+    <?php if (!empty($existingReview['comment'])): ?>
+        <p><?= nl2br(htmlspecialchars($existingReview['comment'])) ?></p>
+    <?php endif; ?>
+
+    <button
+        type="button"
+        class="report-trigger"
+        data-report-trigger
+        data-report-type="review"
+        data-report-id="<?= $existingReview['id'] ?>"
+        data-report-reason="commentaire_inapproprie"
+        data-report-redirect="/commandes/<?= $order['id'] ?>?reported=1">
+        🚩 Signaler cet avis
+    </button>
+<?php endif; ?>
+
+<?php require __DIR__ . '/../components/report-modal.php'; ?>
+<script src="/assets/js/report-modal.js"></script>
 
 <hr>
 

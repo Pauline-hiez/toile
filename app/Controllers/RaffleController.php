@@ -6,18 +6,21 @@ use App\Core\Renderer;
 use App\Core\StripeService;
 use App\Models\RaffleEntry;
 use App\Models\Shop;
+use App\Models\Setting;
 
 class RaffleController
 {
     private Renderer $renderer;
     private RaffleEntry $raffleModel;
     private Shop $shopModel;
+    private Setting $settingModel;
 
     public function __construct(Renderer $renderer)
     {
         $this->renderer = $renderer;
         $this->raffleModel = new RaffleEntry();
         $this->shopModel = new Shop();
+        $this->settingModel = new Setting();
     }
 
     // Page index du tirage au sort
@@ -41,8 +44,8 @@ class RaffleController
             'homepageEntry' => $homepageEntry,
             'currentMonth' => $currentMonth,
             'currentMonday' => $currentMonday,
-            'rafflePrice' => (int) ($_ENV['RAFFLE_PRICE'] ?? 500),
-            'homepagePrice' => (int) ($_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? 700),
+            'rafflePrice' => (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '500'),
+            'homepagePrice' => (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '700'),
             'pageTitle' => 'Tirages au sort — Toile',
         ]);
     }
@@ -59,8 +62,8 @@ class RaffleController
             : date('Y-m');
 
         $price = $type === 'homepage'
-            ? (int) ($_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? 700)
-            : (int) ($_ENV['RAFFLE_PRICE'] ?? 500);
+            ? (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '700')
+            : (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '500');
 
         // Vérifie qu'il n'y ait pas déjà une inscription
         $existingEntry = $this->raffleModel->findByShopTypeAndPeriod($shop['id'], $type, $period);

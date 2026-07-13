@@ -45,7 +45,6 @@ class ShopController
 
         $name = trim($_POST['name'] ?? '');
         $bio = trim($_POST['bio'] ?? '');
-        $isOpen = isset($_POST['is_open']) ? 1 : 0;
 
         // Styles envoyés comme plusieurs cases à cocher du même nom "styles[]".
         $styles = $_POST['styles'] ?? [];
@@ -65,17 +64,22 @@ class ShopController
             return;
         }
 
+        // is_open n'est pas piloté par ce formulaire : une boutique ne
+        // s'ouvre qu'après avoir choisi un abonnement (voir
+        // SubscriptionController), puis se pilote via /my-shop/toggle.
         $data = [
             'name' => $name,
             'bio' => $bio,
-            'is_open' => $isOpen,
             'styles' => json_encode($styles),
         ];
 
         if ($existingShop === null) {
-            // Création : on génère un nouveau slug.
+            // Création : on génère un nouveau slug. La boutique démarre
+            // fermée et sans formule choisie.
             $data['slug'] = $this->shopModel->generateUniqueSlug($name);
             $data['user_id'] = $_SESSION['user_id'];
+            $data['is_open'] = 0;
+            $data['plan_selected'] = 0;
 
             $this->shopModel->create($data);
         } else {
@@ -122,6 +126,22 @@ class ShopController
         ]);
     }
 
+    public function toggleOpen(): void
+    {
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        $this->shopModel->toggleOpen($shop['id']);
+
+        header('Location: /my-shop');
+        exit;
+    }
+
     public function search(): void
     {
         $filters = [
@@ -137,7 +157,7 @@ class ShopController
         $this->renderer->render('shop/search', [
             'shops' => $shops,
             'filters' => $filters,
-            'availableStyles' => ['anime', 'réaliste', 'pixel art', 'digital art', 'bande déssinée'],
+            'availableStyles' => Shop::STYLES,
         ]);
     }
 }
