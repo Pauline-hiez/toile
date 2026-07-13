@@ -24,6 +24,8 @@ $siteFavicon = $settingModel->get('site_favicon');
     <title><?= htmlspecialchars($pageTitle ?? ($settingModel->get('site_name', 'Toile'))) ?></title>
     <link rel="icon" href="<?= $siteFavicon ? '/uploads/branding/' . htmlspecialchars($siteFavicon) : '/assets/images/site/favicon-logo.png' ?>">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(__DIR__ . '/../../../public/assets/css/style.css') ?>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/assets/js/tailwind-config.js"></script>
     <?php if (!empty($extraHead)): ?>
         <?= $extraHead ?>
     <?php endif; ?>
@@ -37,8 +39,6 @@ $siteFavicon = $settingModel->get('site_favicon');
     </main>
 
     <?php require __DIR__ . '/../partials/footer.php'; ?>
-
-    <script src="https://cdn.tailwindcss.com"></script>
 </body>
 
 </html>

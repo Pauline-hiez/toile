@@ -14,9 +14,9 @@
  */
 
 $roleLabels = [
-    'user' => ['label' => 'Utilisateur', 'class' => 'badge--neutral'],
-    'artist' => ['label' => 'Artiste', 'class' => 'badge--success'],
-    'admin' => ['label' => 'Admin', 'class' => 'badge--info'],
+    'user' => ['label' => 'Utilisateur', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
+    'artist' => ['label' => 'Artiste', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
+    'admin' => ['label' => 'Admin', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -33,43 +33,43 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 };
 ?>
 
-<div class="admin-stats">
-    <div class="admin-stat-card">
-        <img class="admin-stat-card__icon" src="/assets/images/icones/users.png" alt="">
-        <div class="admin-stat-card__value"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
-        <div class="admin-stat-card__label">Utilisateurs</div>
-        <div class="admin-stat-card__trend">↗ +<?= $stats['new_this_week'] ?> cette semaine</div>
+<div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
+    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
+        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
+        <div class="text-[0.8rem] text-muted font-medium">Utilisateurs</div>
+        <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="admin-stat-card">
-        <img class="admin-stat-card__icon" src="/assets/images/icones/users.png" alt="">
-        <div class="admin-stat-card__value"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
-        <div class="admin-stat-card__label">Utilisateurs actifs</div>
+    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
+        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
+        <div class="text-[0.8rem] text-muted font-medium">Utilisateurs actifs</div>
     </div>
 
-    <div class="admin-stat-card">
-        <img class="admin-stat-card__icon" src="/assets/images/icones/users.png" alt="">
-        <div class="admin-stat-card__value"><?= number_format($stats['new_this_week'], 0, ',', ' ') ?></div>
-        <div class="admin-stat-card__label">Nouveaux inscrits</div>
-        <div class="admin-stat-card__trend">↗ <?= $stats['new_vs_prev_week'] >= 0 ? '+' : '' ?><?= $stats['new_vs_prev_week'] ?> vs semaine dernière</div>
+    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
+        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['new_this_week'], 0, ',', ' ') ?></div>
+        <div class="text-[0.8rem] text-muted font-medium">Nouveaux inscrits</div>
+        <div class="text-[0.75rem] text-success">↗ <?= $stats['new_vs_prev_week'] >= 0 ? '+' : '' ?><?= $stats['new_vs_prev_week'] ?> vs semaine dernière</div>
     </div>
 
-    <div class="admin-stat-card">
-        <img class="admin-stat-card__icon" src="/assets/images/icones/artiste.png" alt="">
-        <div class="admin-stat-card__value"><?= number_format($stats['artists'], 0, ',', ' ') ?></div>
-        <div class="admin-stat-card__label">Artistes</div>
-        <div class="admin-stat-card__trend">↗ +<?= $stats['new_artists_this_week'] ?> cette semaine</div>
+    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/artiste.png" alt="">
+        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['artists'], 0, ',', ' ') ?></div>
+        <div class="text-[0.8rem] text-muted font-medium">Artistes</div>
+        <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_artists_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="admin-stat-card">
-        <img class="admin-stat-card__icon" src="/assets/images/icones/avertissements.png" alt="">
-        <div class="admin-stat-card__value"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
-        <div class="admin-stat-card__label">Suspendus</div>
+    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/avertissements.png" alt="">
+        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
+        <div class="text-[0.8rem] text-muted font-medium">Suspendus</div>
     </div>
 </div>
 
-<div class="admin-table-wrapper">
-    <form action="/admin/users" method="GET" class="admin-table-filters">
+<div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
+    <form action="/admin/users" method="GET" class="p-5 border-b border-border flex items-center gap-3 flex-wrap [&_select]:border [&_select]:border-border [&_select]:rounded-full [&_select]:px-4 [&_select]:py-[0.4rem] [&_select]:text-[0.85rem] [&_select]:outline-none [&_select]:bg-bg [&_select]:font-main">
         <?php
         $searchStandalone = false;
         $searchValue = $filters['q'];
@@ -101,16 +101,16 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     </form>
 
     <?php if (empty($users)): ?>
-        <p class="admin-panel__empty" style="padding: 1.5rem;">Aucun utilisateur ne correspond à ces filtres.</p>
+        <p class="text-muted text-[0.85rem] text-center p-6">Aucun utilisateur ne correspond à ces filtres.</p>
     <?php else: ?>
-        <div class="admin-table-scroll">
-            <table class="admin-table" data-bulk-table data-bulk-form="usersBulkForm">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse text-[0.875rem] max-[720px]:min-w-[640px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2] [&_input]:w-4 [&_input]:h-4 [&_input]:accent-primary [&_input]:cursor-pointer" data-bulk-table data-bulk-form="usersBulkForm">
                 <thead>
                     <tr>
                         <th>
-                            <span class="admin-th-select">
+                            <span class="inline-flex items-center gap-2">
                                 <input type="checkbox" data-select-all aria-label="Tout sélectionner">
-                                <button type="submit" form="usersBulkForm" class="admin-bulk-trigger" data-bulk-trigger hidden title="Suspendre la sélection">
+                                <button type="submit" form="usersBulkForm" class="inline-flex items-center bg-transparent border-0 cursor-pointer p-1 rounded-sm text-muted transition-colors hover:text-primary hover:bg-primary-light [&_svg]:w-4 [&_svg]:h-4" data-bulk-trigger hidden title="Suspendre la sélection">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="12" cy="12" r="9"></circle>
                                         <line x1="5.5" y1="5.5" x2="18.5" y2="18.5"></line>
@@ -130,7 +130,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 <tbody>
                     <?php foreach ($users as $user): ?>
                         <?php
-                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => 'badge--neutral'];
+                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'];
                         $isSelf = $user['id'] === $_SESSION['user_id'];
                         $shopSlug = $shopSlugsByUserId[$user['id']] ?? null;
                         ?>
@@ -143,42 +143,42 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                             <td>
                                 <div style="display: flex; align-items: center; gap: 0.6rem;">
                                     <?php if (!empty($user['avatar'])): ?>
-                                        <img class="admin-table-avatar" src="/uploads/avatars/<?= htmlspecialchars($user['avatar']) ?>" alt="">
+                                        <img class="w-9 h-9 rounded-full object-cover border border-border" src="/uploads/avatars/<?= htmlspecialchars($user['avatar']) ?>" alt="">
                                     <?php else: ?>
-                                        <img class="admin-table-avatar" src="/assets/images/icones/new-user.png" alt="">
+                                        <img class="w-9 h-9 rounded-full object-cover border border-border" src="/assets/images/icones/new-user.png" alt="">
                                     <?php endif; ?>
                                     <?= htmlspecialchars($user['username']) ?>
                                 </div>
                             </td>
                             <td><a href="mailto:<?= htmlspecialchars($user['email']) ?>"><?= htmlspecialchars($user['email']) ?></a></td>
-                            <td><span class="badge <?= $roleInfo['class'] ?>"><?= htmlspecialchars($roleInfo['label']) ?></span></td>
+                            <td><span class="<?= $roleInfo['class'] ?>"><?= htmlspecialchars($roleInfo['label']) ?></span></td>
                             <td>
                                 <?php if ($user['is_banned']): ?>
-                                    <span class="badge badge--danger">Suspendu</span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger">Suspendu</span>
                                 <?php else: ?>
-                                    <span class="badge badge--success">Actif</span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success">Actif</span>
                                 <?php endif; ?>
                             </td>
                             <td><?= \App\Core\FrenchDate::format('d MMM y', $user['created_at']) ?></td>
                             <td>—</td>
                             <td>
-                                <div class="table-actions">
+                                <div class="flex items-center gap-2 [&_a]:bg-transparent [&_a]:border-0 [&_a]:cursor-pointer [&_a]:p-1 [&_a]:rounded-sm [&_a]:text-muted [&_a]:transition-colors [&_a]:flex [&_a]:items-center [&_a]:no-underline [&_a:hover]:text-primary [&_a:hover]:bg-primary-light [&_button]:bg-transparent [&_button]:border-0 [&_button]:cursor-pointer [&_button]:p-1 [&_button]:rounded-sm [&_button]:text-muted [&_button]:transition-colors [&_button]:flex [&_button]:items-center [&_button:hover]:text-primary [&_button:hover]:bg-primary-light [&_button.danger:hover]:text-danger [&_button.danger:hover]:bg-danger-bg [&_svg]:w-4 [&_svg]:h-4 [&_img]:w-4 [&_img]:h-4 [&_img]:object-contain">
                                     <?php if ($shopSlug): ?>
                                         <a href="/boutiques/<?= htmlspecialchars($shopSlug) ?>" title="Voir la boutique">
                                             <img src="/assets/images/icones/voir.png" alt="Voir">
                                         </a>
                                     <?php else: ?>
-                                        <a href="#" aria-disabled="true" title="Aucune boutique">
+                                        <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Aucune boutique">
                                             <img src="/assets/images/icones/voir.png" alt="Voir">
                                         </a>
                                     <?php endif; ?>
 
                                     <?php if (!$isSelf): ?>
-                                        <details class="action-popover">
-                                            <summary title="Modifier le rôle">
+                                        <details class="relative inline-flex">
+                                            <summary class="list-none cursor-pointer p-1 rounded-sm text-muted flex items-center transition-colors hover:text-primary hover:bg-primary-light [&::-webkit-details-marker]:hidden" title="Modifier le rôle">
                                                 <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                             </summary>
-                                            <div class="action-popover__panel">
+                                            <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-sm [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
                                                 <form method="POST" action="/admin/users/<?= $user['id'] ?>/role">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
                                                     <label for="role-<?= $user['id'] ?>">Changer le rôle</label>
@@ -191,7 +191,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                             </div>
                                         </details>
                                     <?php else: ?>
-                                        <a href="#" aria-disabled="true" title="Modifier">
+                                        <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Modifier">
                                             <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                         </a>
                                     <?php endif; ?>
@@ -215,7 +215,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                             </form>
                                         <?php endif; ?>
                                     <?php else: ?>
-                                        <a href="#" aria-disabled="true" title="Suspendre">
+                                        <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Suspendre">
                                             <img src="/assets/images/icones/supprimer.png" alt="Suspendre">
                                         </a>
                                     <?php endif; ?>

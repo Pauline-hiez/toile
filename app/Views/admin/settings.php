@@ -10,13 +10,13 @@
 ?>
 
 <?php if ($success): ?>
-    <div class="admin-alert" style="background: var(--color-success-bg); border-color: rgba(22,101,52,0.25); color: var(--color-success);">
+    <div class="flex items-center gap-4 flex-wrap bg-success-bg border border-success/25 text-success rounded-md px-5 py-[0.9rem] mb-6 text-[0.9rem]">
         <span>Modifications enregistrées avec succès.</span>
     </div>
 <?php endif; ?>
 
-<div class="admin-panel" style="margin-bottom: 1.5rem;">
-    <h2>Informations générales</h2>
+<div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col mb-6">
+    <h2 class="text-base font-semibold mb-5 text-ink">Informations générales</h2>
     <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Définissez les informations de base du site.</p>
 
     <form method="POST" action="/admin/settings/general" enctype="multipart/form-data" style="display: flex; gap: 2rem; flex-wrap: wrap;">
@@ -80,8 +80,8 @@
     </form>
 </div>
 
-<div class="admin-panel" style="margin-bottom: 1.5rem;">
-    <h2>Réseaux sociaux</h2>
+<div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col mb-6">
+    <h2 class="text-base font-semibold mb-5 text-ink">Réseaux sociaux</h2>
     <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Liens affichés dans le pied de page du site.</p>
 
     <form method="POST" action="/admin/settings/social" style="display: flex; flex-direction: column; gap: 1rem; max-width: 480px;">
@@ -109,8 +109,8 @@
     </form>
 </div>
 
-<div class="admin-panel" style="margin-bottom: 1.5rem;">
-    <h2>Tirage au sort</h2>
+<div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col mb-6">
+    <h2 class="text-base font-semibold mb-5 text-ink">Tirage au sort</h2>
     <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Prix des tickets et nombre de gagnants pour les deux tirages.</p>
 
     <form method="POST" action="/admin/settings/raffle" style="display: flex; gap: 2rem; flex-wrap: wrap;">
@@ -154,8 +154,8 @@
     </form>
 </div>
 
-<div class="admin-panel">
-    <h2>Mode maintenance</h2>
+<div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+    <h2 class="text-base font-semibold mb-5 text-ink">Mode maintenance</h2>
     <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
         Bloque l'accès public au site (les administrateurs continuent d'y accéder pour le désactiver).
     </p>
