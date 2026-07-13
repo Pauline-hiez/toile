@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes commandes — Toile</title>
+    <link rel="icon" href="/assets/images/site/favicon-logo.png">
+    <link rel="stylesheet" href="/assets/css/style.css?v=1783948509">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/assets/js/tailwind-config.js"></script>
+</head>
+
+<body>
+    <header class="site-header">
+    <div class="site-header__inner">
+
+        <a href="/" class="site-header__logo">
+            <img src="/assets/images/site/logo-toile.png" alt="Toile">
+        </a>
+
+        <button type="button" class="site-header__menu-btn" id="siteMenuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="siteNav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+        </button>
+
+        <nav class="site-header__nav" id="siteNav">
+            <a href="/boutiques">Boutiques</a>
+
+            
+            <a href="/comment-ca-marche">Comment ça marche&nbsp;?</a>
+        </nav>
+
+        <div class="site-header__icons">
+                        <div class="search-bar">
+    <form action="/boutiques" method="GET" class="search-bar__form">
+        <input type="text" name="q" placeholder="Rechercher..." value="">
+        <button type="submit" class="search-bar__submit" aria-label="Rechercher" title="Rechercher">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </button>
+    </form>
+</div>
+
+                            <a href="/mes-favoris" class="site-header__icon-btn" aria-label="Favoris" title="Favoris">
+                    <img src="/assets/images/icones/favoris.png" alt="">
+                </a>
+
+                <a href="/mes-commandes" class="site-header__icon-btn" aria-label="Mes commandes" title="Mes commandes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                        <path d="M3 6h18"></path>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                </a>
+
+                <a href="/notifications" class="site-header__icon-btn site-header__notif" aria-label="Notifications" title="Notifications">
+                    <img src="/assets/images/icones/notifications.png" alt="">
+                                    </a>
+
+                <div class="site-header__account">
+                    <a href="/profile" class="site-header__profile" aria-label="Mon compte" title="Mon compte">
+                                                    <img src="/assets/images/icones/new-user.png" alt="Profil" class="site-header__avatar">
+                                                <svg class="site-header__account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </a>
+
+                    <div class="site-header__account-menu">
+                        <div class="site-header__account-menu-inner">
+                                                            <a href="/profile">Profil</a>
+                                                                    <a href="/boutiques/atelier-lunarya">Voir ma boutique</a>
+                                                            
+                            <hr>
+                            <a href="/logout">Se déconnecter</a>
+                        </div>
+                    </div>
+                </div>
+
+                    </div>
+
+    </div>
+</header>
+
+<script>
+    (function () {
+        var menuBtn = document.getElementById('siteMenuBtn');
+        var nav = document.getElementById('siteNav');
+
+        menuBtn.addEventListener('click', function () {
+            var isOpen = nav.classList.toggle('is-open');
+            menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    })();
+</script>
+
+    <main>
+        <div class="relative max-w-[1400px] mx-auto px-5 pt-6 pb-10 min-[641px]:px-10 min-[641px]:pt-8">
+            <img src="/assets/images/decor/hero.png" alt="" class="w-full max-h-[420px] object-cover rounded-md mb-8">
+
+            <h1 class="font-cursive text-[2rem] font-semibold text-ink mb-1">Bonjour ArtisteTest !</h1>
+            <p class="text-muted text-[0.95rem] mb-8">Bienvenue sur ton espace</p>
+
+            <div class="flex flex-col min-[900px]:flex-row gap-8">
+                <nav class="flex flex-row min-[900px]:flex-col flex-wrap gap-2 min-[900px]:w-[220px] shrink-0">
+                                                                    <a href="/my-dashboard" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/dashboard.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Dashboard                        </a>
+                                                                    <a href="/profile" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/new-user.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Mon profil                        </a>
+                                                                    <a href="/commandes-recues" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors bg-primary text-white">
+                            <img src="/assets/images/icones/commande.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Mes commandes                        </a>
+                                                                    <a href="/my-services" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/pro.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Mes prestations                        </a>
+                                                                    <a href="/my-portfolio" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/create.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Portfolio                        </a>
+                                                                    <a href="/my-shop" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/boutique.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Ma boutique                        </a>
+                                    </nav>
+
+                <div class="flex-1 min-w-0">
+                    
+    <div class="flex items-center justify-between gap-4 flex-wrap bg-warning-bg border border-warning/25 text-warning rounded-md px-5 py-[0.9rem] mb-6 text-[0.9rem]">
+        <span>Vous avez 4 demandes en attente</span>
+        <a href="#recentes" class="btn btn--primary">Voir les demandes</a>
+    </div>
+
+<div class="grid grid-cols-3 gap-4 mb-8">
+    <div class="bg-white border border-border rounded-md p-5 text-center shadow-sm">
+        <div class="text-[0.85rem] text-muted font-medium mb-2">Nombre de commandes</div>
+        <div class="font-cursive text-[2.2rem] font-semibold text-ink">4</div>
+    </div>
+
+    <div class="bg-white border border-border rounded-md p-5 text-center shadow-sm">
+        <div class="text-[0.85rem] text-muted font-medium mb-2">Commande en cours</div>
+        <div class="font-cursive text-[2.2rem] font-semibold text-ink">0</div>
+    </div>
+
+    <div class="bg-white border border-border rounded-md p-5 text-center shadow-sm">
+        <div class="text-[0.85rem] text-muted font-medium mb-2">Commandes en attente</div>
+        <div class="font-cursive text-[2.2rem] font-semibold text-ink">4</div>
+    </div>
+</div>
+
+<div id="recentes" class="bg-white border border-border rounded-md p-6 shadow-sm">
+    <h2 class="text-base font-semibold mb-5 text-ink">Commandes récentes</h2>
+
+            <div class="flex flex-col gap-3">
+                                            <a href="/commandes/4" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <img src="/assets/images/icones/commande.png" alt="" class="w-10 h-10 rounded-full object-contain bg-primary-light p-2 shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test 444</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest<br>
+                            Le 9 juil. 2026 à 14h58                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                                            <a href="/commandes/3" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <img src="/assets/images/icones/commande.png" alt="" class="w-10 h-10 rounded-full object-contain bg-primary-light p-2 shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test 555</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest<br>
+                            Le 9 juil. 2026 à 14h50                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                                            <a href="/commandes/2" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <img src="/assets/images/icones/commande.png" alt="" class="w-10 h-10 rounded-full object-contain bg-primary-light p-2 shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test methode paiement 2</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest<br>
+                            Le 9 juil. 2026 à 14h36                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                    </div>
+
+        <div class="text-center mt-6">
+            <a href="#toutes" class="btn btn--primary">Voir toutes les commandes</a>
+        </div>
+    </div>
+
+    <div id="toutes" class="bg-white border border-border rounded-md p-6 shadow-sm mt-8">
+        <h2 class="text-base font-semibold mb-5 text-ink">Toutes les commandes</h2>
+
+        <div class="flex flex-col gap-3">
+                                            <a href="/commandes/4" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test 444</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest                            — 150.00 €
+                            — 9 juil. 2026                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                                            <a href="/commandes/3" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test 555</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest                            — 35.00 €
+                            — 9 juil. 2026                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                                            <a href="/commandes/2" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test methode paiement 2</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest                            — 80.00 €
+                            — 9 juil. 2026                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                                            <a href="/commandes/1" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-[0.95rem] text-ink">test sauvegarde carte</p>
+                        <p class="text-[0.8rem] text-muted">
+                            Commandé par ClientTest                            — 150.00 €
+                            — 9 juil. 2026                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                </a>
+                    </div>
+    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+    <div class="site-footer__inner">
+        <div class="site-footer__logo">
+            <a href="/">
+                <img src="/assets/images/site/logo-toile.png" alt="Toile">
+            </a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>Plateforme</h4>
+            <a href="/boutiques">Découvrir</a>
+            <a href="/boutiques">Prestations</a>
+            <a href="/comment-ca-marche">Comment ça marche ?</a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>À propos</h4>
+            <a href="/a-propos">Qui sommes-nous ?</a>
+            <a href="/become-artist">Devenir Artiste</a>
+            <a href="/contact">Contact</a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>Ressources</h4>
+            <a href="/aide">Aide et FAQ</a>
+            <a href="/cgu">Conditions d'utilisation</a>
+            <a href="/confidentialite">Politique de confidentialité</a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>Suivez-nous</h4>
+            <div class="site-footer__social">
+                <a href="#" aria-label="Instagram">
+                    <img src="/assets/images/reseaux/instagram.png" alt="Instagram">
+                </a>
+                <a href="#" aria-label="Facebook">
+                    <img src="/assets/images/reseaux/facebook.png" alt="Facebook">
+                </a>
+                <a href="#" aria-label="Pinterest">
+                    <img src="/assets/images/reseaux/pinterest.png" alt="Pinterest">
+                </a>
+                <a href="#" aria-label="TikTok">
+                    <img src="/assets/images/reseaux/tiktok.png" alt="TikTok">
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="site-footer__bottom">
+        <p>&copy; 2026 Toile — La marketplace de commissions artistiques.</p>
+    </div>
+</footer>
+</body>
+
+</html>

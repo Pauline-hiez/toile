@@ -28,7 +28,8 @@ class PortfolioController
         $this->renderer->render('portfolio/index', [
             'images' => $images,
             'error' => null,
-        ]);
+            'pageTitle' => 'Mon portfolio — Toile',
+        ], 'layouts/artist');
     }
 
     public function upload(): void
@@ -41,7 +42,8 @@ class PortfolioController
             $this->renderer->render('portfolio/index', [
                 'images' => $this->portfolioModel->findByShopId($shop['id']),
                 'error' => 'Aucune image sélectionnée.',
-            ]);
+                'pageTitle' => 'Mon portfolio — Toile',
+            ], 'layouts/artist');
             return;
         }
 
@@ -76,7 +78,8 @@ class PortfolioController
         $this->renderer->render('portfolio/index', [
             'images' => $this->portfolioModel->findByShopId($shop['id']),
             'error' => !empty($errors) ? implode(' ', $errors) : null,
-        ]);
+            'pageTitle' => 'Mon portfolio — Toile',
+        ], 'layouts/artist');
     }
 
     public function delete(int $id): void

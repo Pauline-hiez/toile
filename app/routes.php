@@ -131,6 +131,14 @@ $router->map('POST', '/my-services/[i:id]/delete', [
     ],
 ]);
 
+$router->map('POST', '/my-services/options/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'deleteOption'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Portfolio
 $router->map('GET', '/my-portfolio', [
     'controller' => ['App\Controllers\PortfolioController', 'index'],
@@ -186,6 +194,14 @@ $router->map('GET', '/mes-commandes', [
 ]);
 
 // Espace artiste
+$router->map('GET', '/my-dashboard', [
+    'controller' => ['App\Controllers\ArtistDashboardController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 $router->map('GET', '/commandes-recues', [
     'controller' => ['App\Controllers\OrderController', 'receivedOrders'],
     'middlewares' => [

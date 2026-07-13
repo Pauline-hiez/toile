@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma boutique — Toile</title>
+    <link rel="icon" href="/assets/images/site/favicon-logo.png">
+    <link rel="stylesheet" href="/assets/css/style.css?v=1783948509">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/assets/js/tailwind-config.js"></script>
+</head>
+
+<body>
+    <header class="site-header">
+    <div class="site-header__inner">
+
+        <a href="/" class="site-header__logo">
+            <img src="/assets/images/site/logo-toile.png" alt="Toile">
+        </a>
+
+        <button type="button" class="site-header__menu-btn" id="siteMenuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="siteNav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+        </button>
+
+        <nav class="site-header__nav" id="siteNav">
+            <a href="/boutiques">Boutiques</a>
+
+            
+            <a href="/comment-ca-marche">Comment ça marche&nbsp;?</a>
+        </nav>
+
+        <div class="site-header__icons">
+                        <div class="search-bar">
+    <form action="/boutiques" method="GET" class="search-bar__form">
+        <input type="text" name="q" placeholder="Rechercher..." value="">
+        <button type="submit" class="search-bar__submit" aria-label="Rechercher" title="Rechercher">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </button>
+    </form>
+</div>
+
+                            <a href="/mes-favoris" class="site-header__icon-btn" aria-label="Favoris" title="Favoris">
+                    <img src="/assets/images/icones/favoris.png" alt="">
+                </a>
+
+                <a href="/mes-commandes" class="site-header__icon-btn" aria-label="Mes commandes" title="Mes commandes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                        <path d="M3 6h18"></path>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                </a>
+
+                <a href="/notifications" class="site-header__icon-btn site-header__notif" aria-label="Notifications" title="Notifications">
+                    <img src="/assets/images/icones/notifications.png" alt="">
+                                    </a>
+
+                <div class="site-header__account">
+                    <a href="/profile" class="site-header__profile" aria-label="Mon compte" title="Mon compte">
+                                                    <img src="/assets/images/icones/new-user.png" alt="Profil" class="site-header__avatar">
+                                                <svg class="site-header__account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </a>
+
+                    <div class="site-header__account-menu">
+                        <div class="site-header__account-menu-inner">
+                                                            <a href="/profile">Profil</a>
+                                                                    <a href="/boutiques/atelier-lunarya">Voir ma boutique</a>
+                                                            
+                            <hr>
+                            <a href="/logout">Se déconnecter</a>
+                        </div>
+                    </div>
+                </div>
+
+                    </div>
+
+    </div>
+</header>
+
+<script>
+    (function () {
+        var menuBtn = document.getElementById('siteMenuBtn');
+        var nav = document.getElementById('siteNav');
+
+        menuBtn.addEventListener('click', function () {
+            var isOpen = nav.classList.toggle('is-open');
+            menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    })();
+</script>
+
+    <main>
+        <div class="relative max-w-[1400px] mx-auto px-5 pt-6 pb-10 min-[641px]:px-10 min-[641px]:pt-8">
+            <img src="/assets/images/decor/hero.png" alt="" class="w-full max-h-[420px] object-cover rounded-md mb-8">
+
+            <h1 class="font-cursive text-[2rem] font-semibold text-ink mb-1">Bonjour ArtisteTest !</h1>
+            <p class="text-muted text-[0.95rem] mb-8">Bienvenue sur ton espace</p>
+
+            <div class="flex flex-col min-[900px]:flex-row gap-8">
+                <nav class="flex flex-row min-[900px]:flex-col flex-wrap gap-2 min-[900px]:w-[220px] shrink-0">
+                                                                    <a href="/my-dashboard" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/dashboard.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Dashboard                        </a>
+                                                                    <a href="/profile" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/new-user.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Mon profil                        </a>
+                                                                    <a href="/commandes-recues" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/commande.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Mes commandes                        </a>
+                                                                    <a href="/my-services" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/pro.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Mes prestations                        </a>
+                                                                    <a href="/my-portfolio" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors text-ink hover:bg-primary-light hover:text-primary">
+                            <img src="/assets/images/icones/create.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Portfolio                        </a>
+                                                                    <a href="/my-shop" class="flex items-center gap-3 px-4 py-[0.6rem] rounded-full text-[0.9rem] font-medium no-underline transition-colors bg-primary text-white">
+                            <img src="/assets/images/icones/boutique.png" alt="" class="w-6 h-6 object-contain shrink-0">
+                            Ma boutique                        </a>
+                                    </nav>
+
+                <div class="flex-1 min-w-0">
+                    
+
+
+<div class="bg-white border border-border rounded-md p-6 shadow-sm">
+    <h2 class="text-base font-semibold text-ink">Ma boutique</h2>
+
+            <p class="text-[0.85rem] text-muted mb-1">URL publique de ma boutique : <a href="/boutiques/atelier-lunarya" class="text-primary hover:underline">/boutiques/atelier-lunarya</a></p>
+
+                    <div class="flex items-center gap-3 mb-5">
+                <p class="text-[0.85rem]">
+                    Statut : <strong class="text-ink">Ouverte aux commandes</strong>
+                </p>
+                <form method="POST" action="/my-shop/toggle">
+                    <input type="hidden" name="csrf_token" value="e0b12fcfdc34e20e72be0910f08cf20f9a326b5a5cd8f2750dc9c50b62e07de3">
+                    <button type="submit" class="btn btn--outline">
+                        Fermer la boutique                    </button>
+                </form>
+            </div>
+            <p class="text-[0.8rem] text-muted mb-5">
+                Ferme temporairement ta boutique si tu ne peux pas honorer de nouvelles commandes (vacances, surcharge...).
+                Elle reste visible dans la recherche mais les clients ne pourront plus commander tant qu'elle n'est pas rouverte.
+            </p>
+            
+    <form method="POST" action="/my-shop" enctype="multipart/form-data" class="flex flex-col gap-5 max-w-[640px]">
+        <input type="hidden" name="csrf_token" value="e0b12fcfdc34e20e72be0910f08cf20f9a326b5a5cd8f2750dc9c50b62e07de3">
+
+        <div>
+            <label class="block font-semibold text-[0.9rem] mb-2">Image de bannière</label>
+
+            
+            <label class="btn btn--primary cursor-pointer inline-block">
+                Ajouter une bannière                <input type="file" name="banner" accept="image/jpeg,image/png,image/webp" class="hidden">
+            </label>
+                    </div>
+
+        <div>
+            <label for="name" class="block font-semibold text-[0.9rem] mb-2">Nom de la boutique</label>
+            <input type="text" id="name" name="name" value="Atelier Lunarya" required
+                class="w-full border border-border rounded-md px-4 py-[0.6rem] font-main outline-none focus:border-primary">
+                    </div>
+
+        <div>
+            <label for="bio" class="block font-semibold text-[0.9rem] mb-2">Description</label>
+            <textarea id="bio" name="bio" rows="4"
+                class="w-full border border-border rounded-md px-4 py-[0.6rem] font-main outline-none focus:border-primary resize-y">Illustrations oniriques et poétiques, inspirées par la nature et les rêves.</textarea>
+        </div>
+
+        <div>
+            <label class="block font-semibold text-[0.9rem] mb-2">Styles artistiques</label>
+            <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                    <label class="inline-flex items-center gap-2 text-[0.9rem] cursor-pointer">
+                        <input type="checkbox" name="styles[]" value="anime"
+                                                        class="w-4 h-4 accent-primary cursor-pointer">
+                        Anime                    </label>
+                                    <label class="inline-flex items-center gap-2 text-[0.9rem] cursor-pointer">
+                        <input type="checkbox" name="styles[]" value="réaliste"
+                            checked                            class="w-4 h-4 accent-primary cursor-pointer">
+                        Réaliste                    </label>
+                                    <label class="inline-flex items-center gap-2 text-[0.9rem] cursor-pointer">
+                        <input type="checkbox" name="styles[]" value="chibi"
+                                                        class="w-4 h-4 accent-primary cursor-pointer">
+                        Chibi                    </label>
+                                    <label class="inline-flex items-center gap-2 text-[0.9rem] cursor-pointer">
+                        <input type="checkbox" name="styles[]" value="pixel art"
+                                                        class="w-4 h-4 accent-primary cursor-pointer">
+                        Pixel art                    </label>
+                                    <label class="inline-flex items-center gap-2 text-[0.9rem] cursor-pointer">
+                        <input type="checkbox" name="styles[]" value="concept art"
+                                                        class="w-4 h-4 accent-primary cursor-pointer">
+                        Concept art                    </label>
+                            </div>
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn--primary">Enregistrer</button>
+        </div>
+    </form>
+</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+    <div class="site-footer__inner">
+        <div class="site-footer__logo">
+            <a href="/">
+                <img src="/assets/images/site/logo-toile.png" alt="Toile">
+            </a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>Plateforme</h4>
+            <a href="/boutiques">Découvrir</a>
+            <a href="/boutiques">Prestations</a>
+            <a href="/comment-ca-marche">Comment ça marche ?</a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>À propos</h4>
+            <a href="/a-propos">Qui sommes-nous ?</a>
+            <a href="/become-artist">Devenir Artiste</a>
+            <a href="/contact">Contact</a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>Ressources</h4>
+            <a href="/aide">Aide et FAQ</a>
+            <a href="/cgu">Conditions d'utilisation</a>
+            <a href="/confidentialite">Politique de confidentialité</a>
+        </div>
+
+        <div class="site-footer__col">
+            <h4>Suivez-nous</h4>
+            <div class="site-footer__social">
+                <a href="#" aria-label="Instagram">
+                    <img src="/assets/images/reseaux/instagram.png" alt="Instagram">
+                </a>
+                <a href="#" aria-label="Facebook">
+                    <img src="/assets/images/reseaux/facebook.png" alt="Facebook">
+                </a>
+                <a href="#" aria-label="Pinterest">
+                    <img src="/assets/images/reseaux/pinterest.png" alt="Pinterest">
+                </a>
+                <a href="#" aria-label="TikTok">
+                    <img src="/assets/images/reseaux/tiktok.png" alt="TikTok">
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="site-footer__bottom">
+        <p>&copy; 2026 Toile — La marketplace de commissions artistiques.</p>
+    </div>
+</footer>
+</body>
+
+</html>

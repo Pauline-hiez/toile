@@ -48,4 +48,12 @@ class Favorite extends BaseModel
         $stmt->execute(['user_id' => $userId]);
         return $stmt->fetchAll();
     }
+
+    // Nombre d'utilisateurs ayant mis une boutique en favori
+    public function countByShopId(int $shopId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM favorite WHERE shop_id = :shop_id');
+        $stmt->execute(['shop_id' => $shopId]);
+        return (int) $stmt->fetchColumn();
+    }
 }
