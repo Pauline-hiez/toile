@@ -36,8 +36,7 @@ class ShopController
             'shop' => $shop,
             'errors' => [],
             'success' => null,
-            'pageTitle' => 'Ma boutique — Toile',
-        ], 'layouts/artist');
+        ]);
     }
 
     public function save(): void
@@ -56,28 +55,12 @@ class ShopController
             $errors['name'] = 'Le nom de la boutique doit faire au moins 3 caractères.';
         }
 
-        $bannerFilename = $existingShop['banner'] ?? null;
-
-        if (isset($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = \App\Core\FileUploader::upload(
-                $_FILES['banner'],
-                __DIR__ . '/../../public/uploads/banners'
-            );
-
-            if ($uploadResult['error'] !== null) {
-                $errors['banner'] = $uploadResult['error'];
-            } else {
-                $bannerFilename = $uploadResult['filename'];
-            }
-        }
-
         if (!empty($errors)) {
             $this->renderer->render('shop/manage', [
                 'shop' => $existingShop,
                 'errors' => $errors,
                 'success' => null,
-                'pageTitle' => 'Ma boutique — Toile',
-            ], 'layouts/artist');
+            ]);
             return;
         }
 
@@ -88,7 +71,6 @@ class ShopController
             'name' => $name,
             'bio' => $bio,
             'styles' => json_encode($styles),
-            'banner' => $bannerFilename,
         ];
 
         if ($existingShop === null) {
@@ -114,8 +96,7 @@ class ShopController
             'shop' => $shop,
             'errors' => [],
             'success' => 'Boutique enregistrée avec succès.',
-            'pageTitle' => 'Ma boutique — Toile',
-        ], 'layouts/artist');
+        ]);
     }
 
     public function show(string $slug): void

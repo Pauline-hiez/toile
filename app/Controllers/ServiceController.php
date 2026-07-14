@@ -26,14 +26,10 @@ class ServiceController
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
         $services = $this->serviceModel->findByShopId($shop['id']);
-        $options = $this->optionModel->findByShopId($shop['id']);
 
         $this->renderer->render('service/index', [
             'services' => $services,
-            'options' => $options,
-            'tab' => $_GET['tab'] ?? 'services',
-            'pageTitle' => 'Mes prestations — Toile',
-        ], 'layouts/artist');
+        ]);
     }
 
     public function create(): void
@@ -42,8 +38,7 @@ class ServiceController
             'service' => null,
             'options' => [],
             'errors' => [],
-            'pageTitle' => 'Nouvelle prestation — Toile',
-        ], 'layouts/artist');
+        ]);
     }
 
     public function edit(int $id): void
@@ -55,8 +50,7 @@ class ServiceController
             'service' => $service,
             'options' => $options,
             'errors' => [],
-            'pageTitle' => 'Modifier la prestation — Toile',
-        ], 'layouts/artist');
+        ]);
     }
 
     public function save(): void
@@ -96,8 +90,7 @@ class ServiceController
                 'service' => $existingService ?? $_POST,
                 'options' => $options,
                 'errors' => $errors,
-                'pageTitle' => 'Prestation — Toile',
-            ], 'layouts/artist');
+            ]);
             return;
         }
 
@@ -146,25 +139,6 @@ class ServiceController
         $this->serviceModel->delete($service['id']);
 
         header('Location: /my-services');
-        exit;
-    }
-
-    public function deleteOption(int $id): void
-    {
-        $option = $this->optionModel->findById($id);
-
-        if ($option === null) {
-            http_response_code(404);
-            echo 'Option introuvable.';
-            exit;
-        }
-
-        // Vérifie que l'option appartient bien à une prestation de la boutique de l'artiste connecté.
-        $this->getOwnedServiceOrFail($option['service_id']);
-
-        $this->optionModel->delete($option['id']);
-
-        header('Location: /my-services?tab=options');
         exit;
     }
 
