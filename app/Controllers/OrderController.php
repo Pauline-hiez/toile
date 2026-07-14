@@ -275,9 +275,22 @@ class OrderController
 
         $orders = $this->orderModel->findByShopId($shop['id']);
 
-        $this->renderer->render('order/received-orders', [
+        $pendingStatuses = ['quote_requested', 'pending'];
+        $pendingOrders = array_values(array_filter($orders, fn($o) => in_array($o['status'], $pendingStatuses, true)));
+
+        $stats = [
+            'total' => count($orders),
+            'in_progress' => count(array_filter($orders, fn($o) => $o['status'] === 'in_progress')),
+            'pending' => count($pendingOrders),
+        ];
+
+        $this->renderer->render('artist/orders', [
             'orders' => $orders,
-        ]);
+            'recentOrders' => array_slice($orders, 0, 3),
+            'stats' => $stats,
+            'pendingCount' => count($pendingOrders),
+            'pageTitle' => 'Mes commandes — Toile',
+        ], 'layouts/artist');
     }
 
     public function transition(int $id): void

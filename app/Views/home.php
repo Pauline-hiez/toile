@@ -94,7 +94,7 @@ $pageTitle = 'Accueil — Toile';
                         <?php if (!empty($styles)): ?>
                             <div class="flex flex-wrap gap-[0.35rem]">
                                 <?php foreach (array_slice($styles, 0, 3) as $style): ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted"><?= htmlspecialchars(ucfirst($style)) ?></span>
+                                    <span class="<?= \App\Core\Badge::classes('neutral') ?>"><?= htmlspecialchars(ucfirst($style)) ?></span>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>

@@ -144,7 +144,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 </thead>
                 <tbody>
                     <?php foreach ($orders as $order): ?>
-                        <?php $statusInfo = $statusLabels[$order['status']] ?? ['label' => $order['status'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted']; ?>
+                        <?php $statusInfo = $statusLabels[$order['status']] ?? ['label' => $order['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
                         <tr>
                             <td><input type="checkbox" class="js-row-select" value="<?= (int) $order['id'] ?>" aria-label="Sélectionner la commande #<?= (int) $order['id'] ?>"></td>
                             <td>#<?= (int) $order['id'] ?></td>

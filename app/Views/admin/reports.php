@@ -20,9 +20,9 @@ $typeLabels = [
 $reasonLabels = \App\Models\Report::reasonLabels();
 
 $statusLabels = [
-    'pending' => ['label' => 'En attente', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title'],
-    'resolved' => ['label' => 'Résolu', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-    'dismissed' => ['label' => 'Rejeté', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
+    'pending' => ['label' => 'En attente', 'class' => \App\Core\Badge::classes('warning')],
+    'resolved' => ['label' => 'Résolu', 'class' => \App\Core\Badge::classes('success')],
+    'dismissed' => ['label' => 'Rejeté', 'class' => \App\Core\Badge::classes('neutral')],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -113,7 +113,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 </thead>
                 <tbody>
                     <?php foreach ($reports as $report): ?>
-                        <?php $statusInfo = $statusLabels[$report['status']] ?? ['label' => $report['status'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted']; ?>
+                        <?php $statusInfo = $statusLabels[$report['status']] ?? ['label' => $report['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
                         <tr>
                             <td><input type="checkbox" class="js-row-select" value="<?= (int) $report['id'] ?>" aria-label="Sélectionner le signalement #<?= (int) $report['id'] ?>"></td>
                             <td><?= sprintf('SIG-%04d', $report['id']) ?></td>

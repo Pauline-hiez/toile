@@ -25,10 +25,11 @@ class PortfolioController
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
         $images = $this->portfolioModel->findByShopId($shop['id']);
 
-        $this->renderer->render('portfolio/index', [
+        $this->renderer->render('artist/portfolio', [
             'images' => $images,
             'error' => null,
-        ]);
+            'pageTitle' => 'Mon portfolio — Toile',
+        ], 'layouts/artist');
     }
 
     public function upload(): void
@@ -38,10 +39,11 @@ class PortfolioController
         $files = $_FILES['images'] ?? null;
 
         if ($files === null || empty($files['name'][0])) {
-            $this->renderer->render('portfolio/index', [
+            $this->renderer->render('artist/portfolio', [
                 'images' => $this->portfolioModel->findByShopId($shop['id']),
                 'error' => 'Aucune image sélectionnée.',
-            ]);
+                'pageTitle' => 'Mon portfolio — Toile',
+            ], 'layouts/artist');
             return;
         }
 
@@ -73,10 +75,11 @@ class PortfolioController
             ]);
         }
 
-        $this->renderer->render('portfolio/index', [
+        $this->renderer->render('artist/portfolio', [
             'images' => $this->portfolioModel->findByShopId($shop['id']),
             'error' => !empty($errors) ? implode(' ', $errors) : null,
-        ]);
+            'pageTitle' => 'Mon portfolio — Toile',
+        ], 'layouts/artist');
     }
 
     public function delete(int $id): void

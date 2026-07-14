@@ -95,13 +95,13 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 
                         <span class="absolute top-2 left-2">
                             <?php if ($shop['is_banned']): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger">Suspendue</span>
+                                <span class="<?= \App\Core\Badge::classes('danger') ?>">Suspendue</span>
                             <?php elseif ($shop['is_open']): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success">Ouverte</span>
+                                <span class="<?= \App\Core\Badge::classes('success') ?>">Ouverte</span>
                             <?php elseif (!$shop['plan_selected']): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente de choix</span>
+                                <span class="<?= \App\Core\Badge::classes('warning') ?>">En attente de choix</span>
                             <?php else: ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">Fermée</span>
+                                <span class="<?= \App\Core\Badge::classes('warning') ?>">Fermée</span>
                             <?php endif; ?>
                         </span>
 
@@ -122,7 +122,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                         <?php if (!empty($styles)): ?>
                             <div class="flex flex-wrap gap-[0.35rem] mb-3">
                                 <?php foreach ($styles as $style): ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted"><?= htmlspecialchars(ucfirst($style)) ?></span>
+                                    <span class="<?= \App\Core\Badge::classes('neutral') ?>"><?= htmlspecialchars(ucfirst($style)) ?></span>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>

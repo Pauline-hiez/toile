@@ -131,9 +131,9 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                                 <td><?= (int) $artist['service_count'] ?></td>
                                 <td>
                                     <?php if ($artist['is_open']): ?>
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success">Actif</span>
+                                        <span class="<?= \App\Core\Badge::classes('success') ?>">Actif</span>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente</span>
+                                        <span class="<?= \App\Core\Badge::classes('warning') ?>">En attente</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -172,7 +172,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                     </thead>
                     <tbody>
                         <?php foreach ($recentOrders as $order): ?>
-                            <?php $statusInfo = $orderStatusLabels[$order['status']] ?? ['label' => $order['status'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted']; ?>
+                            <?php $statusInfo = $orderStatusLabels[$order['status']] ?? ['label' => $order['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
                             <tr>
                                 <td>#<?= (int) $order['id'] ?></td>
                                 <td><?= htmlspecialchars($order['client_name']) ?></td>

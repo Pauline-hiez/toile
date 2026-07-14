@@ -14,9 +14,9 @@
  */
 
 $roleLabels = [
-    'user' => ['label' => 'Utilisateur', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
-    'artist' => ['label' => 'Artiste', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-    'admin' => ['label' => 'Admin', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
+    'user' => ['label' => 'Utilisateur', 'class' => \App\Core\Badge::classes('neutral')],
+    'artist' => ['label' => 'Artiste', 'class' => \App\Core\Badge::classes('success')],
+    'admin' => ['label' => 'Admin', 'class' => \App\Core\Badge::classes('info')],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -130,7 +130,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 <tbody>
                     <?php foreach ($users as $user): ?>
                         <?php
-                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'];
+                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => \App\Core\Badge::classes('neutral')];
                         $isSelf = $user['id'] === $_SESSION['user_id'];
                         $shopSlug = $shopSlugsByUserId[$user['id']] ?? null;
                         ?>
@@ -154,9 +154,9 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                             <td><span class="<?= $roleInfo['class'] ?>"><?= htmlspecialchars($roleInfo['label']) ?></span></td>
                             <td>
                                 <?php if ($user['is_banned']): ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger">Suspendu</span>
+                                    <span class="<?= \App\Core\Badge::classes('danger') ?>">Suspendu</span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success">Actif</span>
+                                    <span class="<?= \App\Core\Badge::classes('success') ?>">Actif</span>
                                 <?php endif; ?>
                             </td>
                             <td><?= \App\Core\FrenchDate::format('d MMM y', $user['created_at']) ?></td>

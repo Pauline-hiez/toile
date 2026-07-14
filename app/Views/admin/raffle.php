@@ -21,10 +21,10 @@ $typeLabels = [
 ];
 
 $statusLabels = [
-    'entered' => ['label' => 'Inscrit', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
-    'selected' => ['label' => 'Gagnant', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-    'not_selected' => ['label' => 'Non retenu', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
-    'cancelled' => ['label' => 'Annulé', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger'],
+    'entered' => ['label' => 'Inscrit', 'class' => \App\Core\Badge::classes('info')],
+    'selected' => ['label' => 'Gagnant', 'class' => \App\Core\Badge::classes('success')],
+    'not_selected' => ['label' => 'Non retenu', 'class' => \App\Core\Badge::classes('neutral')],
+    'cancelled' => ['label' => 'Annulé', 'class' => \App\Core\Badge::classes('danger')],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -164,7 +164,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 </thead>
                 <tbody>
                     <?php foreach ($entries as $entry): ?>
-                        <?php $statusInfo = $statusLabels[$entry['status']] ?? ['label' => $entry['status'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted']; ?>
+                        <?php $statusInfo = $statusLabels[$entry['status']] ?? ['label' => $entry['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
                         <tr>
                             <td><?= htmlspecialchars($entry['username']) ?></td>
                             <td><a href="/boutiques/<?= htmlspecialchars($entry['shop_slug']) ?>"><?= htmlspecialchars($entry['shop_name']) ?></a></td>

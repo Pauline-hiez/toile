@@ -13,9 +13,9 @@
  */
 
 $statusLabels = [
-    'active' => ['label' => 'En cours', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-    'past_due' => ['label' => 'En attente', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title'],
-    'cancelled' => ['label' => 'Expiré', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger'],
+    'active' => ['label' => 'En cours', 'class' => \App\Core\Badge::classes('success')],
+    'past_due' => ['label' => 'En attente', 'class' => \App\Core\Badge::classes('warning')],
+    'cancelled' => ['label' => 'Expiré', 'class' => \App\Core\Badge::classes('danger')],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -120,7 +120,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                         $isFree = $sub['plan_name'] === 'Commission';
                         $isExpired = !$isFree && $sub['status'] === 'active' && strtotime($sub['current_period_end']) <= time();
                         $statusKey = $isExpired ? 'cancelled' : $sub['status'];
-                        $statusInfo = $statusLabels[$statusKey] ?? ['label' => $sub['status'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'];
+                        $statusInfo = $statusLabels[$statusKey] ?? ['label' => $sub['status'], 'class' => \App\Core\Badge::classes('neutral')];
                         ?>
                         <tr>
                             <td><input type="checkbox" class="js-row-select" value="<?= (int) $sub['id'] ?>" aria-label="Sélectionner l'abonnement de <?= htmlspecialchars($sub['shop_name']) ?>"></td>

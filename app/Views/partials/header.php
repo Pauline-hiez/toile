@@ -82,9 +82,10 @@
                                     <a href="/boutiques/<?= htmlspecialchars($userShop['slug']) ?>">Ma boutique</a>
                                 <?php endif; ?>
                             <?php elseif (($_SESSION['user_role'] ?? '') === 'artist'): ?>
+                                <a href="/my-dashboard">Mon espace</a>
                                 <a href="/profile">Profil</a>
                                 <?php if ($userShop): ?>
-                                    <a href="/boutiques/<?= htmlspecialchars($userShop['slug']) ?>">Voir ma boutique</a>
+                                    <a href="/my-shop">Ma boutique</a>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <a href="/profile">Profil</a>
