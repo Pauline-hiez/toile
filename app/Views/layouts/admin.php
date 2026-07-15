@@ -40,12 +40,12 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
 
 $navItems = [
     ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard.png', 'match' => 'exact'],
-    ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users.png', 'match' => 'prefix'],
-    ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'artiste.png', 'match' => 'prefix'],
+    ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'utilisateurs.png', 'match' => 'prefix'],
+    ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'boutique.png', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'commandes.png', 'match' => 'prefix'],
-    ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'commissions.png', 'match' => 'prefix'],
-    ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'abonnements.png', 'match' => 'prefix'],
-    ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'avertissements.png', 'match' => 'prefix'],
+    ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'abonnements.png', 'match' => 'prefix'],
+    ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'tirage.png', 'match' => 'prefix'],
+    ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'signalements.png', 'match' => 'prefix'],
     ['label' => 'Paramètres', 'href' => '/admin/settings', 'icon' => 'parametres.png', 'match' => 'prefix'],
 ];
 ?>
@@ -140,15 +140,15 @@ $navItems = [
                         || ($item['match'] === 'prefix' && str_starts_with($currentPath, $item['href']));
                     ?>
                     <a href="<?= htmlspecialchars($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?> flex items-center gap-3 px-5 py-[0.45rem] text-ink no-underline text-[0.9rem] font-medium rounded-sm mx-2 my-[0.1rem] transition-colors hover:bg-primary-light hover:text-primary">
-                        <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-7 h-7 object-contain shrink-0">
+                        <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-9 h-9 object-contain shrink-0">
                         <?= htmlspecialchars($item['label']) ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
         </aside>
 
-        <div id="adminSidebarIllustration" class="fixed left-0 bottom-[-40px] z-[110] pointer-events-none">
-            <img src="/assets/images/decor/pot.png" alt="" class="block w-[260px] h-auto">
+        <div id="adminSidebarIllustration" class="fixed left-5 bottom-[-35px] z-[110] pointer-events-none">
+            <img src="/assets/images/decor/pot.png" alt="" class="block w-[210px] h-auto">
         </div>
 
         <div id="adminMain" class="ml-[220px] flex-1 flex flex-col min-h-screen">

@@ -29,46 +29,46 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commandes.png" alt="">
+    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commandes.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
         <div class="text-[0.8rem] text-muted font-medium">Commandes totales</div>
         <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commandes.png" alt="">
+    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commandes-attente.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['pending'], 0, ',', ' ') ?></div>
         <div class="text-[0.8rem] text-muted font-medium">En attente</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commandes.png" alt="">
+    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commandes-cours.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['in_progress'], 0, ',', ' ') ?></div>
         <div class="text-[0.8rem] text-muted font-medium">En cours</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commandes.png" alt="">
+    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commandes-terminees.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['completed'], 0, ',', ' ') ?></div>
         <div class="text-[0.8rem] text-muted font-medium">Terminées</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/avertissements.png" alt="">
+    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commandes-annulees.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['cancelled'], 0, ',', ' ') ?></div>
         <div class="text-[0.8rem] text-muted font-medium">Annulées</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commissions.png" alt="">
+    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commissions.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['total_revenue'] / 100, 2, ',', ' ') ?>€</div>
         <div class="text-[0.8rem] text-muted font-medium">Revenu total</div>
         <div class="text-[0.75rem] text-success">↗ +<?= number_format($stats['new_revenue_this_week'] / 100, 2, ',', ' ') ?>€ cette semaine</div>
     </div>
 
-    <a href="/admin/orders?archived=only" class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]" title="Voir les commandes archivées">
-        <svg class="w-[52px] h-[52px] object-contain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary-muted);">
+    <a href="/admin/orders?archived=only" class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]" title="Voir les commandes archivées">
+        <svg class="w-[88px] h-[88px] object-contain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary-muted);">
             <rect x="3" y="4" width="18" height="4" rx="1"></rect>
             <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"></path>
             <line x1="10" y1="12" x2="14" y2="12"></line>

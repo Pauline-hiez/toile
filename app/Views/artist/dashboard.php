@@ -35,7 +35,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
     </div>
 
     <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
+        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/utilisateurs.png" alt="">
         <div class="text-[1.75rem] font-bold text-primary leading-none"><?= (int) $stats['client_count'] ?></div>
         <div class="text-[0.8rem] text-muted font-medium">Clients</div>
         <div class="text-[0.75rem] text-success">↗ +<?= (int) $stats['new_clients'] ?> cette semaine</div>

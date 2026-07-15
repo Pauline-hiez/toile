@@ -27,10 +27,10 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/my-dashboard', PHP_URL_PAT
 
 $navItems = [
     ['label' => 'Dashboard', 'href' => '/my-dashboard', 'icon' => 'dashboard.png', 'match' => 'exact'],
-    ['label' => 'Mon profil', 'href' => '/profile', 'icon' => 'new-user.png', 'match' => 'exact'],
-    ['label' => 'Mes commandes', 'href' => '/commandes-recues', 'icon' => 'commande.png', 'match' => 'prefix'],
-    ['label' => 'Mes prestations', 'href' => '/my-services', 'icon' => 'pro.png', 'match' => 'prefix'],
-    ['label' => 'Portfolio', 'href' => '/my-portfolio', 'icon' => 'create.png', 'match' => 'prefix'],
+    ['label' => 'Mon profil', 'href' => '/profile', 'icon' => 'profile.png', 'match' => 'exact'],
+    ['label' => 'Mes commandes', 'href' => '/commandes-recues', 'icon' => 'commandes.png', 'match' => 'prefix'],
+    ['label' => 'Mes prestations', 'href' => '/my-services', 'icon' => 'prestations.png', 'match' => 'prefix'],
+    ['label' => 'Portfolio', 'href' => '/my-portfolio', 'icon' => 'portfolio.png', 'match' => 'prefix'],
     ['label' => 'Ma boutique', 'href' => '/my-shop', 'icon' => 'boutique.png', 'match' => 'exact'],
 ];
 ?>
@@ -74,21 +74,21 @@ $navItems = [
             <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[120px] h-auto mx-auto">
         </a>
 
-        <nav id="artistSidebarNav" class="flex flex-row min-[900px]:flex-col flex-wrap gap-1 pt-2 min-[900px]:py-4 min-[900px]:overflow-y-auto min-[900px]:min-h-0">
+        <nav id="artistSidebarNav" class="flex flex-row min-[900px]:flex-col flex-wrap min-[900px]:flex-nowrap gap-1 pt-2 min-[900px]:py-4 min-[900px]:overflow-y-auto min-[900px]:min-h-0 min-[900px]:shrink-0">
             <?php foreach ($navItems as $item): ?>
                 <?php
                 $isActive = ($item['match'] === 'exact' && $currentPath === $item['href'])
                     || ($item['match'] === 'prefix' && str_starts_with($currentPath, $item['href']));
                 ?>
                 <a href="<?= htmlspecialchars($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?> flex items-center gap-3 px-5 py-[0.45rem] text-ink no-underline text-[0.9rem] font-medium rounded-sm mx-2 my-[0.1rem] transition-colors hover:bg-primary-light hover:text-primary">
-                    <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-7 h-7 object-contain shrink-0">
+                    <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-9 h-9 object-contain shrink-0">
                     <?= htmlspecialchars($item['label']) ?>
                 </a>
             <?php endforeach; ?>
         </nav>
 
         <div id="artistSidebarIllustration" class="hidden min-[900px]:block min-[900px]:shrink-0 mt-8 pointer-events-none">
-            <img src="/assets/images/decor/main.png?v=<?= filemtime(__DIR__ . '/../../../public/assets/images/decor/main.png') ?>" alt="" class="h-[280px] w-auto max-w-none object-contain">
+            <img src="/assets/images/decor/main.png?v=<?= filemtime(__DIR__ . '/../../../public/assets/images/decor/main.png') ?>" alt="" class="h-[190px] w-auto max-w-none object-contain">
         </div>
     </aside>
 

@@ -45,7 +45,7 @@ $statusLabels = \App\Models\Order::statusLabels();
             <?php foreach ($recentOrders as $order): ?>
                 <?php $statusInfo = $statusLabels[$order['status']] ?? ['label' => $order['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
                 <a href="/commandes/<?= $order['id'] ?>" class="flex items-center gap-4 p-3 border border-border rounded-md no-underline text-inherit transition-colors hover:border-primary">
-                    <img src="/assets/images/icones/commande.png" alt="" class="w-10 h-10 rounded-full object-contain bg-primary-light p-2 shrink-0">
+                    <img src="/assets/images/icones/commandes.png" alt="" class="w-10 h-10 rounded-full object-contain bg-primary-light p-2 shrink-0">
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-[0.95rem] text-ink"><?= htmlspecialchars($order['title']) ?></p>
                         <p class="text-[0.8rem] text-muted">
