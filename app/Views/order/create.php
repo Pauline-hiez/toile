@@ -23,6 +23,28 @@
         <?php endif; ?>
     </div>
 
+    <?php if (!empty($basesGrouped)): ?>
+        <h2>Précise ta demande</h2>
+        <?php if (isset($errors['service_base'])): ?>
+            <p style="color: red;"><?= htmlspecialchars($errors['service_base']) ?></p>
+        <?php endif; ?>
+        <?php foreach ($basesGrouped as $category => $categoryBases): ?>
+            <div>
+                <strong><?= htmlspecialchars($category) ?></strong><br>
+                <?php foreach ($categoryBases as $base): ?>
+                    <label>
+                        <input
+                            type="radio"
+                            name="service_base[<?= htmlspecialchars($category) ?>]"
+                            value="<?= $base['id'] ?>"
+                            required>
+                        <?= htmlspecialchars($base['label']) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
     <?php if (!empty($options)): ?>
         <h2>Options</h2>
         <?php foreach ($options as $option): ?>

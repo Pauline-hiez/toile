@@ -10,7 +10,7 @@ class ShopSubscription extends BaseModel
     public function findActiveByShopId(int $shopId): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT ss.*, sp.name AS plan_name, sp.commission_rate
+            "SELECT ss.*, sp.name AS plan_name, sp.commission_rate, sp.max_options_per_service
             FROM shop_subscription ss
             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
             WHERE ss.shop_id = :shop_id
@@ -68,6 +68,17 @@ class ShopSubscription extends BaseModel
             return (float) $subscription['commission_rate'];
         }
         return (float) ($_ENV['DEFAULT_COMMISSION_RATE'] ?? 10.0);
+    }
+
+    /**
+     * Nombre max d'options (et d'éléments de base) par prestation selon
+     * le plan actuel de la boutique — 2 par défaut (palier gratuit) si
+     * aucun abonnement actif.
+     */
+    public function getMaxOptionsPerService(int $shopId): int
+    {
+        $subscription = $this->findActiveByShopId($shopId);
+        return $subscription !== null ? (int) $subscription['max_options_per_service'] : 2;
     }
 
     /**

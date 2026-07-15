@@ -72,6 +72,7 @@ CREATE TABLE service (
 
     title VARCHAR(150) NOT NULL,
     description TEXT NULL,
+    image VARCHAR(255) NULL,
 
     base_price INT NOT NULL,
 
@@ -99,6 +100,31 @@ CREATE TABLE service_option (
     extra_price INT NOT NULL,
 
     CONSTRAINT fk_service_option_service
+        FOREIGN KEY (service_id) REFERENCES service(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : service_base
+-- Éléments de base d'une prestation : choix purement descriptifs côté
+-- client (ex. catégorie "Style" → "Réaliste"/"Illustration"/"Caricature"),
+-- regroupés par catégorie librement nommée par l'artiste. Un seul choix
+-- par catégorie côté client (comportement radio par groupe). Pas de
+-- prix — sert à préciser le cahier des charges (format, style,
+-- matériaux...), en plus des options payantes de service_option.
+-- -----------------------------------------------------
+CREATE TABLE service_base (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    service_id INT NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT '',
+
+    label VARCHAR(150) NOT NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_service_base_service
         FOREIGN KEY (service_id) REFERENCES service(id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -149,6 +175,31 @@ CREATE TABLE orders (
 
     CONSTRAINT fk_order_service
         FOREIGN KEY (service_id) REFERENCES service(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : order_service_base
+-- Cases à cocher (service_base) sélectionnées par le client sur une
+-- commande. Le libellé est dupliqué (snapshot) pour que l'historique de
+-- la commande reste lisible même si l'artiste modifie ou supprime la
+-- case ensuite (service_base_id passe alors à NULL).
+-- -----------------------------------------------------
+CREATE TABLE order_service_base (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    order_id INT NOT NULL,
+    service_base_id INT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT '',
+    label VARCHAR(150) NOT NULL,
+
+    CONSTRAINT fk_order_service_base_order
+        FOREIGN KEY (order_id) REFERENCES orders(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_order_service_base_base
+        FOREIGN KEY (service_base_id) REFERENCES service_base(id)
         ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

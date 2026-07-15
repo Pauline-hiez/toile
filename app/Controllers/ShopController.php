@@ -135,7 +135,15 @@ class ShopController
             exit;
         }
 
-        $services = $this->serviceModel->findActiveByShopId($shop['id']);
+        // Mode aperçu : réservé au propriétaire de la boutique, permet de
+        // voir le rendu de ses prestations même inactives (non visibles
+        // publiquement) via le bouton "Voir" de /my-services.
+        $isOwner = isset($_SESSION['user_id']) && $_SESSION['user_id'] === (int) $shop['user_id'];
+        $previewMode = $isOwner && isset($_GET['preview']);
+
+        $services = $previewMode
+            ? $this->serviceModel->findByShopId($shop['id'])
+            : $this->serviceModel->findActiveByShopId($shop['id']);
         $portfolioImages = $this->portfolioModel->findByShopId($shop['id']);
         $ratingStats = $this->reviewModel->getShopRatingStats($shop['id']);
         $isFavorite = isset($_SESSION['user_id'])
@@ -150,6 +158,7 @@ class ShopController
             'portfolioImages' => $portfolioImages,
             'ratingStats' => $ratingStats,
             'isFavorite' => $isFavorite,
+            'previewMode' => $previewMode,
             'pageTitle' => htmlspecialchars($shop['name']) . ' — Toile',
         ]);
     }

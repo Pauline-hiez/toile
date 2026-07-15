@@ -9,6 +9,7 @@
  * @var array{average: float, count: int} $ratingStats
  * @var bool $isFavorite
  * @var array|null $artist
+ * @var bool $previewMode Aperçu propriétaire : affiche aussi les prestations inactives.
  */
 $pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
 ?>
@@ -76,8 +77,14 @@ $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
 <?php else: ?>
     <ul>
         <?php foreach ($services as $service): ?>
-            <li>
+            <li id="service-<?= $service['id'] ?>">
+                <?php if (!empty($service['image'])): ?>
+                    <img src="/uploads/services/<?= htmlspecialchars($service['image']) ?>" alt="" style="width: 160px; height: 213px; object-fit: cover; display: block;">
+                <?php endif; ?>
                 <strong><?= htmlspecialchars($service['title']) ?></strong>
+                <?php if ($previewMode && !$service['is_active']): ?>
+                    <em>(inactive — non visible publiquement)</em>
+                <?php endif; ?>
                 — à partir de <?= number_format($service['base_price'] / 100, 2) ?> €
                 — délai estimé : <?= $service['delivery_days'] ?> jours
                 <?php if (!empty($service['description'])): ?>

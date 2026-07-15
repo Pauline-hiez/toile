@@ -139,6 +139,14 @@ $router->map('POST', '/my-services/options/[i:id]/delete', [
     ],
 ]);
 
+$router->map('POST', '/my-services/bases/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'deleteBase'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Portfolio
 $router->map('GET', '/my-portfolio', [
     'controller' => ['App\Controllers\PortfolioController', 'index'],
