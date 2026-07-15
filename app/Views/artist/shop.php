@@ -89,7 +89,7 @@ $bannerShapeRatio = '579 / 226';
         <div>
             <label for="name" class="block font-semibold text-[0.9rem] mb-2">Nom de la boutique</label>
             <input type="text" id="name" name="name" value="<?= htmlspecialchars($shop['name'] ?? '') ?>" required
-                class="w-full border border-border rounded-md px-4 py-[0.6rem] font-main outline-none focus:border-primary">
+                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
             <?php if (isset($errors['name'])): ?>
                 <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['name']) ?></p>
             <?php endif; ?>

@@ -146,7 +146,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                             <summary class="list-none cursor-pointer p-1 rounded-sm text-muted flex items-center transition-colors hover:text-primary hover:bg-primary-light [&::-webkit-details-marker]:hidden" title="Traiter le signalement">
                                                 <img src="/assets/images/icones/modifier.png" alt="Traiter">
                                             </summary>
-                                            <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-sm [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
+                                            <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-full [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
                                                 <?php if (!empty($report['message'])): ?>
                                                     <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.6rem; max-width: 220px;">
                                                         « <?= nl2br(htmlspecialchars($report['message'])) ?> »

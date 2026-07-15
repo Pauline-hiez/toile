@@ -163,7 +163,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <summary class="list-none cursor-pointer p-1 rounded-sm text-muted flex items-center transition-colors hover:text-primary hover:bg-primary-light [&::-webkit-details-marker]:hidden" title="<?= $shop['is_open'] ? 'Désactiver' : 'Activer' ?> la boutique">
                                         <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                     </summary>
-                                    <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-sm [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
+                                    <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-full [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
                                         <form method="POST" action="/admin/shops/<?= $shop['id'] ?>/toggle">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
                                             <label>Statut de la boutique</label>

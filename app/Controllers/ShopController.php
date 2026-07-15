@@ -8,6 +8,7 @@ use App\Models\Review;
 use App\Models\Service;
 use App\Models\PortfolioImage;
 use App\Models\Favorite;
+use App\Models\User;
 
 class ShopController
 {
@@ -17,6 +18,7 @@ class ShopController
     private Service $serviceModel;
     private PortfolioImage $portfolioModel;
     private Favorite $favoriteModel;
+    private User $userModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -26,6 +28,7 @@ class ShopController
         $this->serviceModel = new Service();
         $this->portfolioModel = new PortfolioImage();
         $this->favoriteModel = new Favorite();
+        $this->userModel = new User();
     }
 
     public function manage(): void
@@ -138,9 +141,11 @@ class ShopController
         $isFavorite = isset($_SESSION['user_id'])
             ? $this->favoriteModel->isFavorite($_SESSION['user_id'], $shop['id'])
             : false;
+        $artist = $this->userModel->findById($shop['user_id']);
 
         $this->renderer->render('shop/show', [
             'shop' => $shop,
+            'artist' => $artist,
             'services' => $services,
             'portfolioImages' => $portfolioImages,
             'ratingStats' => $ratingStats,

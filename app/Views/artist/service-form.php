@@ -27,7 +27,7 @@ $rows[] = ['label' => '', 'extra_price' => ''];
         <div>
             <label for="title" class="block font-semibold text-[0.9rem] mb-2">Titre</label>
             <input type="text" id="title" name="title" value="<?= htmlspecialchars($service['title'] ?? '') ?>" required
-                class="w-full border border-border rounded-md px-4 py-[0.6rem] font-main outline-none focus:border-primary">
+                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
             <?php if (isset($errors['title'])): ?>
                 <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['title']) ?></p>
             <?php endif; ?>
@@ -44,7 +44,7 @@ $rows[] = ['label' => '', 'extra_price' => ''];
                 <label for="base_price" class="block font-semibold text-[0.9rem] mb-2">Prix de base (€)</label>
                 <input type="number" id="base_price" name="base_price" step="0.01" min="0"
                     value="<?= isset($service['base_price']) ? number_format($service['base_price'] / 100, 2, '.', '') : '' ?>" required
-                    class="w-full border border-border rounded-md px-4 py-[0.6rem] font-main outline-none focus:border-primary">
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
                 <?php if (isset($errors['base_price'])): ?>
                     <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['base_price']) ?></p>
                 <?php endif; ?>
@@ -54,7 +54,7 @@ $rows[] = ['label' => '', 'extra_price' => ''];
                 <label for="delivery_days" class="block font-semibold text-[0.9rem] mb-2">Délai de livraison (jours)</label>
                 <input type="number" id="delivery_days" name="delivery_days" min="1"
                     value="<?= htmlspecialchars($service['delivery_days'] ?? '') ?>" required
-                    class="w-full border border-border rounded-md px-4 py-[0.6rem] font-main outline-none focus:border-primary">
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
                 <?php if (isset($errors['delivery_days'])): ?>
                     <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['delivery_days']) ?></p>
                 <?php endif; ?>
@@ -74,10 +74,10 @@ $rows[] = ['label' => '', 'extra_price' => ''];
                 <?php foreach ($rows as $option): ?>
                     <div class="flex gap-3">
                         <input type="text" name="option_label[]" placeholder="Ex : Couleur" value="<?= htmlspecialchars($option['label']) ?>"
-                            class="flex-1 border border-border rounded-md px-4 py-[0.5rem] font-main outline-none focus:border-primary">
+                            class="flex-1 border border-border rounded-full px-4 py-[0.35rem] font-main outline-none focus:border-primary">
                         <input type="number" name="option_price[]" step="0.01" min="0" placeholder="Supplément en €"
                             value="<?= $option['extra_price'] !== '' ? number_format($option['extra_price'] / 100, 2, '.', '') : '' ?>"
-                            class="w-[160px] border border-border rounded-md px-4 py-[0.5rem] font-main outline-none focus:border-primary">
+                            class="w-[160px] border border-border rounded-full px-4 py-[0.35rem] font-main outline-none focus:border-primary">
                     </div>
                 <?php endforeach; ?>
             </div>

@@ -26,7 +26,7 @@
             <div>
                 <label for="site_name" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Nom du site</label>
                 <input type="text" id="site_name" name="site_name" value="<?= htmlspecialchars($settings['site_name'] ?? 'Toile') ?>" required
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-family: var(--font-main);">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
             </div>
 
             <div>
@@ -38,7 +38,7 @@
             <div>
                 <label for="contact_email" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Email de contact</label>
                 <input type="email" id="contact_email" name="contact_email" value="<?= htmlspecialchars($settings['contact_email'] ?? '') ?>"
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-family: var(--font-main);">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
             </div>
 
             <div>
@@ -99,7 +99,7 @@
             <div>
                 <label for="<?= $key ?>" style="display: block; font-weight: 600; margin-bottom: 0.4rem;"><?= $label ?></label>
                 <input type="url" id="<?= $key ?>" name="<?= $key ?>" value="<?= htmlspecialchars($settings[$key] ?? '') ?>" placeholder="https://..."
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-family: var(--font-main);">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
             </div>
         <?php endforeach; ?>
 
@@ -122,13 +122,13 @@
                 <label for="raffle_price" style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem;">Prix du ticket (€)</label>
                 <input type="number" id="raffle_price" name="raffle_price" step="0.01" min="0"
                     value="<?= number_format((int) ($settings['raffle_price'] ?? 500) / 100, 2, '.', '') ?>"
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.35rem 0.75rem;">
             </div>
             <div>
                 <label for="raffle_max_winners" style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem;">Nombre de gagnants</label>
                 <input type="number" id="raffle_max_winners" name="raffle_max_winners" min="1"
                     value="<?= (int) ($settings['raffle_max_winners'] ?? 10) ?>"
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.35rem 0.75rem;">
             </div>
         </div>
 
@@ -138,13 +138,13 @@
                 <label for="raffle_homepage_price" style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem;">Prix du ticket (€)</label>
                 <input type="number" id="raffle_homepage_price" name="raffle_homepage_price" step="0.01" min="0"
                     value="<?= number_format((int) ($settings['raffle_homepage_price'] ?? 700) / 100, 2, '.', '') ?>"
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.35rem 0.75rem;">
             </div>
             <div>
                 <label for="raffle_homepage_winners" style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem;">Nombre de gagnants</label>
                 <input type="number" id="raffle_homepage_winners" name="raffle_homepage_winners" min="1"
                     value="<?= (int) ($settings['raffle_homepage_winners'] ?? 5) ?>"
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;">
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.35rem 0.75rem;">
             </div>
         </div>
 

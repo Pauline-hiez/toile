@@ -8,12 +8,17 @@
  * @var array $portfolioImages
  * @var array{average: float, count: int} $ratingStats
  * @var bool $isFavorite
+ * @var array|null $artist
  */
 $pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
 ?>
 
 <?php if (!empty($shop['banner'])): ?>
     <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" class="w-full aspect-[579/226] object-cover shop-banner-shape">
+<?php endif; ?>
+
+<?php if (!empty($artist['avatar'])): ?>
+    <img src="/uploads/avatars/<?= htmlspecialchars($artist['avatar']) ?>" alt="<?= htmlspecialchars($shop['name']) ?>" class="relative -mt-10 ml-6 w-20 aspect-[463/431] object-cover avatar-shape">
 <?php endif; ?>
 
 <h1><?= htmlspecialchars($shop['name']) ?></h1>

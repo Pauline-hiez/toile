@@ -205,6 +205,17 @@ body::before {
     mask-repeat: no-repeat;
 }
 
+/* ---- Avatar en forme déchirée ---- */
+
+.avatar-shape {
+    -webkit-mask-image: url('/assets/images/decor/crop-avatar.png');
+    mask-image: url('/assets/images/decor/crop-avatar.png');
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
 /* ---- Barre de recherche ---- */
 
 .search-bar {
