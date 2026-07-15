@@ -257,6 +257,8 @@ CREATE TABLE portfolio_image (
     shop_id INT NOT NULL,
 
     filename VARCHAR(255) NOT NULL,
+    position INT NOT NULL DEFAULT 0,
+    label VARCHAR(100) NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

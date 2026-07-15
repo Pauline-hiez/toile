@@ -10,7 +10,7 @@ class ShopSubscription extends BaseModel
     public function findActiveByShopId(int $shopId): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT ss.*, sp.name AS plan_name, sp.commission_rate, sp.max_options_per_service
+            "SELECT ss.*, sp.name AS plan_name, sp.commission_rate, sp.max_options_per_service, sp.max_portfolio_images
             FROM shop_subscription ss
             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
             WHERE ss.shop_id = :shop_id
@@ -79,6 +79,16 @@ class ShopSubscription extends BaseModel
     {
         $subscription = $this->findActiveByShopId($shopId);
         return $subscription !== null ? (int) $subscription['max_options_per_service'] : 2;
+    }
+
+    /**
+     * Nombre max d'images de portfolio selon le plan actuel de la
+     * boutique — 5 par défaut (palier gratuit) si aucun abonnement actif.
+     */
+    public function getMaxPortfolioImages(int $shopId): int
+    {
+        $subscription = $this->findActiveByShopId($shopId);
+        return $subscription !== null ? (int) $subscription['max_portfolio_images'] : 5;
     }
 
     /**

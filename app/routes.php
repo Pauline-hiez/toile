@@ -164,6 +164,22 @@ $router->map('POST', '/my-portfolio/upload', [
     ],
 ]);
 
+$router->map('POST', '/my-portfolio/reorder', [
+    'controller' => ['App\Controllers\PortfolioController', 'reorder'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-portfolio/[i:id]/label', [
+    'controller' => ['App\Controllers\PortfolioController', 'updateLabel'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 $router->map('POST', '/my-portfolio/[i:id]/delete', [
     'controller' => ['App\Controllers\PortfolioController', 'delete'],
     'middlewares' => [
