@@ -33,35 +33,35 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <a href="/admin/subscriptions?plan=Commission" class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]" title="Voir les boutiques sur la formule gratuite">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/abonnements.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['commission'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Formule Commission</div>
+    <a href="/admin/subscriptions?plan=Commission" class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary" title="Voir les boutiques sur la formule gratuite">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/abonnements.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['commission'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Formule Commission</div>
     </a>
 
-    <a href="/admin/subscriptions?plan=Essentiel" class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]" title="Voir les boutiques en formule Essentiel">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/abonnements.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['essentiel'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Formule Essentiel</div>
+    <a href="/admin/subscriptions?plan=Essentiel" class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary" title="Voir les boutiques en formule Essentiel">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/abonnements.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['essentiel'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Formule Essentiel</div>
     </a>
 
-    <a href="/admin/subscriptions?plan=Pro" class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]" title="Voir les boutiques en formule Pro">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/choisir-abonnement.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['pro'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Formule Pro</div>
+    <a href="/admin/subscriptions?plan=Pro" class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary" title="Voir les boutiques en formule Pro">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/choisir-abonnement.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['pro'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Formule Pro</div>
     </a>
 
-    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/abonnement-attente.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['pending_choice'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">En attente de choix</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/abonnement-attente.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['pending_choice'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">En attente de choix</div>
         <div class="text-[0.75rem] text-success">Boutiques pas encore ouvertes</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/commissions.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['mrr'] / 100, 2, ',', ' ') ?>€</div>
-        <div class="text-[0.8rem] text-muted font-medium">Revenus mensuels</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/commissions.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['mrr'] / 100, 2, ',', ' ') ?>€</div>
+        <div class="font-cursive text-[0.9rem] text-success">Revenus mensuels</div>
     </div>
 </div>
 

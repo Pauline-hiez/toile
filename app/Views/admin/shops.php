@@ -27,30 +27,30 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/creer-boutique.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Boutiques créées</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/creer-boutique.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Boutiques créées</div>
         <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/boutique-attente.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['pending'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">En attente de choix</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique-attente.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['pending'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">En attente de choix</div>
         <div class="text-[0.75rem] text-success">Formule d'abonnement pas encore choisie</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/boutique-ouverte.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Boutiques ouvertes</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique-ouverte.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Boutiques ouvertes</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-4 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[88px] h-[88px] object-contain" src="/assets/images/icones/boutique-suspendue.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Boutiques suspendues</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique-suspendue.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Boutiques suspendues</div>
     </div>
 </div>
 

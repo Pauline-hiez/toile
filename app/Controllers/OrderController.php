@@ -286,7 +286,6 @@ class OrderController
 
         $this->renderer->render('artist/orders', [
             'orders' => $orders,
-            'recentOrders' => array_slice($orders, 0, 3),
             'stats' => $stats,
             'pendingCount' => count($pendingOrders),
             'pageTitle' => 'Mes commandes — Toile',

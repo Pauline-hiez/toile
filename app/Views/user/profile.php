@@ -23,14 +23,14 @@ $pageTitle = 'Mon profil — Toile';
 
 <?php if ($isArtist): ?>
     <div class="grid grid-cols-1 min-[481px]:grid-cols-2 gap-4 mb-8">
-        <div class="bg-white border border-border rounded-md p-5 text-center shadow-sm">
-            <div class="text-[0.85rem] text-muted font-medium mb-2">Inscrit depuis le</div>
-            <div class="font-cursive text-[1.9rem] font-semibold text-ink"><?= \App\Core\FrenchDate::format('dd/MM/y', $user['created_at']) ?></div>
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= \App\Core\FrenchDate::format('dd/MM/y', $user['created_at']) ?></div>
+            <div class="font-cursive text-[0.9rem] text-success">Inscrit depuis le</div>
         </div>
 
-        <div class="bg-white border border-border rounded-md p-5 text-center shadow-sm">
-            <div class="text-[0.85rem] text-muted font-medium mb-2">Abonnement</div>
-            <div class="font-cursive text-[1.9rem] font-semibold text-ink mb-2"><?= $subscription !== null ? htmlspecialchars($subscription['plan_name']) : 'Aucun' ?></div>
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $subscription !== null ? htmlspecialchars($subscription['plan_name']) : 'Aucun' ?></div>
+            <div class="font-cursive text-[0.9rem] text-success mb-2">Abonnement</div>
             <a href="/my-subscription" class="text-[0.8rem] text-primary font-medium no-underline hover:underline">Gérer mon abonnement →</a>
         </div>
     </div>

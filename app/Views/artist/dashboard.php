@@ -20,24 +20,24 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
 <?php endif; ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commandes.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= (int) $stats['order_count'] ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Commandes</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/commandes.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= (int) $stats['order_count'] ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Commandes</div>
         <div class="text-[0.75rem] text-success">↗ +<?= (int) $stats['new_orders'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/favoris.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= (int) $stats['favorite_count'] ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Favoris</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/favoris.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= (int) $stats['favorite_count'] ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Favoris</div>
         <div class="text-[0.75rem] text-success">↗ +<?= (int) $stats['new_favorites'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/utilisateurs.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= (int) $stats['client_count'] ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Clients</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/utilisateurs.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= (int) $stats['client_count'] ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Clients</div>
         <div class="text-[0.75rem] text-success">↗ +<?= (int) $stats['new_clients'] ?> cette semaine</div>
     </div>
 </div>
