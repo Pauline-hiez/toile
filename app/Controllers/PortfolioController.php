@@ -29,6 +29,8 @@ class PortfolioController
             'images' => $images,
             'error' => null,
             'pageTitle' => 'Mon portfolio — Toile',
+            'pageHeading' => 'Portfolio',
+            'pageSubtitle' => "Partage tes réalisations avec tes clients.",
         ], 'layouts/artist');
     }
 
@@ -43,6 +45,8 @@ class PortfolioController
                 'images' => $this->portfolioModel->findByShopId($shop['id']),
                 'error' => 'Aucune image sélectionnée.',
                 'pageTitle' => 'Mon portfolio — Toile',
+                'pageHeading' => 'Portfolio',
+                'pageSubtitle' => "Partage tes réalisations avec tes clients.",
             ], 'layouts/artist');
             return;
         }
@@ -79,6 +83,8 @@ class PortfolioController
             'images' => $this->portfolioModel->findByShopId($shop['id']),
             'error' => !empty($errors) ? implode(' ', $errors) : null,
             'pageTitle' => 'Mon portfolio — Toile',
+            'pageHeading' => 'Portfolio',
+            'pageSubtitle' => "Partage tes réalisations avec tes clients.",
         ], 'layouts/artist');
     }
 

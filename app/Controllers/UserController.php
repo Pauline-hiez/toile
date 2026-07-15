@@ -54,6 +54,8 @@ class UserController
             'isArtist' => $context['isArtist'],
             'subscription' => $context['subscription'],
             'pageTitle' => 'Mon profil — Toile',
+            'pageHeading' => 'Mon profil',
+            'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
         ], $context['layout']);
     }
 
@@ -93,6 +95,8 @@ class UserController
                 'isArtist' => $context['isArtist'],
                 'subscription' => $context['subscription'],
                 'pageTitle' => 'Mon profil — Toile',
+                'pageHeading' => 'Mon profil',
+                'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
             ], $context['layout']);
             return;
         }
@@ -111,6 +115,8 @@ class UserController
             'isArtist' => $context['isArtist'],
             'subscription' => $context['subscription'],
             'pageTitle' => 'Mon profil — Toile',
+            'pageHeading' => 'Mon profil',
+            'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
         ], $context['layout']);
     }
 
@@ -144,6 +150,8 @@ class UserController
                 'isArtist' => $context['isArtist'],
                 'subscription' => $context['subscription'],
                 'pageTitle' => 'Mon profil — Toile',
+                'pageHeading' => 'Mon profil',
+                'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
             ], $context['layout']);
             return;
         }
@@ -159,6 +167,8 @@ class UserController
             'isArtist' => $context['isArtist'],
             'subscription' => $context['subscription'],
             'pageTitle' => 'Mon profil — Toile',
+            'pageHeading' => 'Mon profil',
+            'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
         ], $context['layout']);
     }
 

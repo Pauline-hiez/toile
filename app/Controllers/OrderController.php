@@ -290,6 +290,8 @@ class OrderController
             'stats' => $stats,
             'pendingCount' => count($pendingOrders),
             'pageTitle' => 'Mes commandes — Toile',
+            'pageHeading' => 'Mes commandes',
+            'pageSubtitle' => "Consulte et gère les commandes reçues sur ta boutique.",
         ], 'layouts/artist');
     }
 

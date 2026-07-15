@@ -33,6 +33,8 @@ class ServiceController
             'options' => $options,
             'tab' => $_GET['tab'] ?? 'services',
             'pageTitle' => 'Mes prestations — Toile',
+            'pageHeading' => 'Mes prestations',
+            'pageSubtitle' => "Gère les prestations et options que tu proposes.",
         ], 'layouts/artist');
     }
 
@@ -43,6 +45,8 @@ class ServiceController
             'options' => [],
             'errors' => [],
             'pageTitle' => 'Nouvelle prestation — Toile',
+            'pageHeading' => 'Nouvelle prestation',
+            'pageSubtitle' => "Renseigne les informations de ta prestation.",
         ], 'layouts/artist');
     }
 
@@ -56,6 +60,8 @@ class ServiceController
             'options' => $options,
             'errors' => [],
             'pageTitle' => 'Modifier la prestation — Toile',
+            'pageHeading' => 'Modifier la prestation',
+            'pageSubtitle' => "Mets à jour les informations de ta prestation.",
         ], 'layouts/artist');
     }
 
@@ -97,6 +103,8 @@ class ServiceController
                 'options' => $options,
                 'errors' => $errors,
                 'pageTitle' => 'Prestation — Toile',
+                'pageHeading' => $existingService !== null ? 'Modifier la prestation' : 'Nouvelle prestation',
+                'pageSubtitle' => "Corrige les champs en erreur ci-dessous.",
             ], 'layouts/artist');
             return;
         }

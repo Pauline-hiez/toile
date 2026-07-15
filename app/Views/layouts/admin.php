@@ -102,7 +102,7 @@ $navItems = [
             }
         }
 
-        @media (max-height: 800px) {
+        @media (max-height: 650px) {
             #adminSidebarIllustration {
                 display: none;
             }
@@ -147,7 +147,7 @@ $navItems = [
             </nav>
         </aside>
 
-        <div id="adminSidebarIllustration" class="fixed left-0 bottom-0 z-[110] pointer-events-none">
+        <div id="adminSidebarIllustration" class="fixed left-0 bottom-[-40px] z-[110] pointer-events-none">
             <img src="/assets/images/decor/pot.png" alt="" class="block w-[260px] h-auto">
         </div>
 

@@ -13,7 +13,7 @@ $pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
 ?>
 
 <?php if (!empty($shop['banner'])): ?>
-    <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" style="width: 100%; max-height: 250px; object-fit: cover;">
+    <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" class="w-full aspect-[579/226] object-cover shop-banner-shape">
 <?php endif; ?>
 
 <h1><?= htmlspecialchars($shop['name']) ?></h1>

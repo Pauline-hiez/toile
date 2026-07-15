@@ -14,7 +14,15 @@ $currentStyles = $shop !== null && $shop['styles']
     : [];
 
 $availableStyles = \App\Models\Shop::STYLES;
+
+// Ratio de la forme découpée (public/assets/images/decor/crop-banniere.png,
+// 579×226 après recadrage à sa bounding box) — pilote à la fois le crop
+// interactif (Cropper.js) et l'affichage (classe .shop-banner-shape).
+$bannerShapeRatio = '579 / 226';
 ?>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
 <?php if ($success !== null): ?>
     <div class="bg-success-bg border border-success/25 text-success rounded-md px-5 py-[0.9rem] mb-6 text-[0.9rem]">
@@ -63,14 +71,16 @@ $availableStyles = \App\Models\Shop::STYLES;
         <div>
             <label class="block font-semibold text-[0.9rem] mb-2">Image de bannière</label>
 
-            <?php if (!empty($shop['banner'])): ?>
-                <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" class="w-full h-[200px] object-cover rounded-md border border-border mb-3">
-            <?php endif; ?>
+            <img id="bannerPreviewImg"
+                src="<?= !empty($shop['banner']) ? '/uploads/banners/' . htmlspecialchars($shop['banner']) : '' ?>"
+                alt="Bannière"
+                class="w-full aspect-[<?= $bannerShapeRatio ?>] object-cover shop-banner-shape mb-3 <?= empty($shop['banner']) ? 'hidden' : '' ?>">
 
             <label class="btn btn--primary cursor-pointer inline-block">
-                <?= !empty($shop['banner']) ? 'Modifier ma bannière' : 'Ajouter une bannière' ?>
-                <input type="file" name="banner" accept="image/jpeg,image/png,image/webp" class="hidden">
+                <span id="bannerUploadLabel"><?= !empty($shop['banner']) ? 'Modifier ma bannière' : 'Ajouter une bannière' ?></span>
+                <input type="file" id="bannerInput" name="banner" accept="image/jpeg,image/png,image/webp" class="hidden">
             </label>
+            <p class="text-[0.8rem] text-muted mt-1">Positionne ton image pour qu'elle s'adapte bien à la découpe.</p>
             <?php if (isset($errors['banner'])): ?>
                 <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['banner']) ?></p>
             <?php endif; ?>
@@ -110,3 +120,86 @@ $availableStyles = \App\Models\Shop::STYLES;
         </div>
     </form>
 </div>
+
+<div id="bannerCropModal" class="hidden fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-md p-5 max-w-[640px] w-full shadow-sm">
+        <h3 class="text-base font-semibold text-ink mb-1">Recadre ta bannière</h3>
+        <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour qu'elle s'adapte bien à la découpe (aperçu en filigrane).</p>
+
+        <div id="bannerCropWrapper" class="relative w-full aspect-[<?= $bannerShapeRatio ?>] bg-bg overflow-hidden mb-4">
+            <img id="bannerCropImage" src="" alt="" class="block max-w-full">
+            <img src="/assets/images/decor/crop-banniere.png" alt="" class="absolute inset-0 w-full h-full pointer-events-none opacity-90 z-10">
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button type="button" id="bannerCropCancel" class="btn btn--outline">Annuler</button>
+            <button type="button" id="bannerCropConfirm" class="btn btn--primary">Valider le cadrage</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var fileInput = document.getElementById('bannerInput');
+        var modal = document.getElementById('bannerCropModal');
+        var cropImage = document.getElementById('bannerCropImage');
+        var confirmBtn = document.getElementById('bannerCropConfirm');
+        var cancelBtn = document.getElementById('bannerCropCancel');
+        var previewImg = document.getElementById('bannerPreviewImg');
+        var cropper = null;
+        var objectUrl = null;
+
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files[0];
+            if (!file) return;
+
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            objectUrl = URL.createObjectURL(file);
+            cropImage.src = objectUrl;
+            modal.classList.remove('hidden');
+
+            cropImage.onload = function () {
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(cropImage, {
+                    aspectRatio: 579 / 226,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                    background: false,
+                });
+            };
+        });
+
+        function closeModal() {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            modal.classList.add('hidden');
+        }
+
+        cancelBtn.addEventListener('click', function () {
+            fileInput.value = '';
+            closeModal();
+        });
+
+        confirmBtn.addEventListener('click', function () {
+            if (!cropper) return;
+
+            cropper.getCroppedCanvas({ width: 1158, height: 452 }).toBlob(function (blob) {
+                var croppedFile = new File([blob], 'banner.png', { type: 'image/png' });
+                var dt = new DataTransfer();
+                dt.items.add(croppedFile);
+                fileInput.files = dt.files;
+
+                previewImg.src = URL.createObjectURL(blob);
+                previewImg.classList.remove('hidden');
+
+                closeModal();
+            }, 'image/png');
+        });
+    })();
+</script>

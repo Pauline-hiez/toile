@@ -37,6 +37,8 @@ class ShopController
             'errors' => [],
             'success' => null,
             'pageTitle' => 'Ma boutique — Toile',
+            'pageHeading' => 'Ma boutique',
+            'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
         ], 'layouts/artist');
     }
 
@@ -115,6 +117,8 @@ class ShopController
             'errors' => [],
             'success' => 'Boutique enregistrée avec succès.',
             'pageTitle' => 'Ma boutique — Toile',
+            'pageHeading' => 'Ma boutique',
+            'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
         ], 'layouts/artist');
     }
 
