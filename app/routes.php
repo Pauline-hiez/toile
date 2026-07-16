@@ -90,6 +90,14 @@ $router->map('POST', '/my-shop/toggle', [
     ],
 ]);
 
+$router->map('POST', '/my-shop/toggle-quotes', [
+    'controller' => ['App\Controllers\ShopController', 'toggleAcceptsQuotes'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Services (côté artiste)
 $router->map('GET', '/my-services', [
     'controller' => ['App\Controllers\ServiceController', 'index'],
@@ -131,6 +139,22 @@ $router->map('POST', '/my-services/[i:id]/delete', [
     ],
 ]);
 
+$router->map('POST', '/my-services/options/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'deleteOption'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-services/bases/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'deleteBase'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Portfolio
 $router->map('GET', '/my-portfolio', [
     'controller' => ['App\Controllers\PortfolioController', 'index'],
@@ -142,6 +166,22 @@ $router->map('GET', '/my-portfolio', [
 
 $router->map('POST', '/my-portfolio/upload', [
     'controller' => ['App\Controllers\PortfolioController', 'upload'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-portfolio/reorder', [
+    'controller' => ['App\Controllers\PortfolioController', 'reorder'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-portfolio/[i:id]/label', [
+    'controller' => ['App\Controllers\PortfolioController', 'updateLabel'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
@@ -186,6 +226,14 @@ $router->map('GET', '/mes-commandes', [
 ]);
 
 // Espace artiste
+$router->map('GET', '/my-dashboard', [
+    'controller' => ['App\Controllers\ArtistDashboardController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 $router->map('GET', '/commandes-recues', [
     'controller' => ['App\Controllers\OrderController', 'receivedOrders'],
     'middlewares' => [

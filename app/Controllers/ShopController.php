@@ -8,6 +8,7 @@ use App\Models\Review;
 use App\Models\Service;
 use App\Models\PortfolioImage;
 use App\Models\Favorite;
+use App\Models\User;
 
 class ShopController
 {
@@ -17,6 +18,7 @@ class ShopController
     private Service $serviceModel;
     private PortfolioImage $portfolioModel;
     private Favorite $favoriteModel;
+    private User $userModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -26,17 +28,38 @@ class ShopController
         $this->serviceModel = new Service();
         $this->portfolioModel = new PortfolioImage();
         $this->favoriteModel = new Favorite();
+        $this->userModel = new User();
     }
 
     public function manage(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
 
-        $this->renderer->render('shop/manage', [
+        $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
             'errors' => [],
             'success' => null,
-        ]);
+            'pageTitle' => 'Ma boutique — Toile',
+            'pageHeading' => 'Ma boutique',
+            'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
+        ], $this->shopStats($shop)), 'layouts/artist');
+    }
+
+    /**
+     * Note moyenne et nombre de favoris de la boutique, pour les tuiles
+     * stats de /my-shop — null si la boutique n'existe pas encore
+     * (premier passage sur la page avant toute sauvegarde).
+     */
+    private function shopStats(?array $shop): array
+    {
+        if ($shop === null) {
+            return ['ratingStats' => null, 'favoriteCount' => null];
+        }
+
+        return [
+            'ratingStats' => $this->reviewModel->getShopRatingStats($shop['id']),
+            'favoriteCount' => $this->favoriteModel->countByShopId($shop['id']),
+        ];
     }
 
     public function save(): void
@@ -46,31 +69,49 @@ class ShopController
         $name = trim($_POST['name'] ?? '');
         $bio = trim($_POST['bio'] ?? '');
 
-        // Styles envoyés comme plusieurs cases à cocher du même nom "styles[]".
-        $styles = $_POST['styles'] ?? [];
-
         $errors = [];
 
         if (mb_strlen($name) < 3) {
             $errors['name'] = 'Le nom de la boutique doit faire au moins 3 caractères.';
         }
 
+        $bannerFilename = $existingShop['banner'] ?? null;
+
+        if (isset($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = \App\Core\FileUploader::upload(
+                $_FILES['banner'],
+                __DIR__ . '/../../public/uploads/banners'
+            );
+
+            if ($uploadResult['error'] !== null) {
+                $errors['banner'] = $uploadResult['error'];
+            } else {
+                $bannerFilename = $uploadResult['filename'];
+            }
+        }
+
         if (!empty($errors)) {
-            $this->renderer->render('shop/manage', [
+            $this->renderer->render('artist/shop', array_merge([
                 'shop' => $existingShop,
                 'errors' => $errors,
                 'success' => null,
-            ]);
+                'pageTitle' => 'Ma boutique — Toile',
+                'pageHeading' => 'Ma boutique',
+                'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
+            ], $this->shopStats($existingShop)), 'layouts/artist');
             return;
         }
 
         // is_open n'est pas piloté par ce formulaire : une boutique ne
         // s'ouvre qu'après avoir choisi un abonnement (voir
         // SubscriptionController), puis se pilote via /my-shop/toggle.
+        // Les styles artistiques ne sont pas gérés par ce formulaire — ils
+        // seront choisis à la création de la boutique (à venir) et ne
+        // doivent pas être écrasés lors d'une simple mise à jour ici.
         $data = [
             'name' => $name,
             'bio' => $bio,
-            'styles' => json_encode($styles),
+            'banner' => $bannerFilename,
         ];
 
         if ($existingShop === null) {
@@ -92,11 +133,14 @@ class ShopController
 
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
 
-        $this->renderer->render('shop/manage', [
+        $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
             'errors' => [],
             'success' => 'Boutique enregistrée avec succès.',
-        ]);
+            'pageTitle' => 'Ma boutique — Toile',
+            'pageHeading' => 'Ma boutique',
+            'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
+        ], $this->shopStats($shop)), 'layouts/artist');
     }
 
     public function show(string $slug): void
@@ -109,19 +153,30 @@ class ShopController
             exit;
         }
 
-        $services = $this->serviceModel->findActiveByShopId($shop['id']);
+        // Mode aperçu : réservé au propriétaire de la boutique, permet de
+        // voir le rendu de ses prestations même inactives (non visibles
+        // publiquement) via le bouton "Voir" de /my-services.
+        $isOwner = isset($_SESSION['user_id']) && $_SESSION['user_id'] === (int) $shop['user_id'];
+        $previewMode = $isOwner && isset($_GET['preview']);
+
+        $services = $previewMode
+            ? $this->serviceModel->findByShopId($shop['id'])
+            : $this->serviceModel->findActiveByShopId($shop['id']);
         $portfolioImages = $this->portfolioModel->findByShopId($shop['id']);
         $ratingStats = $this->reviewModel->getShopRatingStats($shop['id']);
         $isFavorite = isset($_SESSION['user_id'])
             ? $this->favoriteModel->isFavorite($_SESSION['user_id'], $shop['id'])
             : false;
+        $artist = $this->userModel->findById($shop['user_id']);
 
         $this->renderer->render('shop/show', [
             'shop' => $shop,
+            'artist' => $artist,
             'services' => $services,
             'portfolioImages' => $portfolioImages,
             'ratingStats' => $ratingStats,
             'isFavorite' => $isFavorite,
+            'previewMode' => $previewMode,
             'pageTitle' => htmlspecialchars($shop['name']) . ' — Toile',
         ]);
     }
@@ -137,6 +192,22 @@ class ShopController
         }
 
         $this->shopModel->toggleOpen($shop['id']);
+
+        header('Location: /my-shop');
+        exit;
+    }
+
+    public function toggleAcceptsQuotes(): void
+    {
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        $this->shopModel->toggleAcceptsQuotes($shop['id']);
 
         header('Location: /my-shop');
         exit;

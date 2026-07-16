@@ -92,14 +92,14 @@ class Order extends BaseModel
     public static function statusLabels(): array
     {
         return [
-            'quote_requested' => ['label' => 'Devis demandé', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
-            'pending' => ['label' => 'En attente', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title'],
-            'accepted' => ['label' => 'Acceptée', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
-            'rejected' => ['label' => 'Refusée', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger'],
-            'in_progress' => ['label' => 'En cours', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
-            'delivered' => ['label' => 'Livrée', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
-            'completed' => ['label' => 'Terminée', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-            'cancelled' => ['label' => 'Annulée', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger'],
+            'quote_requested' => ['label' => 'Devis demandé', 'class' => \App\Core\Badge::classes('neutral')],
+            'pending' => ['label' => 'En attente', 'class' => \App\Core\Badge::classes('warning')],
+            'accepted' => ['label' => 'Acceptée', 'class' => \App\Core\Badge::classes('info')],
+            'rejected' => ['label' => 'Refusée', 'class' => \App\Core\Badge::classes('danger')],
+            'in_progress' => ['label' => 'En cours', 'class' => \App\Core\Badge::classes('info')],
+            'delivered' => ['label' => 'Livrée', 'class' => \App\Core\Badge::classes('info')],
+            'completed' => ['label' => 'Terminée', 'class' => \App\Core\Badge::classes('success')],
+            'cancelled' => ['label' => 'Annulée', 'class' => \App\Core\Badge::classes('danger')],
         ];
     }
 

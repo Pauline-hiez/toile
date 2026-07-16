@@ -14,9 +14,9 @@
  */
 
 $roleLabels = [
-    'user' => ['label' => 'Utilisateur', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
-    'artist' => ['label' => 'Artiste', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-    'admin' => ['label' => 'Admin', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
+    'user' => ['label' => 'Utilisateur', 'class' => \App\Core\Badge::classes('neutral')],
+    'artist' => ['label' => 'Artiste', 'class' => \App\Core\Badge::classes('success')],
+    'admin' => ['label' => 'Admin', 'class' => \App\Core\Badge::classes('info')],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -34,37 +34,37 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Utilisateurs</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/utilisateurs.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Utilisateurs</div>
         <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Utilisateurs actifs</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/users-actifs.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Utilisateurs actifs</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/users.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['new_this_week'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Nouveaux inscrits</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/new-users.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['new_this_week'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Nouveaux inscrits</div>
         <div class="text-[0.75rem] text-success">↗ <?= $stats['new_vs_prev_week'] >= 0 ? '+' : '' ?><?= $stats['new_vs_prev_week'] ?> vs semaine dernière</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/artiste.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['artists'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Artistes</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/artiste.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['artists'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Artistes</div>
         <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_artists_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/avertissements.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Suspendus</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/suspendus.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Suspendus</div>
     </div>
 </div>
 
@@ -130,7 +130,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 <tbody>
                     <?php foreach ($users as $user): ?>
                         <?php
-                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'];
+                        $roleInfo = $roleLabels[$user['role']] ?? ['label' => $user['role'], 'class' => \App\Core\Badge::classes('neutral')];
                         $isSelf = $user['id'] === $_SESSION['user_id'];
                         $shopSlug = $shopSlugsByUserId[$user['id']] ?? null;
                         ?>
@@ -154,9 +154,9 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                             <td><span class="<?= $roleInfo['class'] ?>"><?= htmlspecialchars($roleInfo['label']) ?></span></td>
                             <td>
                                 <?php if ($user['is_banned']): ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger">Suspendu</span>
+                                    <span class="<?= \App\Core\Badge::classes('danger') ?>">Suspendu</span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success">Actif</span>
+                                    <span class="<?= \App\Core\Badge::classes('success') ?>">Actif</span>
                                 <?php endif; ?>
                             </td>
                             <td><?= \App\Core\FrenchDate::format('d MMM y', $user['created_at']) ?></td>
@@ -178,7 +178,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                             <summary class="list-none cursor-pointer p-1 rounded-sm text-muted flex items-center transition-colors hover:text-primary hover:bg-primary-light [&::-webkit-details-marker]:hidden" title="Modifier le rôle">
                                                 <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                             </summary>
-                                            <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-sm [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
+                                            <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-full [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
                                                 <form method="POST" action="/admin/users/<?= $user['id'] ?>/role">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
                                                     <label for="role-<?= $user['id'] ?>">Changer le rôle</label>

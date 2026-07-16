@@ -21,10 +21,10 @@ $typeLabels = [
 ];
 
 $statusLabels = [
-    'entered' => ['label' => 'Inscrit', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-info-bg text-info'],
-    'selected' => ['label' => 'Gagnant', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success'],
-    'not_selected' => ['label' => 'Non retenu', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted'],
-    'cancelled' => ['label' => 'Annulé', 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger'],
+    'entered' => ['label' => 'Inscrit', 'class' => \App\Core\Badge::classes('info')],
+    'selected' => ['label' => 'Gagnant', 'class' => \App\Core\Badge::classes('success')],
+    'not_selected' => ['label' => 'Non retenu', 'class' => \App\Core\Badge::classes('neutral')],
+    'cancelled' => ['label' => 'Annulé', 'class' => \App\Core\Badge::classes('danger')],
 ];
 
 $totalPages = max(1, (int) ceil($total / $perPage));
@@ -42,34 +42,34 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/essentiel.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['entries_boutiques'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Inscrits — Boutiques (mois en cours)</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['entries_boutiques'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Inscrits — Boutiques (mois en cours)</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/abonnements.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['entries_homepage'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Inscrits — Accueil (semaine en cours)</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/accueil.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['entries_homepage'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Inscrits — Accueil (semaine en cours)</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/essentiel.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['winners_boutiques'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Gagnants — Boutiques (ce mois-ci)</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['winners_boutiques'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Gagnants — Boutiques (ce mois-ci)</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/abonnements.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['winners_homepage'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Gagnants — Accueil (cette semaine)</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/accueil.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['winners_homepage'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Gagnants — Accueil (cette semaine)</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/commissions.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format(($stats['revenue_boutiques'] + $stats['revenue_homepage']) / 100, 2, ',', ' ') ?>€</div>
-        <div class="text-[0.8rem] text-muted font-medium">Recettes attendues (inscriptions en cours)</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/commissions.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format(($stats['revenue_boutiques'] + $stats['revenue_homepage']) / 100, 2, ',', ' ') ?>€</div>
+        <div class="font-cursive text-[0.9rem] text-success">Recettes attendues (inscriptions en cours)</div>
     </div>
 </div>
 
@@ -77,7 +77,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     <h2 class="text-base font-semibold mb-5 text-ink">Prochains tirages</h2>
     <div class="flex flex-col gap-4">
         <div class="flex items-center gap-5 py-4 px-5 border border-border rounded-md bg-bg flex-wrap">
-            <img class="w-14 h-14 object-contain shrink-0" src="/assets/images/icones/essentiel.png" alt="">
+            <img class="w-14 h-14 object-contain shrink-0" src="/assets/images/icones/boutique.png" alt="">
             <div class="flex-1 min-w-[180px]">
                 <div class="text-[0.8rem] text-muted font-semibold uppercase tracking-[0.03em]">Vitrine boutiques — 10 gagnants</div>
                 <div class="text-[1.05rem] font-semibold text-ink"><?= \App\Core\FrenchDate::format('d MMMM y', $nextBoutiquesDraw) ?> à 00h00</div>
@@ -86,7 +86,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         </div>
 
         <div class="flex items-center gap-5 py-4 px-5 border border-border rounded-md bg-bg flex-wrap">
-            <img class="w-14 h-14 object-contain shrink-0" src="/assets/images/icones/abonnements.png" alt="">
+            <img class="w-14 h-14 object-contain shrink-0" src="/assets/images/icones/accueil.png" alt="">
             <div class="flex-1 min-w-[180px]">
                 <div class="text-[0.8rem] text-muted font-semibold uppercase tracking-[0.03em]">Page d'accueil — 5 gagnants</div>
                 <div class="text-[1.05rem] font-semibold text-ink"><?= \App\Core\FrenchDate::format('d MMMM y', $nextHomepageDraw) ?> à 00h00</div>
@@ -164,7 +164,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                 </thead>
                 <tbody>
                     <?php foreach ($entries as $entry): ?>
-                        <?php $statusInfo = $statusLabels[$entry['status']] ?? ['label' => $entry['status'], 'class' => 'inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted']; ?>
+                        <?php $statusInfo = $statusLabels[$entry['status']] ?? ['label' => $entry['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
                         <tr>
                             <td><?= htmlspecialchars($entry['username']) ?></td>
                             <td><a href="/boutiques/<?= htmlspecialchars($entry['shop_slug']) ?>"><?= htmlspecialchars($entry['shop_name']) ?></a></td>

@@ -27,30 +27,30 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="grid grid-cols-2 min-[481px]:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] min-[721px]:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 mb-8">
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/artiste.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Boutiques créées</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/creer-boutique.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['total'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Boutiques créées</div>
         <div class="text-[0.75rem] text-success">↗ +<?= $stats['new_this_week'] ?> cette semaine</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/artiste.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['pending'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">En attente de choix</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique-attente.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['pending'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">En attente de choix</div>
         <div class="text-[0.75rem] text-success">Formule d'abonnement pas encore choisie</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/artiste.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Boutiques ouvertes</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique-ouverte.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['active'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Boutiques ouvertes</div>
     </div>
 
-    <div class="bg-white border border-border rounded-md p-5 flex flex-col gap-[0.4rem] shadow-sm no-underline text-inherit transition-[border-color,box-shadow] duration-150 hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <img class="w-[52px] h-[52px] object-contain" src="/assets/images/icones/avertissements.png" alt="">
-        <div class="text-[1.75rem] font-bold text-primary leading-none"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
-        <div class="text-[0.8rem] text-muted font-medium">Boutiques suspendues</div>
+    <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm no-underline text-inherit max-w-[220px] transition-colors hover:border-primary">
+        <img class="w-20 h-20 object-contain mx-auto" src="/assets/images/icones/boutique-suspendue.png" alt="">
+        <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($stats['suspended'], 0, ',', ' ') ?></div>
+        <div class="font-cursive text-[0.9rem] text-success">Boutiques suspendues</div>
     </div>
 </div>
 
@@ -95,13 +95,13 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 
                         <span class="absolute top-2 left-2">
                             <?php if ($shop['is_banned']): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-danger-bg text-danger">Suspendue</span>
+                                <span class="<?= \App\Core\Badge::classes('danger') ?>">Suspendue</span>
                             <?php elseif ($shop['is_open']): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-success-bg text-success">Ouverte</span>
+                                <span class="<?= \App\Core\Badge::classes('success') ?>">Ouverte</span>
                             <?php elseif (!$shop['plan_selected']): ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">En attente de choix</span>
+                                <span class="<?= \App\Core\Badge::classes('warning') ?>">En attente de choix</span>
                             <?php else: ?>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-title-bg text-title">Fermée</span>
+                                <span class="<?= \App\Core\Badge::classes('warning') ?>">Fermée</span>
                             <?php endif; ?>
                         </span>
 
@@ -122,7 +122,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                         <?php if (!empty($styles)): ?>
                             <div class="flex flex-wrap gap-[0.35rem] mb-3">
                                 <?php foreach ($styles as $style): ?>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full border border-current text-[0.75rem] font-medium bg-border text-muted"><?= htmlspecialchars(ucfirst($style)) ?></span>
+                                    <span class="<?= \App\Core\Badge::classes('neutral') ?>"><?= htmlspecialchars(ucfirst($style)) ?></span>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
@@ -163,7 +163,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <summary class="list-none cursor-pointer p-1 rounded-sm text-muted flex items-center transition-colors hover:text-primary hover:bg-primary-light [&::-webkit-details-marker]:hidden" title="<?= $shop['is_open'] ? 'Désactiver' : 'Activer' ?> la boutique">
                                         <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                     </summary>
-                                    <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-sm [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
+                                    <div class="absolute top-full right-0 mt-[0.4rem] bg-white border border-border rounded-md shadow-sm p-3 min-w-[170px] z-30 [&_label]:block [&_label]:text-[0.75rem] [&_label]:text-muted [&_label]:mb-[0.35rem] [&_select]:w-full [&_select]:border [&_select]:border-border [&_select]:rounded-full [&_select]:px-2 [&_select]:py-[0.35rem] [&_select]:text-[0.85rem] [&_select]:font-main [&_select]:bg-bg">
                                         <form method="POST" action="/admin/shops/<?= $shop['id'] ?>/toggle">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
                                             <label>Statut de la boutique</label>

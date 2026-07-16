@@ -7,6 +7,8 @@ use App\Core\Renderer;
 use App\Models\Order;
 use App\Models\Service;
 use App\Models\ServiceOption;
+use App\Models\ServiceBase;
+use App\Models\OrderServiceBase;
 use App\Models\Shop;
 use App\Models\OrderMessage;
 use App\Models\Notification;
@@ -20,6 +22,8 @@ class OrderController
     private Order $orderModel;
     private Service $serviceModel;
     private ServiceOption $optionModel;
+    private ServiceBase $baseModel;
+    private OrderServiceBase $orderBaseModel;
     private Shop $shopModel;
     private OrderMessage $messageModel;
     private Notification $notificationModel;
@@ -33,6 +37,8 @@ class OrderController
         $this->orderModel = new Order();
         $this->serviceModel = new Service();
         $this->optionModel = new ServiceOption();
+        $this->baseModel = new ServiceBase();
+        $this->orderBaseModel = new OrderServiceBase();
         $this->shopModel = new Shop();
         $this->messageModel = new OrderMessage();
         $this->notificationModel = new Notification();
@@ -60,11 +66,13 @@ class OrderController
         }
 
         $options = $this->optionModel->findByServiceId($service['id']);
+        $basesGrouped = $this->baseModel->findByServiceIdGrouped($service['id']);
 
         $this->renderer->render('order/create', [
             'service' => $service,
             'shop' => $shop,
             'options' => $options,
+            'basesGrouped' => $basesGrouped,
             'errors' => [],
         ]);
     }
@@ -94,10 +102,14 @@ class OrderController
         }
 
         $options = $this->optionModel->findByServiceId($service['id']);
+        $basesGrouped = $this->baseModel->findByServiceIdGrouped($service['id']);
 
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $isQuote = isset($_POST['is_quote']);
+        // Ne fait confiance à la case "demander un devis" que si la
+        // boutique accepte les devis — évite qu'un client la force via une
+        // requête directe alors que order/create.php ne l'affiche même pas.
+        $isQuote = isset($_POST['is_quote']) && !empty($shop['accepts_quotes']);
         $selectedOptionIds = array_map('intval', $_POST['options'] ?? []);
 
         $errors = [];
@@ -110,11 +122,30 @@ class OrderController
             $errors['description'] = 'La description doit faire au moins 10 caractères.';
         }
 
+        // Éléments de base : choix purement descriptifs groupés par
+        // catégorie (format, style, matériaux...), sans impact sur le
+        // prix — un choix obligatoire par catégorie proposée.
+        $submittedBaseChoices = $_POST['service_base'] ?? [];
+        $selectedBaseIds = [];
+
+        foreach ($basesGrouped as $category => $categoryBases) {
+            $choiceId = isset($submittedBaseChoices[$category]) ? (int) $submittedBaseChoices[$category] : null;
+            $validIds = array_column($categoryBases, 'id');
+
+            if ($choiceId === null || !in_array($choiceId, $validIds, true)) {
+                $errors['service_base'] = 'Choisis une option pour chaque catégorie proposée.';
+                break;
+            }
+
+            $selectedBaseIds[] = $choiceId;
+        }
+
         if (!empty($errors)) {
             $this->renderer->render('order/create', [
                 'service' => $service,
                 'shop' => $shop,
                 'options' => $options,
+                'basesGrouped' => $basesGrouped,
                 'errors' => $errors,
                 'pageTitle' => 'Commander — Toile',
             ]);
@@ -142,6 +173,7 @@ class OrderController
                     'service' => $service,
                     'shop' => $shop,
                     'options' => $options,
+                    'basesGrouped' => $basesGrouped,
                     'errors' => $errors,
                     'pageTitle' => 'Commander — Toile',
                 ]);
@@ -149,6 +181,10 @@ class OrderController
             }
             $referenceFile = $result['filename'];
         }
+
+        // Aplatit les catégories pour retrouver catégorie + libellé par id
+        // (voir OrderServiceBase::createForOrder()).
+        $flatBases = array_merge(...array_values($basesGrouped ?: [[]]));
 
         // Si demande de devis, pas de paiement — on crée directement la commande.
         if ($isQuote) {
@@ -162,6 +198,8 @@ class OrderController
                 'status' => 'quote_requested',
                 'delivery_file' => $referenceFile,
             ]);
+
+            $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $flatBases);
 
             $this->notificationModel->notify(
                 $shop['user_id'],
@@ -206,6 +244,9 @@ class OrderController
             'delivery_file' => $referenceFile,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
         ];
+        // Stocké à part : ce n'est pas une colonne de orders, seulement
+        // utilisé après coup pour peupler order_service_base (voir confirm()).
+        $_SESSION['pending_order_base_ids'] = $selectedBaseIds;
         $this->renderer->render('order/payment', [
             'service' => $service,
             'shop' => $shop,
@@ -241,6 +282,12 @@ class OrderController
 
         $orderId = $this->orderModel->create($pendingOrder);
 
+        $selectedBaseIds = $_SESSION['pending_order_base_ids'] ?? [];
+        if (!empty($selectedBaseIds)) {
+            $bases = $this->baseModel->findByServiceId($pendingOrder['service_id']);
+            $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $bases);
+        }
+
         $this->notificationModel->notify(
             $pendingOrder['shop_id'],
             'new_order',
@@ -248,7 +295,7 @@ class OrderController
             '/commandes/' . $orderId
         );
 
-        unset($_SESSION['pending_order']);
+        unset($_SESSION['pending_order'], $_SESSION['pending_order_base_ids']);
 
         header('Location: /commandes/' . $orderId);
         exit;
@@ -275,9 +322,23 @@ class OrderController
 
         $orders = $this->orderModel->findByShopId($shop['id']);
 
-        $this->renderer->render('order/received-orders', [
+        $pendingStatuses = ['quote_requested', 'pending'];
+        $pendingOrders = array_values(array_filter($orders, fn($o) => in_array($o['status'], $pendingStatuses, true)));
+
+        $stats = [
+            'total' => count($orders),
+            'in_progress' => count(array_filter($orders, fn($o) => $o['status'] === 'in_progress')),
+            'pending' => count($pendingOrders),
+        ];
+
+        $this->renderer->render('artist/orders', [
             'orders' => $orders,
-        ]);
+            'stats' => $stats,
+            'pendingCount' => count($pendingOrders),
+            'pageTitle' => 'Mes commandes — Toile',
+            'pageHeading' => 'Mes commandes',
+            'pageSubtitle' => "Consulte et gère les commandes reçues sur ta boutique.",
+        ], 'layouts/artist');
     }
 
     public function transition(int $id): void
@@ -515,6 +576,7 @@ class OrderController
         $stepKeys = array_keys($timelineSteps);
         $currentIndex = array_search($order['status'], $stepKeys);
         $existingReview = $this->reviewModel->findByOrderId($order['id']);
+        $selectedBases = $this->orderBaseModel->findByOrderId($order['id']);
 
         $this->renderer->render('order/show', [
             'order' => $order,
@@ -525,6 +587,7 @@ class OrderController
             'stepKeys' => $stepKeys,
             'currentIndex' => $currentIndex,
             'existingReview' => $existingReview,
+            'selectedBases' => $selectedBases,
             'pageTitle' => 'Commande #' . $order['id'] . ' — Toile',
         ]);
     }

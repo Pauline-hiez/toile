@@ -37,6 +37,11 @@ use App\Core\OrderStatus; ?>
 
 <p>
     <strong>Prestation :</strong> <?= htmlspecialchars($order['service_title'] ?? $order['title']) ?><br>
+    <?php if (!empty($selectedBases)): ?>
+        <?php foreach ($selectedBases as $selectedBase): ?>
+            <strong><?= htmlspecialchars($selectedBase['category']) ?> :</strong> <?= htmlspecialchars($selectedBase['label']) ?><br>
+        <?php endforeach; ?>
+    <?php endif; ?>
     <strong>Boutique :</strong> <a href="/boutiques/<?= htmlspecialchars($order['shop_slug']) ?>"><?= htmlspecialchars($order['shop_name']) ?></a><br>
     <strong>Client :</strong> <?= htmlspecialchars($order['client_name']) ?><br>
     <strong>Prix total :</strong> <?= number_format($order['total_price'] / 100, 2) ?> €<br>
