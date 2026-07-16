@@ -69,12 +69,14 @@
         <?php endif; ?>
     </div>
 
-    <div>
-        <label>
-            <input type="checkbox" name="is_quote">
-            Je préfère demander un devis d'abord
-        </label>
-    </div>
+    <?php if (!empty($shop['accepts_quotes'])): ?>
+        <div>
+            <label>
+                <input type="checkbox" name="is_quote">
+                Je préfère demander un devis d'abord
+            </label>
+        </div>
+    <?php endif; ?>
 
     <h2>
         Total estimé :

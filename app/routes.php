@@ -90,6 +90,14 @@ $router->map('POST', '/my-shop/toggle', [
     ],
 ]);
 
+$router->map('POST', '/my-shop/toggle-quotes', [
+    'controller' => ['App\Controllers\ShopController', 'toggleAcceptsQuotes'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Services (côté artiste)
 $router->map('GET', '/my-services', [
     'controller' => ['App\Controllers\ServiceController', 'index'],

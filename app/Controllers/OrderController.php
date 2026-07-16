@@ -106,7 +106,10 @@ class OrderController
 
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $isQuote = isset($_POST['is_quote']);
+        // Ne fait confiance à la case "demander un devis" que si la
+        // boutique accepte les devis — évite qu'un client la force via une
+        // requête directe alors que order/create.php ne l'affiche même pas.
+        $isQuote = isset($_POST['is_quote']) && !empty($shop['accepts_quotes']);
         $selectedOptionIds = array_map('intval', $_POST['options'] ?? []);
 
         $errors = [];

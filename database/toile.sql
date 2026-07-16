@@ -50,6 +50,7 @@ CREATE TABLE shop (
     styles JSON NULL,
 
     is_open BOOLEAN NOT NULL DEFAULT FALSE,
+    accepts_quotes BOOLEAN NOT NULL DEFAULT TRUE,
     plan_selected BOOLEAN NOT NULL DEFAULT FALSE,
 
     monetization_type ENUM('subscription', 'commission') NOT NULL DEFAULT 'commission',

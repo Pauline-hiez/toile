@@ -87,15 +87,15 @@ $navItems = [
             <?php endforeach; ?>
         </nav>
 
-        <div id="artistSidebarIllustration" class="hidden min-[900px]:block min-[900px]:shrink-0 mt-8 pointer-events-none">
-            <img src="/assets/images/decor/main.png?v=<?= filemtime(__DIR__ . '/../../../public/assets/images/decor/main.png') ?>" alt="" class="h-[190px] w-auto max-w-none object-contain">
+        <div id="artistSidebarIllustration" class="hidden min-[900px]:block min-[900px]:shrink-0 mt-16 pointer-events-none">
+            <img src="/assets/images/decor/main.png?v=<?= filemtime(__DIR__ . '/../../../public/assets/images/decor/main.png') ?>" alt="" class="h-[240px] w-auto max-w-none object-contain">
         </div>
     </aside>
 
     <main>
         <div class="relative max-w-[1400px] mx-auto px-5 pt-6 pb-10 min-[641px]:px-10 min-[641px]:pt-8">
             <div class="min-[900px]:ml-[220px]">
-                <header class="flex items-center justify-between gap-6 pb-6 mb-8 border-b border-border flex-wrap max-[720px]:gap-3">
+                <header class="flex items-center justify-between gap-6 pb-6 mb-8 flex-wrap max-[720px]:gap-3">
                     <div class="min-w-0">
                         <h1 class="font-title text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Mon espace') ?></h1>
                         <?php if (!empty($pageSubtitle)): ?>

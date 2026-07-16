@@ -27,7 +27,7 @@ $bannerShapeRatio = '579 / 226';
 <?php endif; ?>
 
 <?php if ($shop !== null): ?>
-    <div class="grid grid-cols-1 min-[481px]:grid-cols-3 gap-4 mb-8">
+    <div class="grid grid-cols-2 min-[721px]:grid-cols-4 gap-4 mb-8">
         <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
             <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1">
                 <?= $ratingStats['count'] > 0 ? number_format($ratingStats['average'], 1) . ' ⭐' : '—' ?>
@@ -55,6 +55,17 @@ $bannerShapeRatio = '579 / 226';
                 <div class="font-cursive text-[0.9rem] text-success mb-2">Statut</div>
                 <a href="/my-subscription" class="text-[0.8rem] text-primary font-medium no-underline hover:underline">Choisir ma formule →</a>
             <?php endif; ?>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold <?= $shop['accepts_quotes'] ? 'text-success' : 'text-muted' ?> leading-none mb-1"><?= $shop['accepts_quotes'] ? 'Activés' : 'Désactivés' ?></div>
+            <div class="font-cursive text-[0.9rem] text-success mb-2">Devis</div>
+            <form method="POST" action="/my-shop/toggle-quotes">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+                <button type="submit" class="text-[0.8rem] text-primary font-medium bg-transparent border-0 cursor-pointer p-0 hover:underline">
+                    <?= $shop['accepts_quotes'] ? 'Désactiver les devis →' : 'Activer les devis →' ?>
+                </button>
+            </form>
         </div>
     </div>
 <?php endif; ?>

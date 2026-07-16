@@ -270,6 +270,12 @@ class Shop extends BaseModel
         return $stmt->execute(['id' => $id]);
     }
 
+    public function toggleAcceptsQuotes(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE shop SET accepts_quotes = NOT accepts_quotes WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
+
     /**
      * Boutiques mises en avant sur la page d'accueil ("Nos artistes du
      * jour") : priorité aux gagnantes du tirage au sort "page d'accueil"

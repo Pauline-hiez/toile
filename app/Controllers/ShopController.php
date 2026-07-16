@@ -197,6 +197,22 @@ class ShopController
         exit;
     }
 
+    public function toggleAcceptsQuotes(): void
+    {
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        $this->shopModel->toggleAcceptsQuotes($shop['id']);
+
+        header('Location: /my-shop');
+        exit;
+    }
+
     public function search(): void
     {
         $filters = [
