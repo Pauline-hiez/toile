@@ -35,14 +35,31 @@ class ShopController
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
 
-        $this->renderer->render('artist/shop', [
+        $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
             'errors' => [],
             'success' => null,
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], 'layouts/artist');
+        ], $this->shopStats($shop)), 'layouts/artist');
+    }
+
+    /**
+     * Note moyenne et nombre de favoris de la boutique, pour les tuiles
+     * stats de /my-shop — null si la boutique n'existe pas encore
+     * (premier passage sur la page avant toute sauvegarde).
+     */
+    private function shopStats(?array $shop): array
+    {
+        if ($shop === null) {
+            return ['ratingStats' => null, 'favoriteCount' => null];
+        }
+
+        return [
+            'ratingStats' => $this->reviewModel->getShopRatingStats($shop['id']),
+            'favoriteCount' => $this->favoriteModel->countByShopId($shop['id']),
+        ];
     }
 
     public function save(): void
@@ -51,9 +68,6 @@ class ShopController
 
         $name = trim($_POST['name'] ?? '');
         $bio = trim($_POST['bio'] ?? '');
-
-        // Styles envoyés comme plusieurs cases à cocher du même nom "styles[]".
-        $styles = $_POST['styles'] ?? [];
 
         $errors = [];
 
@@ -77,22 +91,26 @@ class ShopController
         }
 
         if (!empty($errors)) {
-            $this->renderer->render('artist/shop', [
+            $this->renderer->render('artist/shop', array_merge([
                 'shop' => $existingShop,
                 'errors' => $errors,
                 'success' => null,
                 'pageTitle' => 'Ma boutique — Toile',
-            ], 'layouts/artist');
+                'pageHeading' => 'Ma boutique',
+                'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
+            ], $this->shopStats($existingShop)), 'layouts/artist');
             return;
         }
 
         // is_open n'est pas piloté par ce formulaire : une boutique ne
         // s'ouvre qu'après avoir choisi un abonnement (voir
         // SubscriptionController), puis se pilote via /my-shop/toggle.
+        // Les styles artistiques ne sont pas gérés par ce formulaire — ils
+        // seront choisis à la création de la boutique (à venir) et ne
+        // doivent pas être écrasés lors d'une simple mise à jour ici.
         $data = [
             'name' => $name,
             'bio' => $bio,
-            'styles' => json_encode($styles),
             'banner' => $bannerFilename,
         ];
 
@@ -115,14 +133,14 @@ class ShopController
 
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
 
-        $this->renderer->render('artist/shop', [
+        $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
             'errors' => [],
             'success' => 'Boutique enregistrée avec succès.',
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], 'layouts/artist');
+        ], $this->shopStats($shop)), 'layouts/artist');
     }
 
     public function show(string $slug): void
