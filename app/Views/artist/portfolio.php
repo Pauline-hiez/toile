@@ -89,8 +89,9 @@ $entityLabel = 'images';
         <p class="text-muted text-[0.85rem] text-center py-6">Tu n'as pas encore d'image dans ton portfolio.</p>
     <?php else: ?>
         <input type="hidden" id="portfolioCsrfToken" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+        <input type="hidden" id="portfolioPageOffset" value="<?= $pageOffset ?>">
         <p class="text-[0.8rem] text-muted mb-3">Glisse-dépose une image pour changer son ordre d'affichage.</p>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4" id="portfolioGrid">
+        <div class="grid grid-cols-2 min-[481px]:grid-cols-3 min-[721px]:grid-cols-6 gap-4" id="portfolioGrid">
             <?php foreach ($images as $image): ?>
                 <div class="relative rounded-md overflow-hidden border border-border cursor-grab" draggable="true" data-image-id="<?= $image['id'] ?>">
                     <img src="/uploads/portfolio/<?= htmlspecialchars($image['filename']) ?>" alt="Image de portfolio" class="w-full aspect-square object-cover block pointer-events-none">
@@ -122,6 +123,8 @@ $entityLabel = 'images';
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+
+    <?php require __DIR__ . '/../components/pagination.php'; ?>
 </div>
 
 <script>
@@ -159,6 +162,7 @@ $entityLabel = 'images';
 
             var formData = new FormData();
             formData.append('csrf_token', document.getElementById('portfolioCsrfToken').value);
+            formData.append('offset', document.getElementById('portfolioPageOffset').value);
             ids.forEach(function (id) { formData.append('order[]', id); });
 
             fetch('/my-portfolio/reorder', { method: 'POST', body: formData });
