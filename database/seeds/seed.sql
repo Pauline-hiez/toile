@@ -10,7 +10,7 @@ VALUES (
     'client@test.com',
     'ClientTest',
     -- Mot de passe en clair pour ce hash : "password123"
-    '$2y$10$pUyfk4n0VLLlNVQ.WMyR9.PVwTl/v8b/8r3HmqsZcOEpr2gN4Q9c2',
+    '$2y$10$.GVXK21kHI8Qo9a70GcHQOd8OuzLFyRM4hDtz9VxonUfc8VaOXEwa',
     'user'
 );
 
@@ -19,7 +19,7 @@ INSERT INTO users (email, username, password_hash, role)
 VALUES (
     'artiste@test.com',
     'ArtisteTest',
-    '$2y$10$pUyfk4n0VLLlNVQ.WMyR9.PVwTl/v8b/8r3HmqsZcOEpr2gN4Q9c2',
+    '$2y$10$.GVXK21kHI8Qo9a70GcHQOd8OuzLFyRM4hDtz9VxonUfc8VaOXEwa',
     'artist'
 );
 
@@ -45,6 +45,6 @@ INSERT INTO users (email, username, password_hash, role)
 VALUES (
     'admin@test.com',
     'AdminTest',
-    '$2y$10$pUyfk4n0VLLlNVQ.WMyR9.PVwTl/v8b/8r3HmqsZcOEpr2gN4Q9c2',
+    '$2y$10$.GVXK21kHI8Qo9a70GcHQOd8OuzLFyRM4hDtz9VxonUfc8VaOXEwa',
     'admin'
 );

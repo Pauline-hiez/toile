@@ -5,17 +5,22 @@ namespace App\Controllers;
 use App\Core\Renderer;
 use App\Models\User;
 use App\Models\PasswordReset;
+use App\Models\RememberToken;
 use App\Core\GoogleAuth;
 
 class AuthController
 {
+    private const REMEMBER_COOKIE = 'remember_token';
+
     private Renderer $renderer;
     private User $userModel;
+    private RememberToken $rememberTokenModel;
 
     public function __construct(Renderer $renderer)
     {
         $this->renderer = $renderer;
         $this->userModel = new User();
+        $this->rememberTokenModel = new RememberToken();
     }
 
     /**
@@ -107,6 +112,7 @@ class AuthController
             $this->renderer->render('auth/login', [
                 'error' => 'Email ou mot de passe incorrect.',
             ]);
+            return;
         }
 
         if ($user['is_banned']) {
@@ -121,12 +127,42 @@ class AuthController
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_role'] = $user['role'];
 
+        if (isset($_POST['remember_me'])) {
+            $this->rememberMe($user['id']);
+        }
+
         header('Location: /');
         exit;
     }
 
+    /**
+     * Émet un jeton "se souvenir de moi" et le pose en cookie longue
+     * durée (30 jours), pour reconnecter automatiquement l'utilisateur
+     * tant que la session a expiré (voir bootstrap dans public/index.php).
+     */
+    private function rememberMe(int $userId): void
+    {
+        $token = $this->rememberTokenModel->issue($userId);
+
+        setcookie(
+            self::REMEMBER_COOKIE,
+            $token,
+            [
+                'expires' => time() + 30 * 86400,
+                'path' => '/',
+                'secure' => !empty($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]
+        );
+    }
+
     public function logout(): void
     {
+        if (isset($_SESSION['user_id'])) {
+            $this->rememberTokenModel->deleteByUserId($_SESSION['user_id']);
+        }
+
         $_SESSION = [];
 
         if (ini_get('session.use.cookies')) {
@@ -142,6 +178,8 @@ class AuthController
         }
 
         session_destroy();
+
+        setcookie(self::REMEMBER_COOKIE, '', ['expires' => time() - 3600, 'path' => '/']);
 
         header('Location: /');
         exit;

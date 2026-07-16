@@ -98,8 +98,8 @@
                 </div>
 
             <?php else: ?>
-                <a href="/login" class="btn btn--outline">Se connecter</a>
-                <a href="/register" class="btn btn--primary">S'inscrire</a>
+                <a href="/login" data-auth-open="login" class="btn btn--outline">Se connecter</a>
+                <a href="/register" data-auth-open="register" class="btn btn--primary">S'inscrire</a>
             <?php endif; ?>
         </div>
 
