@@ -349,6 +349,27 @@ CREATE TABLE password_reset (
 
 
 -- -----------------------------------------------------
+-- Table : remember_token
+-- "Se souvenir de moi" : jeton persistant (cookie longue durée). Seul le
+-- hash du jeton est stocké, le cookie envoyé au client contient la
+-- valeur en clair.
+-- -----------------------------------------------------
+CREATE TABLE remember_token (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+    token_hash VARCHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_remember_token_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
 -- Table : subscription_plan
 -- Les paliers d'abonnement (Commission gratuit, Essentiel, Pro).
 -- commission_rate  : taux prélevé sur chaque commande.

@@ -39,6 +39,13 @@ $siteFavicon = $settingModel->get('site_favicon');
     </main>
 
     <?php require __DIR__ . '/../partials/footer.php'; ?>
+
+    <?php if (!isset($_SESSION['user_id'])): ?>
+        <?php require __DIR__ . '/../components/auth-modal.php'; ?>
+        <script src="/assets/js/input-sparks.js"></script>
+        <script src="/assets/js/password-toggle.js"></script>
+        <script src="/assets/js/auth-modal.js"></script>
+    <?php endif; ?>
 </body>
 
 </html>

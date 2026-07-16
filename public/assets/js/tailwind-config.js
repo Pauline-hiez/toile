@@ -30,6 +30,16 @@ tailwind.config = {
             boxShadow: {
                 sm: '0 1px 3px rgba(0, 0, 0, 0.08)',
             },
+            keyframes: {
+                splash: {
+                    '0%': { opacity: '0', transform: 'scale(0.4) rotate(0deg)' },
+                    '35%': { opacity: '0.45', transform: 'scale(1.05) rotate(3deg)' },
+                    '100%': { opacity: '0', transform: 'scale(1.2) rotate(3deg)' },
+                },
+            },
+            animation: {
+                splash: 'splash 0.7s ease-out',
+            },
         },
     },
 };
