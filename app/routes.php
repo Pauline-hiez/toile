@@ -306,6 +306,13 @@ $router->map('GET', '/notifications', [
     ],
 ]);
 
+$router->map('POST', '/notifications/mark-read', [
+    'controller' => ['App\Controllers\NotificationController', 'markRead'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
 // Avis et commentaires
 $router->map('POST', '/commandes/[i:id]/review', [
     'controller' => ['App\Controllers\ReviewController', 'store'],

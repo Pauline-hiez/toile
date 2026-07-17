@@ -119,7 +119,7 @@ $navItems = [
                                 <?php if (!empty($currentArtist['avatar'])): ?>
                                     <img src="/uploads/avatars/<?= htmlspecialchars($currentArtist['avatar']) ?>" alt="Profil" class="w-[38px] h-[38px] rounded-full object-cover border-2 border-border">
                                 <?php else: ?>
-                                    <img src="/assets/images/icones/new-user.png" alt="Profil" class="w-[38px] h-[38px] rounded-full object-cover border-2 border-border">
+                                    <img src="/uploads/avatars/default.png" alt="Profil" class="w-[38px] h-[38px] rounded-full object-cover border-2 border-border">
                                 <?php endif; ?>
                                 <span class="max-[480px]:hidden">
                                     <strong class="block text-[0.85rem] font-semibold"><?= htmlspecialchars($currentArtist['username'] ?? 'Artiste') ?></strong>

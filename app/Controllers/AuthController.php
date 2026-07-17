@@ -59,6 +59,7 @@ class AuthController
             'username' => $username,
             'password_hash' => password_hash($password, PASSWORD_BCRYPT),
             'provider' => 'credentials',
+            'avatar' => 'default.png',
         ]);
 
         // Envoi un email de bienvenue
@@ -344,6 +345,7 @@ class AuthController
                 'provider_id' => $userInfo['id'],
                 'email_verified_at' => date('Y-m-d H:i:s'),
                 // L'email Google est déjà vérifié par Google.
+                'avatar' => 'default.png',
             ]);
 
             // Email de bienvenue

@@ -28,4 +28,17 @@ class NotificationController
             'pageTitle' => 'Notifications - Toile',
         ]);
     }
+
+    /**
+     * Marque toutes les notifications comme lues — appelé en AJAX à
+     * l'ouverture du menu déroulant du header (voir notif-dropdown.js).
+     * (POST /notifications/mark-read)
+     */
+    public function markRead(): void
+    {
+        $this->notificationModel->markAllAsRead($_SESSION['user_id']);
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+    }
 }

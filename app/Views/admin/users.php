@@ -145,7 +145,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <?php if (!empty($user['avatar'])): ?>
                                         <img class="w-9 h-9 rounded-full object-cover border border-border" src="/uploads/avatars/<?= htmlspecialchars($user['avatar']) ?>" alt="">
                                     <?php else: ?>
-                                        <img class="w-9 h-9 rounded-full object-cover border border-border" src="/assets/images/icones/new-user.png" alt="">
+                                        <img class="w-9 h-9 rounded-full object-cover border border-border" src="/uploads/avatars/default.png" alt="">
                                     <?php endif; ?>
                                     <?= htmlspecialchars($user['username']) ?>
                                 </div>

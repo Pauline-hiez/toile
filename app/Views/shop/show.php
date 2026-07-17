@@ -49,7 +49,7 @@ $renderStars = function (?float $rating, int $size = 14): string {
             <?php if (!empty($artist['avatar'])): ?>
                 <img src="/uploads/avatars/<?= htmlspecialchars($artist['avatar']) ?>" alt="<?= htmlspecialchars($shop['name']) ?>" class="w-56 min-[641px]:w-80 aspect-[463/431] object-cover avatar-shape border-4 border-white bg-bg shadow-sm shrink-0">
             <?php else: ?>
-                <img src="/assets/images/icones/new-user.png" alt="" class="w-56 min-[641px]:w-80 aspect-[463/431] object-cover avatar-shape border-4 border-white bg-bg shadow-sm shrink-0">
+                <img src="/uploads/avatars/default.png" alt="" class="w-56 min-[641px]:w-80 aspect-[463/431] object-cover avatar-shape border-4 border-white bg-bg shadow-sm shrink-0">
             <?php endif; ?>
 
             <div class="pb-1">
@@ -231,7 +231,7 @@ $renderStars = function (?float $rating, int $size = 14): string {
                                 <?php if (!empty($review['client_avatar'])): ?>
                                     <img src="/uploads/avatars/<?= htmlspecialchars($review['client_avatar']) ?>" alt="" class="w-8 h-8 rounded-full object-cover border border-border">
                                 <?php else: ?>
-                                    <img src="/assets/images/icones/new-user.png" alt="" class="w-8 h-8 rounded-full object-cover border border-border">
+                                    <img src="/uploads/avatars/default.png" alt="" class="w-8 h-8 rounded-full object-cover border border-border">
                                 <?php endif; ?>
 
                                 <div class="flex-1">

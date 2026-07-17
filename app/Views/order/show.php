@@ -87,11 +87,15 @@ $stepIcons = [
                 $isDone = $currentIndex !== false && $stepIndex < $currentIndex;
                 $ringClass = $isActive ? 'ring-2 ring-title' : ($isDone ? 'ring-2 ring-success' : '');
                 ?>
-                <div class="flex flex-col items-center shrink-0 min-w-[100px]">
+                <div class="flex flex-col items-center shrink-0 min-w-[130px]">
                     <div class="flex items-center w-full">
                         <span class="<?= $stepIndex === 0 ? 'flex-1' : 'flex-1 border-t border-border' ?>"></span>
-                        <span class="relative w-14 h-14 rounded-full bg-white shrink-0 flex items-center justify-center <?= $ringClass ?>">
-                            <img src="/assets/images/icones/<?= $stepIcons[$key] ?? 'commandes.png' ?>" alt="" class="w-9 h-9 object-contain <?= $isActive || $isDone ? '' : 'opacity-40 grayscale' ?>">
+                        <span class="relative inline-block w-16 h-16 shrink-0">
+                            <span class="block relative w-16 h-16 rounded-full bg-white overflow-hidden <?= $ringClass ?>">
+                                <img src="/assets/images/icones/<?= $stepIcons[$key] ?? 'commandes.png' ?>" alt=""
+                                    style="position:absolute; left:50%; top:-50px; height:140px; width:auto; max-width:none; transform:translateX(-50%);"
+                                    class="<?= $isActive || $isDone ? '' : 'opacity-40 grayscale' ?>">
+                            </span>
                             <?php if ($isDone): ?>
                                 <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-success text-white text-[0.65rem] font-semibold flex items-center justify-center border-2 border-white">✓</span>
                             <?php endif; ?>

@@ -108,7 +108,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                         <?php if (!empty($shop['avatar'])): ?>
                             <img class="absolute left-[0.9rem] bottom-[-22px] w-[52px] h-[52px] rounded-full border-[3px] border-white object-cover bg-bg" src="/uploads/avatars/<?= htmlspecialchars($shop['avatar']) ?>" alt="">
                         <?php else: ?>
-                            <img class="absolute left-[0.9rem] bottom-[-22px] w-[52px] h-[52px] rounded-full border-[3px] border-white object-cover bg-bg" src="/assets/images/icones/new-user.png" alt="">
+                            <img class="absolute left-[0.9rem] bottom-[-22px] w-[52px] h-[52px] rounded-full border-[3px] border-white object-cover bg-bg" src="/uploads/avatars/default.png" alt="">
                         <?php endif; ?>
                     </div>
 

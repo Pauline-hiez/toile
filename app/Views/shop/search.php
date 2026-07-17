@@ -88,7 +88,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                             <?php endif; ?>
 
                             <img class="absolute left-[0.9rem] bottom-[-22px] w-[52px] h-[52px] rounded-full border-[3px] border-white object-cover bg-bg"
-                                src="<?= !empty($shop['avatar']) ? '/uploads/avatars/' . htmlspecialchars($shop['avatar']) : '/assets/images/icones/new-user.png' ?>" alt="">
+                                src="<?= !empty($shop['avatar']) ? '/uploads/avatars/' . htmlspecialchars($shop['avatar']) : '/uploads/avatars/default.png' ?>" alt="">
                         </div>
 
                         <div class="pt-7 px-[0.9rem] pb-[0.9rem] flex-1 flex flex-col">

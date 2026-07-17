@@ -1,9 +1,20 @@
 <?php
 $unreadCount = 0;
+$recentNotifications = [];
 $userShop = null;
+$currentUserAvatar = null;
 if (isset($_SESSION['user_id'])) {
     $notificationModel = new \App\Models\Notification();
     $unreadCount = $notificationModel->countUnread($_SESSION['user_id']);
+    $recentNotifications = $notificationModel->findRecentByUserId($_SESSION['user_id']);
+
+    // $_SESSION['user_avatar'] n'est jamais renseigné à la connexion — on
+    // relit l'avatar courant depuis la base à chaque page (comme pour
+    // $unreadCount/$userShop ci-dessus), pour rester à jour même après
+    // un changement de photo sans reconnexion.
+    $userModel = new \App\Models\User();
+    $currentUser = $userModel->findById($_SESSION['user_id']);
+    $currentUserAvatar = $currentUser['avatar'] ?? null;
 
     if (in_array($_SESSION['user_role'] ?? '', ['artist', 'admin'], true)) {
         $shopModel = new \App\Models\Shop();
@@ -42,7 +53,9 @@ $siteFavicon = $settingModel->get('site_favicon');
 
     <?php require __DIR__ . '/../partials/footer.php'; ?>
 
-    <?php if (!isset($_SESSION['user_id'])): ?>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <script src="/assets/js/notif-dropdown.js"></script>
+    <?php else: ?>
         <?php require __DIR__ . '/../components/auth-modal.php'; ?>
         <script src="/assets/js/input-sparks.js"></script>
         <script src="/assets/js/password-toggle.js"></script>
