@@ -138,7 +138,7 @@ $pageTitle = 'Mes prestations — Toile';
                                 <td>
                                     <div class="flex items-center gap-2 [&_a]:bg-transparent [&_a]:border-0 [&_a]:cursor-pointer [&_a]:p-1 [&_a]:rounded-sm [&_a]:text-muted [&_a]:transition-colors [&_a]:flex [&_a]:items-center [&_a]:no-underline [&_a:hover]:text-primary [&_a:hover]:bg-primary-light [&_button]:bg-transparent [&_button]:border-0 [&_button]:cursor-pointer [&_button]:p-1 [&_button]:rounded-sm [&_button]:text-muted [&_button]:transition-colors [&_button]:flex [&_button]:items-center [&_button:hover]:text-primary [&_button:hover]:bg-primary-light [&_svg]:w-4 [&_svg]:h-4 [&_img]:w-4 [&_img]:h-4 [&_img]:object-contain">
                                         <?php if ($shopSlug): ?>
-                                            <a href="/boutiques/<?= htmlspecialchars($shopSlug) ?>?preview=1#service-<?= $service['id'] ?>" target="_blank" rel="noopener" title="Voir le rendu">
+                                            <a href="/boutiques/<?= htmlspecialchars($shopSlug) ?>?preview=1&tab=prestations#service-<?= $service['id'] ?>" target="_blank" rel="noopener" title="Voir le rendu">
                                                 <img src="/assets/images/icones/voir.png" alt="Voir">
                                             </a>
                                         <?php endif; ?>

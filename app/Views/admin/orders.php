@@ -151,7 +151,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                             <td><?= htmlspecialchars($order['client_name']) ?></td>
                             <td><?= htmlspecialchars($order['shop_name']) ?></td>
                             <td><?= htmlspecialchars($order['service_title'] ?? $order['title']) ?></td>
-                            <td><?= number_format($order['total_price'] / 100, 2, ',', ' ') ?> €</td>
+                            <td><?= $order['total_price'] > 0 ? number_format($order['total_price'] / 100, 2, ',', ' ') . ' €' : 'À convenir' ?></td>
                             <td><?= number_format($order['commission_amount'] / 100, 2, ',', ' ') ?> €</td>
                             <td><span class="<?= $statusInfo['class'] ?>"><?= htmlspecialchars($statusInfo['label']) ?></span></td>
                             <td><?= \App\Core\FrenchDate::format('d MMM y', $order['created_at']) ?></td>

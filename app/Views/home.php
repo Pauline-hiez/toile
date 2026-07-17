@@ -120,33 +120,33 @@ $pageTitle = 'Accueil — Toile';
     <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Comment ça marche ?</h2>
 
     <div class="grid grid-cols-1 min-[641px]:grid-cols-2 min-[1100px]:grid-cols-4 gap-8">
-        <div class="text-center p-6">
-            <span class="inline-flex items-center justify-center w-[76px] h-[76px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
-                <img src="/assets/images/icones/search.png" alt="" class="w-[80px] h-[80px] object-contain">
+        <div class="text-center">
+            <span class="inline-flex items-center justify-center w-[140px] h-[140px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
+                <img src="/assets/images/icones/rechercher.png" alt="" class="w-[130px] h-[130px] object-contain">
             </span>
             <h3 class="font-cursive text-[1.1rem] font-semibold text-ink mb-2">1. Recherchez</h3>
             <p class="text-[0.85rem] text-muted leading-[1.5]">Découvrez les artistes et trouvez celui qui correspond à votre projet.</p>
         </div>
 
-        <div class="text-center p-6">
-            <span class="inline-flex items-center justify-center w-[76px] h-[76px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
-                <img src="/assets/images/icones/messages.png" alt="" class="w-[80px] h-[80px] object-contain">
+        <div class="text-center">
+            <span class="inline-flex items-center justify-center w-[140px] h-[140px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
+                <img src="/assets/images/icones/echangez.png" alt="" class="w-[130px] h-[130px] object-contain">
             </span>
             <h3 class="font-cursive text-[1.1rem] font-semibold text-ink mb-2">2. Echangez</h3>
             <p class="text-[0.85rem] text-muted leading-[1.5]">Discutez de votre idée avec les artistes et trouvez la prestation idéale.</p>
         </div>
 
-        <div class="text-center p-6">
-            <span class="inline-flex items-center justify-center w-[76px] h-[76px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
-                <img src="/assets/images/icones/create.png" alt="" class="w-[80px] h-[80px] object-contain">
+        <div class="text-center">
+            <span class="inline-flex items-center justify-center w-[140px] h-[140px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
+                <img src="/assets/images/icones/creez.png" alt="" class="w-[130px] h-[130px] object-contain">
             </span>
             <h3 class="font-cursive text-[1.1rem] font-semibold text-ink mb-2">3. Créez</h3>
             <p class="text-[0.85rem] text-muted leading-[1.5]">L'artiste donne vie à votre projet avec passion et créativité.</p>
         </div>
 
-        <div class="text-center p-6">
-            <span class="inline-flex items-center justify-center w-[76px] h-[76px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
-                <img src="/assets/images/icones/commande.png" alt="" class="w-[80px] h-[80px] object-contain">
+        <div class="text-center">
+            <span class="inline-flex items-center justify-center w-[140px] h-[140px] rounded-full mb-4 bg-[radial-gradient(circle,var(--color-title-bg)_0%,transparent_72%)]">
+                <img src="/assets/images/icones/recevez.png" alt="" class="w-[130px] h-[130px] object-contain">
             </span>
             <h3 class="font-cursive text-[1.1rem] font-semibold text-ink mb-2">4. Recevez</h3>
             <p class="text-[0.85rem] text-muted leading-[1.5]">Recevez votre commande et partagez votre expérience avec la communauté.</p>

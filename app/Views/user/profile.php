@@ -64,7 +64,7 @@ $pageTitle = 'Mon profil — Toile';
             <label class="block font-semibold text-[0.9rem] mb-2">Avatar</label>
             <div class="flex items-center gap-4">
                 <img id="avatarPreviewImg"
-                    src="<?= !empty($user['avatar']) ? '/uploads/avatars/' . htmlspecialchars($user['avatar']) : '/assets/images/icones/new-user.png' ?>"
+                    src="<?= !empty($user['avatar']) ? '/uploads/avatars/' . htmlspecialchars($user['avatar']) : '/uploads/avatars/default.png' ?>"
                     alt="Avatar"
                     class="w-36 aspect-[463/431] object-cover <?= !empty($user['avatar']) ? 'avatar-shape' : 'rounded-full border border-border' ?>">
 

@@ -83,7 +83,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                         <?php if (!empty($signup['avatar'])): ?>
                             <img src="/uploads/avatars/<?= htmlspecialchars($signup['avatar']) ?>" alt="" class="w-9 h-9 rounded-full object-cover border border-border shrink-0">
                         <?php else: ?>
-                            <img src="/assets/images/icones/new-user.png" alt="" class="w-9 h-9 rounded-full object-cover border border-border shrink-0">
+                            <img src="/uploads/avatars/default.png" alt="" class="w-9 h-9 rounded-full object-cover border border-border shrink-0">
                         <?php endif; ?>
                         <div>
                             <span class="text-[0.85rem] font-semibold block"><?= htmlspecialchars($signup['username']) ?></span>
@@ -123,7 +123,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                                     <?php if (!empty($artist['avatar'])): ?>
                                         <img class="w-9 h-9 rounded-full object-cover border border-border" src="/uploads/avatars/<?= htmlspecialchars($artist['avatar']) ?>" alt="">
                                     <?php else: ?>
-                                        <img class="w-9 h-9 rounded-full object-cover border border-border" src="/assets/images/icones/new-user.png" alt="">
+                                        <img class="w-9 h-9 rounded-full object-cover border border-border" src="/uploads/avatars/default.png" alt="">
                                     <?php endif; ?>
                                 </td>
                                 <td><a href="/boutiques/<?= htmlspecialchars($artist['slug']) ?>"><?= htmlspecialchars($artist['username']) ?></a></td>

@@ -63,18 +63,20 @@ class Shop extends BaseModel
     }
 
     /**
-     * Recherche de boutiques avec filtres combinables.
+     * Recherche de boutiques avec filtres combinables (page publique
+     * /boutiques).
      *
-     * @param array 
-     * 
+     * @param array $filters q, style, min_price, max_price, sort ('rating'|'price'), page, per_page
+     * @return array{shops: array, total: int}
      */
-
     public function search(array $filters): array
     {
         // Calcule le prix min de la boutique
         $sql = "
             SELECT
                 shop.*,
+                u.username,
+                u.avatar,
                 (
                     SELECT MIN(base_price)
                     FROM service
@@ -86,8 +88,18 @@ class Shop extends BaseModel
                     INNER JOIN orders ON orders.id = review.order_id
                     WHERE orders.shop_id = shop.id
                 ) AS avg_rating,
+                (
+                    SELECT COUNT(*)
+                    FROM review
+                    INNER JOIN orders ON orders.id = review.order_id
+                    WHERE orders.shop_id = shop.id
+                ) AS review_count,
+                (
+                    SELECT COUNT(*) FROM favorite WHERE favorite.shop_id = shop.id
+                ) AS favorite_count,
                 CASE WHEN re.status = 'selected' THEN 1 ELSE 0 END AS is_raffle_featured
             FROM shop
+            INNER JOIN users u ON u.id = shop.user_id
             LEFT JOIN raffle_entry re
                 ON re.shop_id = shop.id
                 AND re.type = 'boutiques'
@@ -104,7 +116,7 @@ class Shop extends BaseModel
             $params['q'] = '%' . $filters['q'] . '%';
         }
 
-        // Filtre par style 
+        // Filtre par style
         if (!empty($filters['style'])) {
             $sql .= ' AND JSON_CONTAINS(shop.styles, :style)';
 
@@ -136,8 +148,18 @@ class Shop extends BaseModel
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
+        $allShops = $stmt->fetchAll();
 
-        return $stmt->fetchAll();
+        // Pagination faite en PHP : le HAVING porte sur des colonnes
+        // calculées (sous-requêtes), dupliquer cette logique dans une
+        // requête COUNT séparée serait plus fragile qu'un array_slice
+        // ici, sans souci de performance vu le volume de boutiques.
+        $total = count($allShops);
+        $perPage = max(1, (int) ($filters['per_page'] ?? 25));
+        $page = max(1, (int) ($filters['page'] ?? 1));
+        $offset = ($page - 1) * $perPage;
+
+        return ['shops' => array_slice($allShops, $offset, $perPage), 'total' => $total];
     }
 
     private function slugify(string $text): string

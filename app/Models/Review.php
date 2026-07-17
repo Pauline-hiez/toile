@@ -34,6 +34,24 @@ class Review extends BaseModel
         return $result ?: null;
     }
 
+    /**
+     * Avis d'une boutique (onglet "Avis" de la page boutique publique),
+     * du plus récent au plus ancien.
+     */
+    public function findByShopId(int $shopId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT r.*, u.username AS client_name, u.avatar AS client_avatar
+            FROM review r
+            INNER JOIN orders o ON o.id = r.order_id
+            INNER JOIN users u ON u.id = o.client_id
+            WHERE o.shop_id = :shop_id
+            ORDER BY r.created_at DESC'
+        );
+        $stmt->execute(['shop_id' => $shopId]);
+        return $stmt->fetchAll();
+    }
+
     public function findAllWithDetails(): array
     {
         $stmt = $this->pdo->prepare(

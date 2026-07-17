@@ -34,6 +34,22 @@ class Order extends BaseModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Nombre de commandes en attente d'action de l'artiste (nouvelle
+     * demande ou devis) — pour la pastille de la sidebar, même définition
+     * de "en attente" que OrderController::receivedOrders().
+     */
+    public function countPendingByShopId(int $shopId): int
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM orders
+             WHERE shop_id = :shop_id AND status IN ('quote_requested', 'pending')"
+        );
+        $stmt->execute(['shop_id' => $shopId]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
     public function findByIdWithDetails(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
@@ -61,7 +77,13 @@ class Order extends BaseModel
                 'artist' => ['accepted', 'rejected'],
             ],
             'quote_requested' => [
-                'artist' => ['accepted', 'rejected'],
+                'artist' => ['price_proposed', 'rejected'],
+            ],
+            // L'acceptation du prix proposé ne passe pas par cette map :
+            // elle nécessite un paiement Stripe (voir
+            // OrderController::payQuote()), pas une simple transition.
+            'price_proposed' => [
+                'client' => ['rejected'],
             ],
             'accepted' => [
                 'artist' => ['in_progress', 'cancelled'],
@@ -93,6 +115,7 @@ class Order extends BaseModel
     {
         return [
             'quote_requested' => ['label' => 'Devis demandé', 'class' => \App\Core\Badge::classes('neutral')],
+            'price_proposed' => ['label' => 'Prix proposé', 'class' => \App\Core\Badge::classes('warning')],
             'pending' => ['label' => 'En attente', 'class' => \App\Core\Badge::classes('warning')],
             'accepted' => ['label' => 'Acceptée', 'class' => \App\Core\Badge::classes('info')],
             'rejected' => ['label' => 'Refusée', 'class' => \App\Core\Badge::classes('danger')],

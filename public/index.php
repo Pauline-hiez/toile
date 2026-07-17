@@ -3,6 +3,11 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+// PHP est en UTC par défaut, alors que MySQL suit l'heure système
+// (Europe/Paris) — sans ça, tout calcul de durée entre time() et un
+// created_at venant de la base est faussé de 1h/2h selon la saison.
+date_default_timezone_set('Europe/Paris');
+
 require __DIR__ . '/../vendor/autoload.php';
 
 // Charger le .env EN PREMIER, avant tout autre code

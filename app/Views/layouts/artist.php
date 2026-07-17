@@ -9,6 +9,7 @@
  */
 
 use App\Models\Notification;
+use App\Models\Order;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\Setting;
@@ -23,12 +24,16 @@ $artistShop = $shopModel->findByUserId($_SESSION['user_id']);
 $unreadCount = (new Notification())->countUnread($_SESSION['user_id']);
 $userShop = $artistShop;
 
+// Pastille "Mes commandes" — nombre de commandes en attente d'action,
+// vide si la boutique n'existe pas encore (premier passage sans boutique).
+$pendingOrdersCount = $artistShop ? (new Order())->countPendingByShopId($artistShop['id']) : 0;
+
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/my-dashboard', PHP_URL_PATH);
 
 $navItems = [
     ['label' => 'Dashboard', 'href' => '/my-dashboard', 'icon' => 'dashboard.png', 'match' => 'exact'],
     ['label' => 'Mon profil', 'href' => '/profile', 'icon' => 'profile.png', 'match' => 'exact'],
-    ['label' => 'Mes commandes', 'href' => '/commandes-recues', 'icon' => 'commandes.png', 'match' => 'prefix'],
+    ['label' => 'Mes commandes', 'href' => '/commandes-recues', 'icon' => 'commandes.png', 'match' => 'prefix', 'badge' => $pendingOrdersCount],
     ['label' => 'Mes prestations', 'href' => '/my-services', 'icon' => 'prestations.png', 'match' => 'prefix'],
     ['label' => 'Portfolio', 'href' => '/my-portfolio', 'icon' => 'portfolio.png', 'match' => 'prefix'],
     ['label' => 'Ma boutique', 'href' => '/my-shop', 'icon' => 'boutique.png', 'match' => 'exact'],
@@ -83,6 +88,9 @@ $navItems = [
                 <a href="<?= htmlspecialchars($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?> flex items-center gap-3 px-5 py-[0.45rem] text-ink no-underline text-[0.9rem] font-medium rounded-sm mx-2 my-[0.1rem] transition-colors hover:bg-primary-light hover:text-primary">
                     <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-9 h-9 object-contain shrink-0">
                     <?= htmlspecialchars($item['label']) ?>
+                    <?php if (!empty($item['badge'])): ?>
+                        <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
+                    <?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </nav>
@@ -119,7 +127,7 @@ $navItems = [
                                 <?php if (!empty($currentArtist['avatar'])): ?>
                                     <img src="/uploads/avatars/<?= htmlspecialchars($currentArtist['avatar']) ?>" alt="Profil" class="w-[38px] h-[38px] rounded-full object-cover border-2 border-border">
                                 <?php else: ?>
-                                    <img src="/assets/images/icones/new-user.png" alt="Profil" class="w-[38px] h-[38px] rounded-full object-cover border-2 border-border">
+                                    <img src="/uploads/avatars/default.png" alt="Profil" class="w-[38px] h-[38px] rounded-full object-cover border-2 border-border">
                                 <?php endif; ?>
                                 <span class="max-[480px]:hidden">
                                     <strong class="block text-[0.85rem] font-semibold"><?= htmlspecialchars($currentArtist['username'] ?? 'Artiste') ?></strong>
