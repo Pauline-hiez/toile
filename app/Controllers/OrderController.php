@@ -362,8 +362,11 @@ class OrderController
             $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $bases);
         }
 
+        // notify() attend l'ID de l'utilisateur artiste, pas l'ID de la
+        // boutique — il faut résoudre le propriétaire de la boutique.
+        $shop = $this->shopModel->findById($pendingOrder['shop_id']);
         $this->notificationModel->notify(
-            $pendingOrder['shop_id'],
+            $shop['user_id'],
             'new_order',
             'Nouvelle commande : ' . $pendingOrder['title'],
             '/commandes/' . $orderId
