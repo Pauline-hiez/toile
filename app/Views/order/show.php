@@ -321,7 +321,7 @@ $stepIcons = [
     <script src="/assets/js/report-modal.js"></script>
 
     <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-4 mb-6">
-        <img src="/assets/images/decor/carnet.png" alt="" class="hidden min-[1024px]:block absolute -right-24 -bottom-14 w-[220px] h-auto pointer-events-none select-none opacity-90 z-10">
+        <img src="/assets/images/decor/carnet.png" alt="" class="hidden min-[1024px]:block absolute -right-36 -bottom-16 w-[260px] h-auto pointer-events-none select-none opacity-90 -z-10">
         <h2 id="messages" class="font-cursive text-[1.1rem] font-semibold text-ink mb-3">Messages</h2>
 
         <?php if (empty($messages)): ?>

@@ -15,8 +15,6 @@
 
         var canvas = document.createElement('canvas');
         canvas.className = 'pointer-events-none absolute';
-        canvas.style.left = -PADDING + 'px';
-        canvas.style.top = -PADDING + 'px';
         wrapper.insertBefore(canvas, input);
 
         var ctx = canvas.getContext('2d');
@@ -25,6 +23,17 @@
 
         function resize() {
             var rect = input.getBoundingClientRect();
+            var wrapperRect = wrapper.getBoundingClientRect();
+
+            // Décalage réel de l'input dans son parent (le parent peut
+            // avoir du padding, ou l'input n'être qu'un des éléments d'une
+            // rangée flex) — on ne peut pas supposer que l'input est collé
+            // à l'origine du wrapper.
+            var offsetX = rect.left - wrapperRect.left;
+            var offsetY = rect.top - wrapperRect.top;
+
+            canvas.style.left = (offsetX - PADDING) + 'px';
+            canvas.style.top = (offsetY - PADDING) + 'px';
             canvas.width = rect.width + PADDING * 2;
             canvas.height = rect.height + PADDING * 2;
         }
