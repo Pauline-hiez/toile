@@ -1038,8 +1038,8 @@ class AdminController
 
     public function updateRaffleSettings(): void
     {
-        $rafflePrice = (float) str_replace(',', '.', $_POST['raffle_price'] ?? '5');
-        $homepagePrice = (float) str_replace(',', '.', $_POST['raffle_homepage_price'] ?? '7');
+        $rafflePrice = (float) str_replace(',', '.', $_POST['raffle_price'] ?? '3');
+        $homepagePrice = (float) str_replace(',', '.', $_POST['raffle_homepage_price'] ?? '5');
 
         $this->settingModel->setMany([
             'raffle_price' => (string) max(0, (int) round($rafflePrice * 100)),

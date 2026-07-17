@@ -121,7 +121,7 @@
             <div>
                 <label for="raffle_price" style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem;">Prix du ticket (€)</label>
                 <input type="number" id="raffle_price" name="raffle_price" step="0.01" min="0"
-                    value="<?= number_format((int) ($settings['raffle_price'] ?? 500) / 100, 2, '.', '') ?>"
+                    value="<?= number_format((int) ($settings['raffle_price'] ?? 300) / 100, 2, '.', '') ?>"
                     style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.35rem 0.75rem;">
             </div>
             <div>
@@ -137,7 +137,7 @@
             <div>
                 <label for="raffle_homepage_price" style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem;">Prix du ticket (€)</label>
                 <input type="number" id="raffle_homepage_price" name="raffle_homepage_price" step="0.01" min="0"
-                    value="<?= number_format((int) ($settings['raffle_homepage_price'] ?? 700) / 100, 2, '.', '') ?>"
+                    value="<?= number_format((int) ($settings['raffle_homepage_price'] ?? 500) / 100, 2, '.', '') ?>"
                     style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.35rem 0.75rem;">
             </div>
             <div>

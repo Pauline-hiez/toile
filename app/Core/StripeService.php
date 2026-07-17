@@ -16,12 +16,12 @@ class StripeService
         Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
     }
 
-    public function createPaymentIntent(int $amount, string $currency = 'eur', array $metadata = [], ?string $customerId = null): array
+    public function createPaymentIntent(int $amount, string $currency = 'eur', array $metadata = [], ?string $customerId = null, string $captureMethod = 'manual'): array
     {
         $params = [
             'amount' => $amount,
             'currency' => $currency,
-            'capture_method' => 'manual',
+            'capture_method' => $captureMethod,
             'metadata' => $metadata,
             // Restreint à la carte pour éviter que Stripe Link ne remplace
             // la case "mémoriser cette carte" par son propre encart e-mail.

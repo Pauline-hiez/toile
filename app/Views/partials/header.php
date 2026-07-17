@@ -28,7 +28,9 @@
         <nav class="site-header__nav" id="siteNav">
             <a href="/boutiques">Boutiques</a>
 
-            <?php if (($_SESSION['user_role'] ?? '') !== 'artist'): ?>
+            <?php if (($_SESSION['user_role'] ?? '') === 'artist'): ?>
+                <a href="/raffle">Tirage au sort</a>
+            <?php else: ?>
                 <a href="/become-artist">Devenir artiste</a>
             <?php endif; ?>
 
