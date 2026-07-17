@@ -196,6 +196,15 @@ $router->map('POST', '/my-portfolio/[i:id]/delete', [
     ],
 ]);
 
+// Demande de devis générale (sans prestation précise), soumise depuis la
+// modale de shop/show.php.
+$router->map('POST', '/boutiques/[*:slug]/devis', [
+    'controller' => ['App\Controllers\OrderController', 'storeGeneric'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
 // Boutique
 $router->map('GET', '/boutiques/[*:slug]', ['App\Controllers\ShopController', 'show']);
 
@@ -245,6 +254,21 @@ $router->map('GET', '/commandes-recues', [
 // Etats des commandes
 $router->map('POST', '/commandes/[i:id]/transition', [
     'controller' => ['App\Controllers\OrderController', 'transition'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Paiement du prix proposé sur un devis
+$router->map('GET', '/commandes/[i:id]/payer-devis', [
+    'controller' => ['App\Controllers\OrderController', 'payQuote'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('GET', '/commandes/[i:id]/confirmer-devis', [
+    'controller' => ['App\Controllers\OrderController', 'confirmQuotePayment'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],

@@ -45,6 +45,10 @@ CREATE TABLE shop (
     slug VARCHAR(160) NOT NULL UNIQUE,
 
     bio TEXT NULL,
+    social_instagram VARCHAR(255) NULL,
+    social_facebook VARCHAR(255) NULL,
+    social_pinterest VARCHAR(255) NULL,
+    social_tiktok VARCHAR(255) NULL,
     banner VARCHAR(255) NULL,
 
     styles JSON NULL,
@@ -150,6 +154,7 @@ CREATE TABLE orders (
 
     status ENUM(
         'quote_requested',
+        'price_proposed',
         'pending',
         'accepted',
         'rejected',

@@ -259,6 +259,80 @@ class OrderController
     }
 
     /**
+     * Demande de devis générale, sans prestation précise — soumise depuis
+     * la modale "Demander un devis" de shop/show.php. Contrairement à
+     * store(), pas de service/options/bases : le client décrit librement
+     * son projet, le prix sera négocié avec l'artiste via la messagerie
+     * de la commande (comme pour les devis liés à une prestation, où le
+     * passage "accepted" ne déclenche déjà aucun paiement Stripe faute de
+     * PaymentIntent).
+     * (POST /boutiques/[slug]/devis)
+     */
+    public function storeGeneric(string $slug): void
+    {
+        $shop = $this->shopModel->findBySlug($slug);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        if (!$shop['is_open'] || !$shop['accepts_quotes']) {
+            http_response_code(403);
+            echo 'Cette boutique n\'accepte pas les demandes de devis pour le moment.';
+            exit;
+        }
+
+        $description = trim($_POST['description'] ?? '');
+
+        if (mb_strlen($description) < 10) {
+            header('Location: /boutiques/' . urlencode($slug) . '?quote_error=1');
+            exit;
+        }
+
+        // Pas de champ titre dans la modale : on en dérive un à partir du
+        // début de la description pour peupler la colonne title (NOT NULL).
+        $title = mb_strlen($description) > 80
+            ? mb_substr($description, 0, 80) . '…'
+            : $description;
+
+        $referenceFile = null;
+        if (isset($_FILES['reference']) && $_FILES['reference']['error'] === UPLOAD_ERR_OK) {
+            $result = FileUploader::upload(
+                $_FILES['reference'],
+                __DIR__ . '/../../public/uploads/references'
+            );
+            if ($result['error'] !== null) {
+                header('Location: /boutiques/' . urlencode($slug) . '?quote_error=1');
+                exit;
+            }
+            $referenceFile = $result['filename'];
+        }
+
+        $orderId = $this->orderModel->create([
+            'client_id' => $_SESSION['user_id'],
+            'shop_id' => $shop['id'],
+            'service_id' => null,
+            'title' => $title,
+            'description' => $description,
+            'total_price' => 0,
+            'status' => 'quote_requested',
+            'delivery_file' => $referenceFile,
+        ]);
+
+        $this->notificationModel->notify(
+            $shop['user_id'],
+            'new_order',
+            'Nouvelle demande de devis personnalisée : ' . $title,
+            '/commandes/' . $orderId
+        );
+
+        header('Location: /boutiques/' . urlencode($slug) . '?quote_sent=1');
+        exit;
+    }
+
+    /**
      * Finalise la commande après confirmation Stripe
      * (GET /commander/confirm).
      */
@@ -392,6 +466,33 @@ class OrderController
             }
 
             $updateData['delivery_file'] = $result['filename'];
+        }
+
+        // Proposition de prix par l'artiste sur un devis — total_price sert
+        // à la fois de prix proposé et de prix final, comme pour une
+        // commande classique.
+        if ($newStatus === 'price_proposed') {
+            $proposedPrice = (float) str_replace(',', '.', $_POST['proposed_price'] ?? '');
+
+            if ($proposedPrice <= 0) {
+                http_response_code(400);
+                echo 'Merci de proposer un prix valide.';
+                exit;
+            }
+
+            $updateData['total_price'] = (int) round($proposedPrice * 100);
+
+            // Message optionnel accompagnant la proposition de prix — un
+            // seul bouton d'envoi plutôt que deux (prix + message
+            // séparés), voir la discussion sur la confusion des boutons.
+            $priceMessage = trim($_POST['message'] ?? '');
+            if ($priceMessage !== '') {
+                $this->messageModel->create([
+                    'order_id' => $order['id'],
+                    'sender_id' => $userId,
+                    'content' => $priceMessage,
+                ]);
+            }
         }
 
         // Appels Stripe selon la transition
@@ -534,6 +635,116 @@ class OrderController
         exit;
     }
 
+    /**
+     * Étape 1 de l'acceptation d'un prix proposé par l'artiste : le client
+     * paie (autorisation Stripe) avant que la commande ne rejoigne le
+     * statut 'pending', exactement comme une commande classique — pas de
+     * transition directe vers 'accepted' sans paiement.
+     * (GET /commandes/[id]/payer-devis)
+     */
+    public function payQuote(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        if ($order['client_id'] !== $_SESSION['user_id']) {
+            http_response_code(403);
+            echo 'Accès refusé.';
+            exit;
+        }
+
+        if ($order['status'] !== 'price_proposed') {
+            http_response_code(403);
+            echo 'Cette commande n\'a pas de prix proposé en attente de paiement.';
+            exit;
+        }
+
+        $user = $this->userModel->findById($order['client_id']);
+        $stripe = new \App\Core\StripeService();
+
+        $stripeCustomerId = $user['stripe_customer_id'];
+        if (empty($stripeCustomerId)) {
+            $stripeCustomerId = $stripe->createCustomer($user['email'], $user['username']);
+            $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
+        }
+
+        $paymentData = $stripe->createPaymentIntent($order['total_price'], 'eur', [
+            'order_id' => $order['id'],
+            'client_id' => $order['client_id'],
+        ], $stripeCustomerId);
+
+        $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
+
+        // Contrairement à store(), la commande existe déjà : on persiste
+        // le PaymentIntent directement dessus (pas besoin de session), ce
+        // qui rend confirmQuotePayment() résistant à un rafraîchissement.
+        $this->orderModel->update($order['id'], [
+            'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
+        ]);
+
+        $this->renderer->render('order/payment', [
+            'service' => ['title' => $order['service_title'] ?? $order['title']],
+            'shop' => ['name' => $order['shop_name']],
+            'totalPrice' => $order['total_price'],
+            'clientSecret' => $paymentData['client_secret'],
+            'customerSessionClientSecret' => $customerSessionClientSecret,
+            'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'returnUrl' => '/commandes/' . $order['id'] . '/confirmer-devis',
+            'pageTitle' => 'Paiement — Toile',
+        ]);
+    }
+
+    /**
+     * Étape 2 : Stripe redirige ici après l'autorisation du paiement.
+     * (GET /commandes/[id]/confirmer-devis)
+     */
+    public function confirmQuotePayment(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        if ($order['client_id'] !== $_SESSION['user_id']) {
+            http_response_code(403);
+            echo 'Accès refusé.';
+            exit;
+        }
+
+        if ($order['status'] !== 'price_proposed' || empty($order['stripe_payment_intent_id'])) {
+            header('Location: /commandes/' . $order['id']);
+            exit;
+        }
+
+        $stripe = new \App\Core\StripeService();
+        $status = $stripe->getPaymentIntentStatus($order['stripe_payment_intent_id']);
+
+        if ($status !== 'requires_capture') {
+            header('Location: /commandes/' . $order['id'] . '?payment=failed');
+            exit;
+        }
+
+        $this->orderModel->update($order['id'], ['status' => 'pending']);
+
+        $this->notificationModel->notify(
+            $order['shop_owner_id'],
+            'new_order',
+            'Devis accepté et payé par le client : ' . $order['title'],
+            '/commandes/' . $order['id']
+        );
+
+        header('Location: /commandes/' . $order['id']);
+        exit;
+    }
+
     public function show(int $id): void
     {
         $order = $this->orderModel->findByIdWithDetails($id);
@@ -566,9 +777,9 @@ class OrderController
         $messages = $this->messageModel->findByOrderId($order['id']);
 
         $timelineSteps = [
-            'pending'     => 'Demande envoyée',
+            'pending'     => 'Commande reçue',
             'accepted'    => 'Acceptée',
-            'in_progress' => 'En cours',
+            'in_progress' => 'En création',
             'delivered'   => 'Livrée',
             'completed'   => 'Terminée',
         ];

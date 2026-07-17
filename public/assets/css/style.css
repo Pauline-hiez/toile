@@ -813,24 +813,19 @@ body::before {
 }
 
 .site-footer__social a {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid rgba(23, 51, 27, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s, border-color 0.15s;
+    transition: opacity 0.15s;
 }
 
 .site-footer__social a:hover {
-    background: rgba(23, 51, 27, 0.1);
-    border-color: var(--color-footer-text);
+    opacity: 0.8;
 }
 
 .site-footer__social img {
-    width: 16px;
-    height: 16px;
+    width: 34px;
+    height: 34px;
 }
 
 .site-footer__bottom {

@@ -130,6 +130,37 @@ $bannerShapeRatio = '579 / 226';
         </div>
     </div>
 
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm mb-6">
+        <h2 class="text-base font-semibold text-ink mb-2">Réseaux sociaux</h2>
+        <p class="text-[0.8rem] text-muted mb-5">Affichés sur ta page boutique publique, sous le bouton "Ajouter aux favoris". Laisse vide les réseaux que tu n'utilises pas.</p>
+
+        <div class="grid grid-cols-1 min-[641px]:grid-cols-2 gap-5">
+            <div>
+                <label for="social_instagram" class="block font-semibold text-[0.9rem] mb-2">Instagram</label>
+                <input type="url" id="social_instagram" name="social_instagram" value="<?= htmlspecialchars($shop['social_instagram'] ?? '') ?>" placeholder="https://instagram.com/tonpseudo"
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label for="social_facebook" class="block font-semibold text-[0.9rem] mb-2">Facebook</label>
+                <input type="url" id="social_facebook" name="social_facebook" value="<?= htmlspecialchars($shop['social_facebook'] ?? '') ?>" placeholder="https://facebook.com/tapage"
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label for="social_pinterest" class="block font-semibold text-[0.9rem] mb-2">Pinterest</label>
+                <input type="url" id="social_pinterest" name="social_pinterest" value="<?= htmlspecialchars($shop['social_pinterest'] ?? '') ?>" placeholder="https://pinterest.com/tonpseudo"
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label for="social_tiktok" class="block font-semibold text-[0.9rem] mb-2">TikTok</label>
+                <input type="url" id="social_tiktok" name="social_tiktok" value="<?= htmlspecialchars($shop['social_tiktok'] ?? '') ?>" placeholder="https://tiktok.com/@tonpseudo"
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+            </div>
+        </div>
+    </div>
+
     <div class="text-center">
         <button type="submit" class="btn btn--primary">Enregistrer</button>
     </div>

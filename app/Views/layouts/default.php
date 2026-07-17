@@ -32,6 +32,8 @@ $siteFavicon = $settingModel->get('site_favicon');
 </head>
 
 <body>
+    <img src="/assets/images/decor/tache6.png" alt="" class="hidden min-[1024px]:block fixed bottom-0 -left-16 w-[480px] h-auto pointer-events-none select-none opacity-40 -z-10">
+
     <?php require __DIR__ . '/../partials/header.php'; ?>
 
     <main>

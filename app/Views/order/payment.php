@@ -17,7 +17,8 @@
     data-stripe-public-key="<?= htmlspecialchars($stripePublicKey) ?>"
     data-client-secret="<?= htmlspecialchars($clientSecret) ?>"
     data-customer-session-client-secret="<?= htmlspecialchars($customerSessionClientSecret) ?>"
-    data-total-price="<?= number_format($totalPrice / 100, 2, '.', '') ?>">
+    data-total-price="<?= number_format($totalPrice / 100, 2, '.', '') ?>"
+    <?php if (isset($returnUrl)): ?>data-return-url="<?= htmlspecialchars($returnUrl) ?>"<?php endif; ?>>
     <div id="payment-element"></div>
     <div id="payment-errors" style="color: red; margin-top: 0.5rem;"></div>
     <button id="submit-btn" style="margin-top: 1rem; display: none;">

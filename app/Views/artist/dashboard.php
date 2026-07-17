@@ -114,7 +114,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
                                 <td><a href="/commandes/<?= $order['id'] ?>">#<?= (int) $order['id'] ?></a></td>
                                 <td><a href="/commandes/<?= $order['id'] ?>"><?= htmlspecialchars($order['client_name']) ?></a></td>
                                 <td><a href="/commandes/<?= $order['id'] ?>"><?= htmlspecialchars($order['title']) ?></a></td>
-                                <td><?= number_format($order['total_price'] / 100, 2, ',', ' ') ?>€</td>
+                                <td><?= $order['total_price'] > 0 ? number_format($order['total_price'] / 100, 2, ',', ' ') . '€' : 'À convenir' ?></td>
                                 <td><span class="<?= $statusInfo['class'] ?>"><?= htmlspecialchars($statusInfo['label']) ?></span></td>
                                 <td><?= \App\Core\FrenchDate::format('d MMM y', $order['created_at']) ?></td>
                             </tr>

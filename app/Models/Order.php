@@ -61,7 +61,13 @@ class Order extends BaseModel
                 'artist' => ['accepted', 'rejected'],
             ],
             'quote_requested' => [
-                'artist' => ['accepted', 'rejected'],
+                'artist' => ['price_proposed', 'rejected'],
+            ],
+            // L'acceptation du prix proposé ne passe pas par cette map :
+            // elle nécessite un paiement Stripe (voir
+            // OrderController::payQuote()), pas une simple transition.
+            'price_proposed' => [
+                'client' => ['rejected'],
             ],
             'accepted' => [
                 'artist' => ['in_progress', 'cancelled'],
@@ -93,6 +99,7 @@ class Order extends BaseModel
     {
         return [
             'quote_requested' => ['label' => 'Devis demandé', 'class' => \App\Core\Badge::classes('neutral')],
+            'price_proposed' => ['label' => 'Prix proposé', 'class' => \App\Core\Badge::classes('warning')],
             'pending' => ['label' => 'En attente', 'class' => \App\Core\Badge::classes('warning')],
             'accepted' => ['label' => 'Acceptée', 'class' => \App\Core\Badge::classes('info')],
             'rejected' => ['label' => 'Refusée', 'class' => \App\Core\Badge::classes('danger')],

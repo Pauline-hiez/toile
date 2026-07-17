@@ -68,6 +68,10 @@ class ShopController
 
         $name = trim($_POST['name'] ?? '');
         $bio = trim($_POST['bio'] ?? '');
+        $socialInstagram = trim($_POST['social_instagram'] ?? '');
+        $socialFacebook = trim($_POST['social_facebook'] ?? '');
+        $socialPinterest = trim($_POST['social_pinterest'] ?? '');
+        $socialTiktok = trim($_POST['social_tiktok'] ?? '');
 
         $errors = [];
 
@@ -111,6 +115,10 @@ class ShopController
         $data = [
             'name' => $name,
             'bio' => $bio,
+            'social_instagram' => $socialInstagram !== '' ? $socialInstagram : null,
+            'social_facebook' => $socialFacebook !== '' ? $socialFacebook : null,
+            'social_pinterest' => $socialPinterest !== '' ? $socialPinterest : null,
+            'social_tiktok' => $socialTiktok !== '' ? $socialTiktok : null,
             'banner' => $bannerFilename,
         ];
 
@@ -164,10 +172,14 @@ class ShopController
             : $this->serviceModel->findActiveByShopId($shop['id']);
         $portfolioImages = $this->portfolioModel->findByShopId($shop['id']);
         $ratingStats = $this->reviewModel->getShopRatingStats($shop['id']);
+        $reviews = $this->reviewModel->findByShopId($shop['id']);
         $isFavorite = isset($_SESSION['user_id'])
             ? $this->favoriteModel->isFavorite($_SESSION['user_id'], $shop['id'])
             : false;
         $artist = $this->userModel->findById($shop['user_id']);
+
+        $allowedTabs = ['portfolio', 'prestations', 'avis'];
+        $tab = in_array($_GET['tab'] ?? '', $allowedTabs, true) ? $_GET['tab'] : 'portfolio';
 
         $this->renderer->render('shop/show', [
             'shop' => $shop,
@@ -175,8 +187,10 @@ class ShopController
             'services' => $services,
             'portfolioImages' => $portfolioImages,
             'ratingStats' => $ratingStats,
+            'reviews' => $reviews,
             'isFavorite' => $isFavorite,
             'previewMode' => $previewMode,
+            'tab' => $tab,
             'pageTitle' => htmlspecialchars($shop['name']) . ' — Toile',
         ]);
     }
@@ -215,20 +229,53 @@ class ShopController
 
     public function search(): void
     {
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 25; // 5 lignes de 5
+
         $filters = [
             'q' => trim($_GET['q'] ?? ''),
             'style' => trim($_GET['style'] ?? ''),
             'min_price' => $_GET['min_price'] ?? '',
             'max_price' => $_GET['max_price'] ?? '',
             'sort' => $_GET['sort'] ?? 'rating',
+            'page' => $page,
+            'per_page' => $perPage,
         ];
 
-        $shops = $this->shopModel->search($filters);
+        $result = $this->shopModel->search($filters);
 
         $this->renderer->render('shop/search', [
-            'shops' => $shops,
+            'shops' => $result['shops'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perPage' => $perPage,
+            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'availableStyles' => Shop::STYLES,
+            'pageTitle' => 'Découvrir les artistes — Toile',
         ]);
+    }
+
+    /**
+     * Construit une liste de numéros de page avec des '...' pour les
+     * séquences non affichées (ex: 1 2 3 ... 12) — même logique que
+     * AdminController::buildPageNumbers().
+     *
+     * @return array<int, int|string>
+     */
+    private function buildPageNumbers(int $currentPage, int $totalPages): array
+    {
+        $totalPages = max(1, $totalPages);
+        $pages = [];
+
+        for ($p = 1; $p <= $totalPages; $p++) {
+            if ($p === 1 || $p === $totalPages || abs($p - $currentPage) <= 1) {
+                $pages[] = $p;
+            } elseif (end($pages) !== '...') {
+                $pages[] = '...';
+            }
+        }
+
+        return $pages;
     }
 }

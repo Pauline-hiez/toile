@@ -13,7 +13,7 @@
                 </a>
                 — <?= htmlspecialchars($order['shop_name']) ?>
                 — <?= htmlspecialchars($order['status']) ?>
-                — <?= number_format($order['total_price'] / 100, 2) ?> €
+                — <?= $order['total_price'] > 0 ? number_format($order['total_price'] / 100, 2) . ' €' : 'À convenir' ?>
             </li>
         <?php endforeach; ?>
     </ul>
