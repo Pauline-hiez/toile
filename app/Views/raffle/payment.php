@@ -1,10 +1,10 @@
-<h1>Autorisation de paiement</h1>
+<h1>Paiement du ticket</h1>
 
 <p>
     <strong>Tirage :</strong>
     <?= $type === 'homepage' ? 'Page d\'accueil' : 'Vitrine boutiques' ?><br>
-    <strong>Montant autorisé :</strong> <?= number_format($price / 100, 2) ?> €<br>
-    <em>Ce montant ne sera débité que si ta boutique est sélectionnée.</em>
+    <strong>Montant à régler :</strong> <?= number_format($price / 100, 2) ?> €<br>
+    <em>Ce montant est prélevé immédiatement, que ta boutique soit sélectionnée ou non.</em>
 </p>
 
 <div
@@ -18,7 +18,7 @@
     <div id="payment-element"></div>
     <div id="payment-errors" style="color: red; margin-top: 0.5rem;"></div>
     <button id="submit-btn" style="margin-top: 1rem; display: none;">
-        Autoriser <?= number_format($price / 100, 2) ?> €
+        Payer <?= number_format($price / 100, 2) ?> €
     </button>
 </div>
 

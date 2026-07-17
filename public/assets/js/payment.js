@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) {
             document.getElementById('payment-errors').textContent = error.message;
             btn.disabled = false;
-            btn.textContent = 'Autoriser le paiement — ' + totalPrice + ' €';
+            btn.textContent = 'Réessayer — ' + totalPrice + ' €';
         }
     });
 });

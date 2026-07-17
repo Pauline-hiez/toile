@@ -19,6 +19,48 @@ class RaffleEntry extends BaseModel
         return $result ?: null;
     }
 
+    // Nombre d'inscriptions pour un type et une période donnés
+    public function countByTypeAndPeriod(string $type, string $period): int
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM raffle_entry WHERE type = :type AND period = :period'
+        );
+        $stmt->execute(['type' => $type, 'period' => $period]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    // Derniers tickets achetés par une boutique, tous types confondus
+    public function findRecentByShopId(int $shopId, int $limit = 6): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM raffle_entry
+             WHERE shop_id = :shop_id
+             ORDER BY created_at DESC
+             LIMIT ' . max(1, $limit)
+        );
+        $stmt->execute(['shop_id' => $shopId]);
+
+        return $stmt->fetchAll();
+    }
+
+    // Derniers gagnants toutes boutiques et tous types confondus
+    public function findRecentWinners(int $limit = 6): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT re.*, s.name AS shop_name, s.slug AS shop_slug, u.avatar
+             FROM raffle_entry re
+             INNER JOIN shop s ON s.id = re.shop_id
+             INNER JOIN users u ON u.id = s.user_id
+             WHERE re.status = 'selected'
+             ORDER BY re.created_at DESC
+             LIMIT " . max(1, $limit)
+        );
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
     // Toutes les inscriptions pour un type et une période donnés
     public function findByTypeAndPeriod(string $type, string $period): array
     {

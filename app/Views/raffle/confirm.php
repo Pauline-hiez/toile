@@ -1,7 +1,7 @@
 <h1>Inscription confirmée ! 🎉</h1>
 
 <p>
-    Ta carte a bien été autorisée pour le tirage
+    Ton ticket a bien été payé pour le tirage
     <strong><?= $type === 'homepage' ? 'Page d\'accueil' : 'Vitrine boutiques' ?></strong>.<br>
 
     <?php if ($type === 'homepage'): ?>

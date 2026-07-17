@@ -44,8 +44,14 @@ class RaffleController
             'homepageEntry' => $homepageEntry,
             'currentMonth' => $currentMonth,
             'currentMonday' => $currentMonday,
-            'rafflePrice' => (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '500'),
-            'homepagePrice' => (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '700'),
+            'rafflePrice' => (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '300'),
+            'homepagePrice' => (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '500'),
+            'boutiqueEntriesCount' => $this->raffleModel->countByTypeAndPeriod('boutiques', $currentMonth),
+            'homepageEntriesCount' => $this->raffleModel->countByTypeAndPeriod('homepage', $currentMonday),
+            'nextBoutiquesDraw' => date('Y-m-d 00:00:00', strtotime('first day of next month')),
+            'nextHomepageDraw' => date('Y-m-d 00:00:00', strtotime('next monday')),
+            'recentTickets' => $shop ? $this->raffleModel->findRecentByShopId($shop['id'], 6) : [],
+            'recentWinners' => $this->raffleModel->findRecentWinners(6),
             'pageTitle' => 'Tirages au sort — Toile',
         ]);
     }
@@ -62,8 +68,8 @@ class RaffleController
             : date('Y-m');
 
         $price = $type === 'homepage'
-            ? (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '700')
-            : (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '500');
+            ? (int) $this->settingModel->get('raffle_homepage_price', $_ENV['RAFFLE_HOMEPAGE_PRICE'] ?? '500')
+            : (int) $this->settingModel->get('raffle_price', $_ENV['RAFFLE_PRICE'] ?? '300');
 
         // Vérifie qu'il n'y ait pas déjà une inscription
         $existingEntry = $this->raffleModel->findByShopTypeAndPeriod($shop['id'], $type, $period);
@@ -84,26 +90,30 @@ class RaffleController
             $userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
         }
 
+        // Contrairement aux commandes (autorisation différée, capturée
+        // seulement si acceptée), le ticket de tirage est prélevé
+        // immédiatement à l'achat, gagnant ou non — capture automatique.
         $paymentData = $stripe->createPaymentIntent($price, 'eur', [
             'type' => 'raffle_' . $type,
             'shop_id' => $shop['id'],
             'period' => $period,
-        ], $stripeCustomerId);
+        ], $stripeCustomerId, 'automatic');
 
         // Nécessaire pour que le Payment Element affiche la case
         // "Mémoriser cette carte" et les cartes déjà enregistrées.
         $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
 
-        $this->raffleModel->create([
+        // L'inscription n'est écrite en base qu'après paiement Stripe
+        // réussi (voir confirm()) — sinon un artiste qui abandonne la
+        // page de paiement se retrouverait quand même inscrit au tirage
+        // sans jamais avoir payé son ticket.
+        $_SESSION['pending_raffle'] = [
             'shop_id' => $shop['id'],
             'type' => $type,
             'period' => $period,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
             'status' => 'entered',
-        ]);
-
-        // Stocke le type en session pour la page de confirmation
-        $_SESSION['pending_raffle_type'] = $type;
+        ];
 
         $this->renderer->render('raffle/payment', [
             'type' => $type,
@@ -111,18 +121,35 @@ class RaffleController
             'clientSecret' => $paymentData['client_secret'],
             'customerSessionClientSecret' => $customerSessionClientSecret,
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
-            'pageTitle' => 'Autorisation tirage — Toile',
+            'pageTitle' => 'Paiement du ticket — Toile',
         ]);
     }
 
-    // Confirmation après autorisation Stripe
+    // Confirmation après paiement Stripe
     public function confirm(): void
     {
-        $type = $_SESSION['pending_raffle_type'] ?? 'boutiques';
-        unset($_SESSION['pending_raffle_type']);
+        $pendingRaffle = $_SESSION['pending_raffle'] ?? null;
+
+        if ($pendingRaffle === null) {
+            header('Location: /raffle');
+            exit;
+        }
+
+        $stripe = new StripeService();
+        $status = $stripe->getPaymentIntentStatus($pendingRaffle['stripe_payment_intent_id']);
+
+        if ($status !== 'succeeded') {
+            unset($_SESSION['pending_raffle']);
+            header('Location: /raffle?payment=failed');
+            exit;
+        }
+
+        $this->raffleModel->create($pendingRaffle);
+
+        unset($_SESSION['pending_raffle']);
 
         $this->renderer->render('raffle/confirm', [
-            'type' => $type,
+            'type' => $pendingRaffle['type'],
             'pageTitle' => 'Inscription confirmée — Toile',
         ]);
     }
@@ -145,9 +172,12 @@ class RaffleController
         }
 
         if (!empty($entry['stripe_payment_intent_id'])) {
+            // Le ticket est prélevé immédiatement à l'achat (capture
+            // automatique) — annuler l'inscription doit donc rembourser,
+            // pas seulement annuler une autorisation non capturée.
             $stripe = new StripeService();
             try {
-                $stripe->cancelPaymentIntent($entry['stripe_payment_intent_id']);
+                $stripe->refundPaymentIntent($entry['stripe_payment_intent_id']);
             } catch (\Exception $e) {
                 // Supprime quand même l'entrée
             }
