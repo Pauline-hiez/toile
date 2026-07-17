@@ -93,7 +93,7 @@ $match = $router->match();
 
 if ($match === false) {
     http_response_code(404);
-    echo '404 — Page non trouvée';
+    $renderer->render('errors/404', ['pageTitle' => 'Page introuvable — Toile']);
     exit;
 }
 
