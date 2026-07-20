@@ -353,6 +353,14 @@ $router->map('GET', '/admin', [
     ],
 ]);
 
+$router->map('GET', '/admin/statistics', [
+    'controller' => ['App\Controllers\AdminController', 'statistics'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/artist-requests', [
     'controller' => ['App\Controllers\AdminController', 'artistRequests'],
     'middlewares' => [

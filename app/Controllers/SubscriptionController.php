@@ -31,13 +31,10 @@ class SubscriptionController
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
 
-        // "Commission" est le palier gratuit par défaut, pas une offre à
-        // souscrire via Stripe (elle n'a pas de stripe_price_id) — on ne
-        // la propose donc pas dans la liste des plans payants.
-        $plans = array_values(array_filter(
-            $this->planModel->findAll(),
-            fn($plan) => $plan['name'] !== 'Commission'
-        ));
+        // "Commission" est affichée comme les autres plans (carte, prix à
+        // 0€) mais reste un cas particulier côté vue : pas de souscription
+        // Stripe (pas de stripe_price_id), elle passe par confirm-free().
+        $plans = $this->planModel->findAll();
 
         $activeSubscription = $shop
             ? $this->subscriptionModel->findActiveByShopId($shop['id'])
@@ -62,13 +59,19 @@ class SubscriptionController
     public function confirmFree(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+        $freePlan = $this->planModel->findByName('Commission');
 
         if ($shop === null) {
+            // Pas encore de boutique : le choix d'abonnement précède
+            // désormais sa création — on mémorise le choix en session,
+            // finalisé par ShopController::save() une fois la boutique créée.
+            if ($freePlan !== null) {
+                $_SESSION['pending_shop_subscription'] = ['plan_id' => $freePlan['id']];
+            }
             header('Location: /my-shop');
             exit;
         }
 
-        $freePlan = $this->planModel->findByName('Commission');
         if ($freePlan !== null) {
             $this->subscriptionModel->assignFreePlan($shop['id'], $freePlan['id']);
         }
@@ -142,6 +145,25 @@ class SubscriptionController
         // Crée l'abonnement maintenant que la carte est attachée.
         $subscriptionData = $stripe->createSubscription($stripeCustomerId, $plan['stripe_price_id']);
 
+        unset($_SESSION['pending_subscription_plan_id']);
+        unset($_SESSION['pending_stripe_customer_id']);
+
+        if ($shop === null) {
+            // Pas encore de boutique : le choix d'abonnement précède
+            // désormais sa création — on mémorise l'abonnement Stripe déjà
+            // créé en session, finalisé par ShopController::save() une
+            // fois la boutique créée (ligne shop_subscription + ouverture).
+            $_SESSION['pending_shop_subscription'] = [
+                'plan_id' => $plan['id'],
+                'stripe_subscription_id' => $subscriptionData['subscription_id'],
+                'current_period_start' => date('Y-m-d H:i:s', $subscriptionData['current_period_start']),
+                'current_period_end' => date('Y-m-d H:i:s', $subscriptionData['current_period_end']),
+            ];
+
+            header('Location: /my-shop');
+            exit;
+        }
+
         $existingSubscription = $this->subscriptionModel->findByShopId($shop['id']);
 
         $subscriptionRecord = [
@@ -165,9 +187,6 @@ class SubscriptionController
             'plan_selected' => 1,
             'is_open' => 1,
         ]);
-
-        unset($_SESSION['pending_subscription_plan_id']);
-        unset($_SESSION['pending_stripe_customer_id']);
 
         $this->renderer->render('subscription/confirm', [
             'pageTitle' => 'Abonnement activé — Toile',

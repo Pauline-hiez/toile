@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Renderer;
 use App\Models\Shop;
+use App\Models\ShopSubscription;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\PortfolioImage;
@@ -14,6 +15,7 @@ class ShopController
 {
     private Renderer $renderer;
     private Shop $shopModel;
+    private ShopSubscription $subscriptionModel;
     private Review $reviewModel;
     private Service $serviceModel;
     private PortfolioImage $portfolioModel;
@@ -24,6 +26,7 @@ class ShopController
     {
         $this->renderer = $renderer;
         $this->shopModel = new Shop();
+        $this->subscriptionModel = new ShopSubscription();
         $this->reviewModel = new Review();
         $this->serviceModel = new Service();
         $this->portfolioModel = new PortfolioImage();
@@ -34,6 +37,15 @@ class ShopController
     public function manage(): void
     {
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+
+        // Le choix d'abonnement précède désormais la création de la
+        // boutique (voir SubscriptionController) — un artiste qui arrive
+        // ici sans boutique ni choix en attente doit d'abord passer par
+        // /my-subscription.
+        if ($shop === null && !isset($_SESSION['pending_shop_subscription'])) {
+            header('Location: /my-subscription');
+            exit;
+        }
 
         $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
@@ -72,6 +84,8 @@ class ShopController
         $socialFacebook = trim($_POST['social_facebook'] ?? '');
         $socialPinterest = trim($_POST['social_pinterest'] ?? '');
         $socialTiktok = trim($_POST['social_tiktok'] ?? '');
+        $styles = array_values(array_intersect($_POST['styles'] ?? [], Shop::STYLES));
+        $types = array_values(array_intersect($_POST['types'] ?? [], Shop::TYPES));
 
         $errors = [];
 
@@ -109,9 +123,6 @@ class ShopController
         // is_open n'est pas piloté par ce formulaire : une boutique ne
         // s'ouvre qu'après avoir choisi un abonnement (voir
         // SubscriptionController), puis se pilote via /my-shop/toggle.
-        // Les styles artistiques ne sont pas gérés par ce formulaire — ils
-        // seront choisis à la création de la boutique (à venir) et ne
-        // doivent pas être écrasés lors d'une simple mise à jour ici.
         $data = [
             'name' => $name,
             'bio' => $bio,
@@ -120,17 +131,47 @@ class ShopController
             'social_pinterest' => $socialPinterest !== '' ? $socialPinterest : null,
             'social_tiktok' => $socialTiktok !== '' ? $socialTiktok : null,
             'banner' => $bannerFilename,
+            'styles' => json_encode($styles),
+            'types' => json_encode($types),
         ];
 
         if ($existingShop === null) {
             // Création : on génère un nouveau slug. La boutique démarre
-            // fermée et sans formule choisie.
+            // fermée et sans formule choisie, sauf si un abonnement a déjà
+            // été choisi juste avant (voir SubscriptionController) —
+            // c'est désormais l'ordre normal du parcours "Devenir Artiste".
             $data['slug'] = $this->shopModel->generateUniqueSlug($name);
             $data['user_id'] = $_SESSION['user_id'];
             $data['is_open'] = 0;
             $data['plan_selected'] = 0;
 
-            $this->shopModel->create($data);
+            $shopId = $this->shopModel->create($data);
+
+            $pendingSubscription = $_SESSION['pending_shop_subscription'] ?? null;
+            unset($_SESSION['pending_shop_subscription']);
+
+            if ($pendingSubscription !== null) {
+                if (isset($pendingSubscription['stripe_subscription_id'])) {
+                    $this->subscriptionModel->create(array_merge($pendingSubscription, [
+                        'shop_id' => $shopId,
+                        'status' => 'active',
+                    ]));
+                } else {
+                    $this->subscriptionModel->assignFreePlan($shopId, $pendingSubscription['plan_id']);
+                }
+
+                $this->shopModel->update($shopId, ['plan_selected' => 1, 'is_open' => 1]);
+
+                header('Location: /my-shop');
+                exit;
+            }
+
+            // Accès direct à /my-shop sans être passé par le choix
+            // d'abonnement au préalable (ex: URL mise en favori) — la
+            // boutique existe mais reste fermée tant qu'un plan n'est
+            // pas choisi, /my-subscription gère déjà ce cas normalement.
+            header('Location: /my-subscription');
+            exit;
         } else {
             if ($name !== $existingShop['name']) {
                 $data['slug'] = $this->shopModel->generateUniqueSlug($name, $existingShop['id']);

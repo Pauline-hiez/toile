@@ -131,6 +131,39 @@ $bannerShapeRatio = '579 / 226';
     </div>
 
     <div class="bg-white border border-border rounded-md p-6 shadow-sm mb-6">
+        <h2 class="text-base font-semibold text-ink mb-5">Style & spécialité</h2>
+
+        <?php
+        $selectedStyles = !empty($shop['styles']) ? json_decode($shop['styles'], true) : [];
+        $selectedTypes = !empty($shop['types']) ? json_decode($shop['types'], true) : [];
+        ?>
+
+        <div class="mb-5">
+            <p class="text-[0.82rem] font-semibold text-ink mb-2">Styles artistiques</p>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach (\App\Models\Shop::STYLES as $style): ?>
+                    <label class="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-[0.4rem] text-[0.82rem] text-ink cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:text-primary transition-colors">
+                        <input type="checkbox" name="styles[]" value="<?= htmlspecialchars($style) ?>" <?= in_array($style, $selectedStyles, true) ? 'checked' : '' ?> class="accent-primary">
+                        <?= htmlspecialchars(ucfirst($style)) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div>
+            <p class="text-[0.82rem] font-semibold text-ink mb-2">Type / spécialité</p>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach (\App\Models\Shop::TYPES as $type): ?>
+                    <label class="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-[0.4rem] text-[0.82rem] text-ink cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:text-primary transition-colors">
+                        <input type="checkbox" name="types[]" value="<?= htmlspecialchars($type) ?>" <?= in_array($type, $selectedTypes, true) ? 'checked' : '' ?> class="accent-primary">
+                        <?= htmlspecialchars(ucfirst($type)) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm mb-6">
         <h2 class="text-base font-semibold text-ink mb-2">Réseaux sociaux</h2>
         <p class="text-[0.8rem] text-muted mb-5">Affichés sur ta page boutique publique, sous le bouton "Ajouter aux favoris". Laisse vide les réseaux que tu n'utilises pas.</p>
 

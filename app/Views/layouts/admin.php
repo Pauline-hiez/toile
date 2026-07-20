@@ -40,7 +40,9 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
 
 $navItems = [
     ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard.png', 'match' => 'exact'],
+    ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'users-actifs.png', 'match' => 'prefix'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'utilisateurs.png', 'match' => 'prefix'],
+    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'artiste.png', 'match' => 'prefix'],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'boutique.png', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'commandes.png', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'abonnements.png', 'match' => 'prefix'],
@@ -102,7 +104,11 @@ $navItems = [
             }
         }
 
-        @media (max-height: 650px) {
+        /* Deux items de nav ont été ajoutés (Statistiques, Demandes
+           artistes) — la liste est plus haute qu'avant, il faut masquer
+           l'illustration décorative plus tôt pour ne plus chevaucher
+           "Paramètres" en bas de liste. */
+        @media (max-height: 800px) {
             #adminSidebarIllustration {
                 display: none;
             }

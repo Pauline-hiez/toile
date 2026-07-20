@@ -16,6 +16,7 @@
 $pageTitle = htmlspecialchars($shop['name']) . ' — Toile';
 
 $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
+$types = $shop['types'] ? json_decode($shop['types'], true) : [];
 
 // Préserve le mode aperçu et l'onglet courant dans les liens qui doivent
 // ramener sur cette même vue (ex: redirection après le toggle favoris).
@@ -54,6 +55,9 @@ $renderStars = function (?float $rating, int $size = 14): string {
 
             <div class="pb-1">
                 <h1 class="font-cursive text-[1.3rem] min-[641px]:text-[1.6rem] font-semibold text-ink leading-tight"><?= htmlspecialchars($shop['name']) ?></h1>
+                <?php if (!empty($types)): ?>
+                    <p class="text-[0.85rem] text-muted"><?= htmlspecialchars(implode(', ', array_map('ucfirst', $types))) ?></p>
+                <?php endif; ?>
                 <?php if (!empty($styles)): ?>
                     <p class="text-[0.85rem] text-muted"><?= htmlspecialchars(implode(', ', array_map('ucfirst', $styles))) ?></p>
                 <?php endif; ?>

@@ -12,6 +12,12 @@ class Shop extends BaseModel
      */
     public const STYLES = ['anime', 'réaliste', 'chibi', 'pixel art', 'concept art'];
 
+    /**
+     * Spécialités/types d'artiste disponibles à la sélection (formulaire
+     * boutique). Multi-sélection, même principe que STYLES.
+     */
+    public const TYPES = ['illustrateur', 'portraitiste', 'character designer', 'concept artist', 'designer graphique', 'tatoueur', 'autre'];
+
     public function findByUserId(int $userId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM shop WHERE user_id = :user_id');

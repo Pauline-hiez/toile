@@ -29,6 +29,15 @@ CREATE TABLE users (
 
     artist_request_status ENUM('pending', 'approved', 'rejected') NULL,
 
+    -- Détails de la candidature artiste (formulaire /become-artist),
+    -- affichés à l'admin pour la revue de la demande.
+    artist_display_name VARCHAR(150) NULL,
+    requested_shop_name VARCHAR(150) NULL,
+    artist_contact_email VARCHAR(180) NULL,
+    artist_presentation TEXT NULL,
+    artist_motivation TEXT NULL,
+    artist_terms_accepted_at DATETIME NULL,
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -52,6 +61,7 @@ CREATE TABLE shop (
     banner VARCHAR(255) NULL,
 
     styles JSON NULL,
+    types JSON NULL,
 
     is_open BOOLEAN NOT NULL DEFAULT FALSE,
     accepts_quotes BOOLEAN NOT NULL DEFAULT TRUE,

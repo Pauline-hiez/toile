@@ -69,7 +69,7 @@ $orderStatusLabels = \App\Models\Order::statusLabels();
             role="img"
             aria-label="Nombre de commandes par jour sur les 14 derniers jours"
         ></div>
-        <a href="#" class="btn btn--primary self-center">Voir toutes les statistiques</a>
+        <a href="/admin/statistics" class="btn btn--primary self-center">Voir toutes les statistiques</a>
     </div>
 
     <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">

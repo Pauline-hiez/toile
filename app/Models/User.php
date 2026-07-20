@@ -20,6 +20,20 @@ class User extends BaseModel
         return $this->update($userId, ['artist_request_status' => $status]);
     }
 
+    // Enregistre une candidature artiste complète (voir ArtistController::submitRequest())
+    public function submitArtistRequest(int $userId, array $data): bool
+    {
+        return $this->update($userId, [
+            'artist_request_status' => 'pending',
+            'artist_display_name' => $data['artist_display_name'],
+            'requested_shop_name' => $data['requested_shop_name'],
+            'artist_contact_email' => $data['artist_contact_email'],
+            'artist_presentation' => $data['artist_presentation'],
+            'artist_motivation' => $data['artist_motivation'],
+            'artist_terms_accepted_at' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
     public function findPendingArtistRequests(): array
     {
         $stmt = $this->pdo->prepare(
