@@ -189,6 +189,7 @@ class SubscriptionController
         ]);
 
         $this->renderer->render('subscription/confirm', [
+            'plan' => $plan,
             'pageTitle' => 'Abonnement activé — Toile',
         ]);
     }
