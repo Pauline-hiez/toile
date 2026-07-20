@@ -58,6 +58,27 @@ class AdminController
     }
 
     /**
+     * Page Statistiques : courbes d'activité étendues (inscriptions,
+     * commandes, revenus, commissions) sur une période paramétrable.
+     */
+    public function statistics(): void
+    {
+        $days = (int) ($_GET['days'] ?? 30);
+        $days = in_array($days, [14, 30, 90], true) ? $days : 30;
+
+        $this->renderer->render('admin/statistics', [
+            'days' => $days,
+            'signupsChart' => $this->getSignupsChartData($days),
+            'ordersChart' => $this->getActivityChartData($days),
+            'revenueChart' => $this->getRevenueChartData($days),
+            'commissionsChart' => $this->getCommissionsChartData($days),
+            'pageTitle' => 'Statistiques - Administration',
+            'pageHeading' => 'Statistiques',
+            'pageSubtitle' => "Suis l'évolution de l'activité de la plateforme dans le temps.",
+        ], 'layouts/admin');
+    }
+
+    /**
      * Calcule les indicateurs clés de la plateforme.
      */
     private function getStats(): array
@@ -204,14 +225,67 @@ class AdminController
      */
     private function getActivityChartData(int $days = 14): array
     {
-        $pdo = \App\Core\Database::getInstance()->getConnection();
-
-        $stmt = $pdo->prepare(
+        return $this->getDailySeries(
             "SELECT DATE(created_at) AS day, COUNT(*) AS total
              FROM orders
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
-             GROUP BY DATE(created_at)"
+             GROUP BY DATE(created_at)",
+            $days
         );
+    }
+
+    // Nombre d'inscriptions par jour (page Statistiques).
+    private function getSignupsChartData(int $days): array
+    {
+        return $this->getDailySeries(
+            "SELECT DATE(created_at) AS day, COUNT(*) AS total
+             FROM users
+             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days
+        );
+    }
+
+    // Revenus (montant total des commandes capturées) par jour (page Statistiques).
+    private function getRevenueChartData(int $days): array
+    {
+        return $this->getDailySeries(
+            "SELECT DATE(created_at) AS day, COALESCE(SUM(total_price), 0) / 100 AS total
+             FROM orders
+             WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')
+             AND created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            true
+        );
+    }
+
+    // Commissions perçues par la plateforme par jour (page Statistiques).
+    private function getCommissionsChartData(int $days): array
+    {
+        return $this->getDailySeries(
+            "SELECT DATE(created_at) AS day, COALESCE(SUM(commission_amount), 0) / 100 AS total
+             FROM orders
+             WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')
+             AND created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            true
+        );
+    }
+
+    /**
+     * Série temporelle jour par jour à partir d'une requête SQL fournie
+     * (doit retourner les colonnes day/total, avec un paramètre nommé
+     * :days) — comble les jours sans donnée à 0, pour que le graphique
+     * (voir admin-chart.js) ait toujours une courbe continue. $asFloat
+     * pour les montants (revenus/commissions), int par défaut (compteurs).
+     */
+    private function getDailySeries(string $sql, int $days, bool $asFloat = false): array
+    {
+        $pdo = \App\Core\Database::getInstance()->getConnection();
+
+        $stmt = $pdo->prepare($sql);
         $stmt->bindValue('days', $days - 1, \PDO::PARAM_INT);
         $stmt->execute();
 
@@ -223,7 +297,8 @@ class AdminController
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = date('Y-m-d', strtotime("-{$i} days"));
             $labels[] = date('d/m', strtotime($date));
-            $values[] = (int) ($countsByDay[$date] ?? 0);
+            $rawValue = $countsByDay[$date] ?? 0;
+            $values[] = $asFloat ? round((float) $rawValue, 2) : (int) $rawValue;
         }
 
         return ['labels' => $labels, 'values' => $values];
