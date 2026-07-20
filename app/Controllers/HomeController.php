@@ -64,6 +64,14 @@ class HomeController
         ]);
     }
 
+    // Page "Conditions d'utilisation"
+    public function terms(): void
+    {
+        $this->renderer->render('terms', [
+            'pageTitle' => "Conditions d'utilisation — Toile",
+        ]);
+    }
+
     public function testDb(): void
     {
         try {
