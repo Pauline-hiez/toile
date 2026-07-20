@@ -39,9 +39,33 @@ class Favorite extends BaseModel
     public function findShopsByUserId(int $userId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT shop.*
+            'SELECT
+                shop.*,
+                u.username,
+                u.avatar,
+                (
+                    SELECT MIN(base_price)
+                    FROM service
+                    WHERE service.shop_id = shop.id AND service.is_active = 1
+                ) AS min_price,
+                (
+                    SELECT AVG(review.rating)
+                    FROM review
+                    INNER JOIN orders ON orders.id = review.order_id
+                    WHERE orders.shop_id = shop.id
+                ) AS avg_rating,
+                (
+                    SELECT COUNT(*)
+                    FROM review
+                    INNER JOIN orders ON orders.id = review.order_id
+                    WHERE orders.shop_id = shop.id
+                ) AS review_count,
+                (
+                    SELECT COUNT(*) FROM favorite WHERE favorite.shop_id = shop.id
+                ) AS favorite_count
             FROM favorite
             INNER JOIN shop ON shop.id = favorite.shop_id
+            INNER JOIN users u ON u.id = shop.user_id
             WHERE favorite.user_id = :user_id
             ORDER BY favorite.created_at DESC'
         );
