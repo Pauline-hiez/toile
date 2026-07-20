@@ -5,7 +5,6 @@
  * extract($data) (voir HomeController::index()).
  *
  * @var array $featuredShops Boutiques mises en avant ("Nos artistes de la semaine").
- * @var array<int, true> $favoriteShopIds Favoris de l'utilisateur, indexés par shop_id.
  * @var array<int, array{name: string, image: string|null}> $styleTiles Styles artistiques avec une image de portfolio représentative.
  */
 $pageTitle = 'Accueil — Toile';
@@ -37,6 +36,78 @@ $pageTitle = 'Accueil — Toile';
     </div>
 </section>
 
+<?php if (!empty($featuredShops)): ?>
+    <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
+        <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Nos artistes de la semaine</h2>
+
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
+            <?php foreach ($featuredShops as $shop): ?>
+                <?php
+                $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
+                $rating = $shop['avg_rating'] !== null ? number_format((float) $shop['avg_rating'], 1) : null;
+                ?>
+                <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm flex flex-col transition hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5">
+                    <div class="relative h-[100px] bg-primary-light">
+                        <?php if (!empty($shop['banner'])): ?>
+                            <img class="w-full h-full object-cover block" src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="">
+                        <?php endif; ?>
+
+                        <?php if (!$shop['is_open']): ?>
+                            <span class="absolute top-2 left-2 <?= \App\Core\Badge::classes('warning') ?>">Fermée</span>
+                        <?php endif; ?>
+
+                        <img class="absolute left-[0.9rem] bottom-[-22px] w-[52px] h-[52px] rounded-full border-[3px] border-white object-cover bg-bg"
+                            src="<?= !empty($shop['avatar']) ? '/uploads/avatars/' . htmlspecialchars($shop['avatar']) : '/uploads/avatars/default.png' ?>" alt="">
+                    </div>
+
+                    <div class="pt-7 px-[0.9rem] pb-[0.9rem] flex-1 flex flex-col">
+                        <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>" class="font-semibold text-[0.95rem] text-ink no-underline block"><?= htmlspecialchars($shop['name']) ?></a>
+                        <div class="text-[0.75rem] text-muted mb-[0.65rem]">Par <?= htmlspecialchars($shop['username']) ?></div>
+
+                        <?php if (!empty($styles)): ?>
+                            <div class="flex flex-wrap gap-[0.35rem] mb-3">
+                                <?php foreach (array_slice($styles, 0, 3) as $style): ?>
+                                    <span class="<?= \App\Core\Badge::classes('neutral') ?>"><?= htmlspecialchars(ucfirst($style)) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="flex items-center gap-[0.9rem] text-[0.8rem] text-muted mb-3">
+                            <?php if ($rating !== null): ?>
+                                <span title="Note moyenne" class="inline-flex items-center gap-[0.3rem]">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-[14px] h-[14px] text-title">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon>
+                                    </svg>
+                                    <?= $rating ?> (<?= (int) $shop['review_count'] ?>)
+                                </span>
+                            <?php else: ?>
+                                <span>Pas encore d'avis</span>
+                            <?php endif; ?>
+
+                            <span title="Favoris" class="inline-flex items-center gap-[0.3rem]">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-[14px] h-[14px]">
+                                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path>
+                                </svg>
+                                <?= (int) $shop['favorite_count'] ?>
+                            </span>
+                        </div>
+
+                        <div class="mt-auto pt-[0.65rem] border-t border-border flex items-center justify-between gap-2">
+                            <?php if ($shop['min_price'] !== null): ?>
+                                <span class="text-[0.85rem] font-semibold text-ink">Dès <?= number_format($shop['min_price'] / 100, 2) ?> €</span>
+                            <?php else: ?>
+                                <span class="text-[0.8rem] text-muted">Aucune prestation</span>
+                            <?php endif; ?>
+
+                            <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>" class="btn btn--outline" style="padding: 0.3rem 0.9rem; font-size: 0.8rem;">Voir</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>
+
 <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
     <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Explorez l'univers de la création</h2>
 
@@ -44,7 +115,7 @@ $pageTitle = 'Accueil — Toile';
         <?php foreach ($styleTiles as $tile): ?>
             <?php
             $tileImage = $tile['image']
-                ? '/uploads/portfolio/' . htmlspecialchars($tile['image'])
+                ? '/assets/images/decor/' . htmlspecialchars($tile['image'])
                 : '/assets/images/default/style.png';
             ?>
             <a href="/boutiques?style=<?= urlencode($tile['name']) ?>" class="group relative flex items-end h-[200px] rounded-md overflow-hidden bg-primary-light shadow-sm no-underline transition hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:-translate-y-0.5">
@@ -55,66 +126,6 @@ $pageTitle = 'Accueil — Toile';
         <?php endforeach; ?>
     </div>
 </section>
-
-<?php if (!empty($featuredShops)): ?>
-    <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-        <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Nos artistes de la semaine</h2>
-
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
-            <?php foreach ($featuredShops as $shop): ?>
-                <?php
-                $styles = $shop['styles'] ? json_decode($shop['styles'], true) : [];
-                $coverImage = $shop['cover_image']
-                    ? '/uploads/portfolio/' . htmlspecialchars($shop['cover_image'])
-                    : ($shop['banner'] ? '/uploads/banners/' . htmlspecialchars($shop['banner']) : null);
-                $isFavorite = isset($favoriteShopIds[$shop['id']]);
-                ?>
-                <article class="bg-white border border-border rounded-md overflow-hidden shadow-sm flex flex-col transition hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5">
-                    <div class="relative h-[170px] bg-primary-light">
-                        <?php if ($coverImage): ?>
-                            <img src="<?= $coverImage ?>" alt="" class="w-full h-full object-cover block">
-                        <?php endif; ?>
-
-                        <?php if (isset($_SESSION['user_id'])): ?>
-                            <form method="POST" action="/favoris/toggle/<?= $shop['id'] ?>" class="absolute top-[0.6rem] right-[0.6rem]">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
-                                <input type="hidden" name="redirect" value="/">
-                                <button type="submit" class="flex items-center justify-center w-[34px] h-[34px] rounded-full bg-white/85 <?= $isFavorite ? 'text-danger' : 'text-muted' ?> hover:bg-white hover:text-danger transition-colors" aria-label="<?= $isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' ?>">
-                                    <svg viewBox="0 0 24 24" fill="<?= $isFavorite ? 'currentColor' : 'none' ?>" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-[17px] h-[17px]">
-                                        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path>
-                                    </svg>
-                                </button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="p-4 flex-1 flex flex-col gap-[0.6rem]">
-                        <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>" class="font-semibold text-base text-ink no-underline"><?= htmlspecialchars($shop['name']) ?></a>
-
-                        <?php if (!empty($styles)): ?>
-                            <div class="flex flex-wrap gap-[0.35rem]">
-                                <?php foreach (array_slice($styles, 0, 3) as $style): ?>
-                                    <span class="<?= \App\Core\Badge::classes('neutral') ?>"><?= htmlspecialchars(ucfirst($style)) ?></span>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="flex items-center gap-[0.35rem] text-[0.85rem] text-muted mt-auto">
-                            <svg viewBox="0 0 24 24" fill="currentColor" class="w-[15px] h-[15px] text-title">
-                                <path d="M12 2.5l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.6 5.9 21l1.5-6.8-5.2-4.7 6.9-.7L12 2.5Z"></path>
-                            </svg>
-                            <?php if ($shop['avg_rating'] !== null): ?>
-                                <?= number_format((float) $shop['avg_rating'], 1) ?> (<?= (int) $shop['review_count'] ?>)
-                            <?php else: ?>
-                                Pas encore d'avis
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </section>
-<?php endif; ?>
 
 <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
     <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Comment ça marche ?</h2>

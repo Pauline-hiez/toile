@@ -3,23 +3,29 @@
 namespace App\Controllers;
 
 use App\Core\Renderer;
-use App\Models\Favorite;
-use App\Models\PortfolioImage;
 use App\Models\Shop;
 
 class HomeController
 {
     private Renderer $renderer;
     private Shop $shopModel;
-    private Favorite $favoriteModel;
-    private PortfolioImage $portfolioModel;
+
+    // Illustrations fixes des tuiles de style ("Explorez l'univers de la
+    // création") — une image choisie par style plutôt qu'une image de
+    // portfolio piochée dynamiquement (pouvait se répéter d'une tuile à
+    // l'autre quand une boutique cochait plusieurs styles à la fois).
+    private const STYLE_TILE_IMAGES = [
+        'anime' => 'anime.png',
+        'réaliste' => 'realiste.png',
+        'chibi' => 'chibi.png',
+        'pixel art' => 'pixel-art.png',
+        'concept art' => 'concept-art.png',
+    ];
 
     public function __construct(Renderer $renderer)
     {
         $this->renderer = $renderer;
         $this->shopModel = new Shop();
-        $this->favoriteModel = new Favorite();
-        $this->portfolioModel = new PortfolioImage();
     }
 
     // Page d'accueil
@@ -27,27 +33,17 @@ class HomeController
     {
         $featuredShops = $this->shopModel->findFeaturedForHomepage(5);
 
-        $favoriteShopIds = [];
-        if (isset($_SESSION['user_id'])) {
-            foreach ($featuredShops as $shop) {
-                if ($this->favoriteModel->isFavorite($_SESSION['user_id'], $shop['id'])) {
-                    $favoriteShopIds[$shop['id']] = true;
-                }
-            }
-        }
-
         $styleTiles = [];
         foreach (Shop::STYLES as $style) {
             $styleTiles[] = [
                 'name' => $style,
-                'image' => $this->portfolioModel->findCoverByStyle($style),
+                'image' => self::STYLE_TILE_IMAGES[$style] ?? null,
             ];
         }
 
         $this->renderer->render('home', [
             'pageTitle' => 'Accueil — Toile',
             'featuredShops' => $featuredShops,
-            'favoriteShopIds' => $favoriteShopIds,
             'styleTiles' => $styleTiles,
         ]);
     }

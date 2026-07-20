@@ -315,9 +315,10 @@ class Shop extends BaseModel
         $stmt = $this->pdo->prepare(
             "SELECT
                 shop.id, shop.name, shop.slug, shop.bio, shop.styles, shop.banner,
-                (SELECT filename FROM portfolio_image
-                    WHERE portfolio_image.shop_id = shop.id
-                    ORDER BY created_at ASC LIMIT 1) AS cover_image,
+                shop.is_open, u.username, u.avatar,
+                (SELECT MIN(base_price) FROM service
+                    WHERE service.shop_id = shop.id AND service.is_active = 1) AS min_price,
+                (SELECT COUNT(*) FROM favorite WHERE favorite.shop_id = shop.id) AS favorite_count,
                 (SELECT AVG(review.rating) FROM review
                     INNER JOIN orders ON orders.id = review.order_id
                     WHERE orders.shop_id = shop.id) AS avg_rating,
@@ -326,6 +327,7 @@ class Shop extends BaseModel
                     WHERE orders.shop_id = shop.id) AS review_count,
                 CASE WHEN re.status = 'selected' THEN 1 ELSE 0 END AS is_featured
              FROM shop
+             INNER JOIN users u ON u.id = shop.user_id
              LEFT JOIN raffle_entry re
                 ON re.shop_id = shop.id
                 AND re.type = 'homepage'

@@ -59,27 +59,4 @@ class PortfolioImage extends BaseModel
             $stmt->execute(['position' => $offset + $index, 'id' => $id, 'shop_id' => $shopId]);
         }
     }
-
-    /**
-     * Image de portfolio la plus récente parmi les boutiques ouvertes
-     * pratiquant ce style (voir Shop::STYLES), pour illustrer une tuile
-     * de style sur la page d'accueil. Null si aucune boutique n'a encore
-     * d'image dans ce style.
-     */
-    public function findCoverByStyle(string $style): ?string
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT pi.filename
-            FROM portfolio_image pi
-            INNER JOIN shop ON shop.id = pi.shop_id
-            WHERE shop.is_open = 1 AND JSON_CONTAINS(shop.styles, :style)
-            ORDER BY pi.created_at DESC
-            LIMIT 1'
-        );
-        $stmt->execute(['style' => json_encode($style)]);
-
-        $result = $stmt->fetchColumn();
-
-        return $result !== false ? $result : null;
-    }
 }

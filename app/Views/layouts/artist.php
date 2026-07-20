@@ -31,12 +31,23 @@ $pendingOrdersCount = $artistShop ? (new Order())->countPendingByShopId($artistS
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/my-dashboard', PHP_URL_PATH);
 
 $navItems = [
-    ['label' => 'Dashboard', 'href' => '/my-dashboard', 'icon' => 'dashboard.png', 'match' => 'exact'],
-    ['label' => 'Mon profil', 'href' => '/profile', 'icon' => 'profile.png', 'match' => 'exact'],
-    ['label' => 'Mes commandes', 'href' => '/commandes-recues', 'icon' => 'commandes.png', 'match' => 'prefix', 'badge' => $pendingOrdersCount],
-    ['label' => 'Mes prestations', 'href' => '/my-services', 'icon' => 'prestations.png', 'match' => 'prefix'],
-    ['label' => 'Portfolio', 'href' => '/my-portfolio', 'icon' => 'portfolio.png', 'match' => 'prefix'],
-    ['label' => 'Ma boutique', 'href' => '/my-shop', 'icon' => 'boutique.png', 'match' => 'exact'],
+    ['label' => 'Dashboard', 'href' => '/my-dashboard', 'icon' => 'dashboard', 'match' => 'exact'],
+    ['label' => 'Mon profil', 'href' => '/profile', 'icon' => 'user', 'match' => 'exact'],
+    ['label' => 'Mes commandes', 'href' => '/commandes-recues', 'icon' => 'package', 'match' => 'prefix', 'badge' => $pendingOrdersCount],
+    ['label' => 'Mes prestations', 'href' => '/my-services', 'icon' => 'tag', 'match' => 'prefix'],
+    ['label' => 'Portfolio', 'href' => '/my-portfolio', 'icon' => 'image', 'match' => 'prefix'],
+    ['label' => 'Ma boutique', 'href' => '/my-shop', 'icon' => 'shop', 'match' => 'exact'],
+];
+
+// SVG des icônes de la sidebar (remplace les anciens PNG) — même
+// convention que $notifIcons dans partials/header.php.
+$navIcons = [
+    'dashboard' => '<rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect>',
+    'user' => '<circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>',
+    'package' => '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>',
+    'tag' => '<path d="M12.6 2H4a2 2 0 0 0-2 2v8.6a2 2 0 0 0 .6 1.4l9 9a2 2 0 0 0 2.8 0l7.6-7.6a2 2 0 0 0 0-2.8l-9-9a2 2 0 0 0-1.4-.6Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle>',
+    'image' => '<rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path>',
+    'shop' => '<path d="M3 9.5 4.5 3h15L21 9.5"></path><path d="M3 9.5V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9.5"></path><path d="M9 21v-6h6v6"></path><path d="M3 9.5h18"></path>',
 ];
 ?>
 <!DOCTYPE html>
@@ -70,6 +81,16 @@ $navItems = [
                 display: none;
             }
         }
+
+        /* Icônes de nav vertes au repos, blanches sur le lien actif (même
+           fond vert) — même principe que la sidebar admin. */
+        #artistSidebarNav .nav-icon {
+            color: var(--color-primary);
+        }
+
+        #artistSidebarNav a.active .nav-icon {
+            color: var(--color-white);
+        }
     </style>
 </head>
 
@@ -86,7 +107,9 @@ $navItems = [
                     || ($item['match'] === 'prefix' && str_starts_with($currentPath, $item['href']));
                 ?>
                 <a href="<?= htmlspecialchars($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?> flex items-center gap-3 px-5 py-[0.45rem] text-ink no-underline text-[0.9rem] font-medium rounded-sm mx-2 my-[0.1rem] transition-colors hover:bg-primary-light hover:text-primary">
-                    <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-9 h-9 object-contain shrink-0">
+                    <span class="w-9 h-9 shrink-0 flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
+                    </span>
                     <?= htmlspecialchars($item['label']) ?>
                     <?php if (!empty($item['badge'])): ?>
                         <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>

@@ -39,16 +39,32 @@ if (isset($_SESSION['user_id'])) {
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
 
 $navItems = [
-    ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard.png', 'match' => 'exact'],
-    ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'users-actifs.png', 'match' => 'prefix'],
-    ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'utilisateurs.png', 'match' => 'prefix'],
-    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'artiste.png', 'match' => 'prefix'],
-    ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'boutique.png', 'match' => 'prefix'],
-    ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'commandes.png', 'match' => 'prefix'],
-    ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'abonnements.png', 'match' => 'prefix'],
-    ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'tirage.png', 'match' => 'prefix'],
-    ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'signalements.png', 'match' => 'prefix'],
-    ['label' => 'Paramètres', 'href' => '/admin/settings', 'icon' => 'parametres.png', 'match' => 'prefix'],
+    ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard', 'match' => 'exact'],
+    ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'stats', 'match' => 'prefix'],
+    ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users', 'match' => 'prefix'],
+    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix'],
+    ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'shop', 'match' => 'prefix'],
+    ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'package', 'match' => 'prefix'],
+    ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'card', 'match' => 'prefix'],
+    ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'ticket', 'match' => 'prefix'],
+    ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'flag', 'match' => 'prefix'],
+    ['label' => 'Paramètres', 'href' => '/admin/settings', 'icon' => 'settings', 'match' => 'prefix'],
+];
+
+// SVG des icônes de la sidebar (remplace les anciens PNG) — même
+// convention que $notifIcons dans partials/header.php : un nom court
+// mappé vers le contenu <path>/<circle>/... d'un <svg viewBox="0 0 24 24">.
+$navIcons = [
+    'dashboard' => '<rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect>',
+    'stats' => '<rect x="4" y="12" width="4" height="8" rx="1"></rect><rect x="10" y="7" width="4" height="13" rx="1"></rect><rect x="16" y="3" width="4" height="17" rx="1"></rect>',
+    'users' => '<circle cx="9" cy="7" r="3"></circle><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"></path><circle cx="17" cy="8" r="2.5"></circle><path d="M15.5 14c2.9.3 5.5 2.6 5.5 6"></path>',
+    'user-plus' => '<path d="M13 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="7" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path>',
+    'shop' => '<path d="M3 9.5 4.5 3h15L21 9.5"></path><path d="M3 9.5V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9.5"></path><path d="M9 21v-6h6v6"></path><path d="M3 9.5h18"></path>',
+    'package' => '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>',
+    'card' => '<rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line>',
+    'ticket' => '<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"></path><line x1="13" y1="6.5" x2="13" y2="8"></line><line x1="13" y1="11" x2="13" y2="13"></line><line x1="13" y1="16" x2="13" y2="17.5"></line>',
+    'flag' => '<path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>',
+    'settings' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.63.78 1.05 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>',
 ];
 ?>
 <!DOCTYPE html>
@@ -127,6 +143,17 @@ $navItems = [
             color: var(--color-white);
             border-radius: 999px;
         }
+
+        /* Icônes de nav vertes au repos, blanches sur le lien actif (même
+           fond vert) — surcharge le text-primary de la <span> via la
+           cascade, pas de spécificité à gérer côté Tailwind. */
+        #adminSidebarNav .nav-icon {
+            color: var(--color-primary);
+        }
+
+        #adminSidebarNav a.active .nav-icon {
+            color: var(--color-white);
+        }
     </style>
 </head>
 
@@ -146,7 +173,9 @@ $navItems = [
                         || ($item['match'] === 'prefix' && str_starts_with($currentPath, $item['href']));
                     ?>
                     <a href="<?= htmlspecialchars($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?> flex items-center gap-3 px-5 py-[0.45rem] text-ink no-underline text-[0.9rem] font-medium rounded-sm mx-2 my-[0.1rem] transition-colors hover:bg-primary-light hover:text-primary">
-                        <img src="/assets/images/icones/<?= $item['icon'] ?>" alt="" class="w-9 h-9 object-contain shrink-0">
+                        <span class="w-9 h-9 shrink-0 flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
+                        </span>
                         <?= htmlspecialchars($item['label']) ?>
                     </a>
                 <?php endforeach; ?>
