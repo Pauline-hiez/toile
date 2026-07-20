@@ -116,7 +116,7 @@ $steps = [
         </div>
 
         <div class="text-center mb-10">
-            <h2 class="font-cursive text-title text-[1.6rem] font-semibold mb-8">Comment ça marche&nbsp;?</h2>
+            <h2 class="font-title text-primary text-[2rem] mb-8">Comment ça marche&nbsp;?</h2>
 
             <div class="flex flex-col min-[900px]:flex-row items-center min-[900px]:items-start justify-center gap-6 min-[900px]:gap-3">
                 <?php foreach ($steps as $i => $step): ?>

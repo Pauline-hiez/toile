@@ -112,6 +112,7 @@ class RaffleController
             'type' => $type,
             'period' => $period,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
+            'amount_paid' => $price,
             'status' => 'entered',
         ];
 

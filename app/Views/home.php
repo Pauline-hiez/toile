@@ -10,9 +10,9 @@
 $pageTitle = 'Accueil — Toile';
 ?>
 
-<section class="max-w-[1400px] mx-auto px-5 pt-6 pb-6 min-[641px]:px-10 min-[641px]:pt-10 grid grid-cols-1 min-[1100px]:grid-cols-2 items-center gap-10">
-    <div class="order-first min-[1100px]:order-none">
-        <h1 class="font-cursive text-[2.3rem] min-[641px]:text-[3.2rem] font-semibold leading-[1.15] text-ink mb-3">Donnez vie à<br>vos idées.</h1>
+<section class="max-w-[1400px] mx-auto pt-6 pb-6 min-[641px]:pt-10 grid grid-cols-1 min-[1100px]:grid-cols-2 items-center gap-4">
+    <div class="order-first min-[1100px]:order-none px-5 min-[641px]:px-10">
+        <h1 class="font-title text-title text-[2.8rem] min-[641px]:text-[3.8rem] leading-[1.15] mb-3">Donnez vie à<br>vos idées.</h1>
         <p class="font-title italic text-[1.6rem] text-primary mb-4">L'art n'attend que vous.</p>
         <p class="text-muted text-base leading-[1.6] max-w-[480px] mb-7">
             Toile est un marketplace de comissions artistiques
@@ -38,7 +38,7 @@ $pageTitle = 'Accueil — Toile';
 
 <?php if (!empty($featuredShops)): ?>
     <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-        <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Nos artistes de la semaine</h2>
+        <h2 class="text-center font-title text-primary text-[2.3rem] mb-8">Nos artistes de la semaine</h2>
 
         <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
             <?php foreach ($featuredShops as $shop): ?>
@@ -109,7 +109,7 @@ $pageTitle = 'Accueil — Toile';
 <?php endif; ?>
 
 <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-    <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Explorez l'univers de la création</h2>
+    <h2 class="text-center font-title text-primary text-[2.3rem] mb-8">Explorez l'univers de la création</h2>
 
     <div class="grid grid-cols-2 min-[641px]:grid-cols-3 min-[1100px]:grid-cols-5 gap-6">
         <?php foreach ($styleTiles as $tile): ?>
@@ -128,7 +128,7 @@ $pageTitle = 'Accueil — Toile';
 </section>
 
 <section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-    <h2 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Comment ça marche ?</h2>
+    <h2 class="text-center font-title text-primary text-[2.3rem] mb-8">Comment ça marche ?</h2>
 
     <div class="grid grid-cols-1 min-[641px]:grid-cols-2 min-[1100px]:grid-cols-4 gap-8">
         <div class="text-center">

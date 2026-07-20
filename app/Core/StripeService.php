@@ -4,6 +4,7 @@ namespace App\Core;
 
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Price;
 use Stripe\Refund;
 use Stripe\Subscription;
 use Stripe\Customer;
@@ -116,6 +117,45 @@ class StripeService
         ]);
 
         return $setupIntent->client_secret;
+    }
+
+    /**
+     * Crée un nouveau Price pour le même produit qu'un Price existant,
+     * avec un nouveau montant. Les Price Stripe sont immuables (on ne
+     * peut pas changer le montant d'un Price déjà créé) — c'est la seule
+     * façon de faire évoluer le tarif d'un abonnement (voir aussi
+     * migrateSubscriptionToPrice() pour basculer les abonnés déjà actifs
+     * vers ce nouveau Price).
+     */
+    public function createPriceForSamePlan(string $existingPriceId, int $amount, string $currency = 'eur'): string
+    {
+        $existingPrice = Price::retrieve($existingPriceId);
+
+        $newPrice = Price::create([
+            'product' => $existingPrice->product,
+            'unit_amount' => $amount,
+            'currency' => $currency,
+            'recurring' => ['interval' => 'month'],
+        ]);
+
+        return $newPrice->id;
+    }
+
+    /**
+     * Bascule un abonnement Stripe actif vers un nouveau Price.
+     * proration_behavior 'none' : le nouveau montant s'applique à partir
+     * du prochain renouvellement, pas de facturation/remboursement
+     * immédiat en plein milieu du cycle en cours.
+     */
+    public function migrateSubscriptionToPrice(string $stripeSubscriptionId, string $newPriceId): void
+    {
+        $subscription = Subscription::retrieve($stripeSubscriptionId);
+        $itemId = $subscription->items->data[0]->id;
+
+        Subscription::update($stripeSubscriptionId, [
+            'items' => [['id' => $itemId, 'price' => $newPriceId]],
+            'proration_behavior' => 'none',
+        ]);
     }
 
     /**

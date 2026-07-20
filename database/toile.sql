@@ -459,6 +459,9 @@ CREATE TABLE raffle_entry (
 
     stripe_payment_intent_id VARCHAR(255) NULL,
 
+    -- Montant réellement payé (centimes), figé au moment de l'achat.
+    amount_paid INT NULL,
+
     status ENUM('entered', 'selected', 'not_selected', 'cancelled') NOT NULL DEFAULT 'entered',
 
     -- Pour le tirage homepage : date de fin de mise en avant (7 jours).

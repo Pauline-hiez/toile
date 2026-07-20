@@ -9,6 +9,7 @@ use App\Models\Shop;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\ShopSubscription;
+use App\Models\SubscriptionPlan;
 use App\Models\RaffleEntry;
 use App\Models\Report;
 use App\Models\Setting;
@@ -21,6 +22,7 @@ class AdminController
     private Order $orderModel;
     private Review $reviewModel;
     private ShopSubscription $subscriptionModel;
+    private SubscriptionPlan $subscriptionPlanModel;
     private RaffleEntry $raffleModel;
     private Report $reportModel;
     private Setting $settingModel;
@@ -33,6 +35,7 @@ class AdminController
         $this->orderModel = new Order();
         $this->reviewModel = new Review();
         $this->subscriptionModel = new ShopSubscription();
+        $this->subscriptionPlanModel = new SubscriptionPlan();
         $this->raffleModel = new RaffleEntry();
         $this->reportModel = new Report();
         $this->settingModel = new Setting();
@@ -59,19 +62,28 @@ class AdminController
 
     /**
      * Page Statistiques : courbes d'activité étendues (inscriptions,
-     * commandes, revenus, commissions) sur une période paramétrable.
+     * commandes, revenus) sur une période paramétrable, réparties en
+     * deux onglets — Activité (site/utilisateurs) et Revenus (finances).
      */
     public function statistics(): void
     {
         $days = (int) ($_GET['days'] ?? 30);
         $days = in_array($days, [14, 30, 90], true) ? $days : 30;
 
+        $ordersRevenueChart = $this->getRevenueChartData($days);
+        $commissionsChart = $this->getCommissionsChartData($days);
+        $subscriptionsChart = $this->getSubscriptionRevenueChartData($days);
+        $raffleChart = $this->getRaffleRevenueChartData($days);
+
         $this->renderer->render('admin/statistics', [
             'days' => $days,
             'signupsChart' => $this->getSignupsChartData($days),
             'ordersChart' => $this->getActivityChartData($days),
-            'revenueChart' => $this->getRevenueChartData($days),
-            'commissionsChart' => $this->getCommissionsChartData($days),
+            'ordersRevenueChart' => $ordersRevenueChart,
+            'commissionsChart' => $commissionsChart,
+            'subscriptionsChart' => $subscriptionsChart,
+            'raffleChart' => $raffleChart,
+            'totalRevenueChart' => $this->sumSeries([$commissionsChart, $subscriptionsChart, $raffleChart]),
             'pageTitle' => 'Statistiques - Administration',
             'pageHeading' => 'Statistiques',
             'pageSubtitle' => "Suis l'évolution de l'activité de la plateforme dans le temps.",
@@ -272,6 +284,61 @@ class AdminController
             $days,
             true
         );
+    }
+
+    /**
+     * Revenus tirage au sort par jour (montant réellement payé, voir
+     * raffle_entry.amount_paid — NULL pour les tickets vendus avant
+     * l'ajout de cette colonne, comptés comme 0).
+     */
+    private function getRaffleRevenueChartData(int $days): array
+    {
+        return $this->getDailySeries(
+            "SELECT DATE(created_at) AS day, COALESCE(SUM(amount_paid), 0) / 100 AS total
+             FROM raffle_entry
+             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            true
+        );
+    }
+
+    /**
+     * Revenus abonnements par jour — compte les nouvelles souscriptions
+     * ou changements de formule (shop_subscription.created_at), pas les
+     * renouvellements récurrents : aucun webhook Stripe n'est branché sur
+     * les factures pour l'instant, donc pas de vrai suivi MRR dans le temps.
+     */
+    private function getSubscriptionRevenueChartData(int $days): array
+    {
+        return $this->getDailySeries(
+            "SELECT DATE(ss.created_at) AS day, COALESCE(SUM(sp.price), 0) / 100 AS total
+             FROM shop_subscription ss
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
+             WHERE ss.created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(ss.created_at)",
+            $days,
+            true
+        );
+    }
+
+    /**
+     * Additionne plusieurs séries temporelles (même format labels/values,
+     * mêmes jours) point par point — utilisé pour "Revenus totaux
+     * plateforme" (commissions + abonnements + tirage au sort).
+     */
+    private function sumSeries(array $series): array
+    {
+        $labels = $series[0]['labels'] ?? [];
+        $values = array_fill(0, count($labels), 0.0);
+
+        foreach ($series as $s) {
+            foreach ($s['values'] as $i => $v) {
+                $values[$i] += $v;
+            }
+        }
+
+        return ['labels' => $labels, 'values' => array_map(fn($v) => round($v, 2), $values)];
     }
 
     /**
@@ -1056,6 +1123,7 @@ class AdminController
     {
         $this->renderer->render('admin/settings', [
             'settings' => $this->settingModel->all(),
+            'plans' => $this->subscriptionPlanModel->findAll(),
             'section' => $_GET['section'] ?? '',
             'success' => isset($_GET['success']),
             'pageTitle' => 'Paramètres - Administration',
@@ -1127,6 +1195,103 @@ class AdminController
 
         header('Location: /admin/settings?section=raffle&success=1');
         exit;
+    }
+
+    /**
+     * Met à jour le prix et les caractéristiques des formules d'abonnement.
+     * Le palier gratuit "Commission" n'a pas de prix (pas de facturation
+     * Stripe), sa valeur soumise est ignorée.
+     *
+     * Si le prix d'un palier payant change réellement, un nouveau Price
+     * Stripe est créé automatiquement (les Price Stripe sont immuables,
+     * impossible de modifier le montant d'un Price existant), et TOUS les
+     * abonnés déjà actifs sur ce plan sont basculés vers ce nouveau Price
+     * (proration_behavior 'none' : effectif à leur prochain renouvellement,
+     * pas de facturation immédiate en plein milieu du cycle en cours) —
+     * pas de grandfathering, tout le monde paie le même tarif à terme.
+     */
+    public function updateSubscriptionPlans(): void
+    {
+        $plans = $this->subscriptionPlanModel->findAll();
+
+        foreach ($plans as $plan) {
+            $input = $_POST['plan'][$plan['id']] ?? null;
+            if ($input === null) {
+                continue;
+            }
+
+            $price = $plan['name'] === 'Commission'
+                ? 0
+                : max(0, (int) round((float) str_replace(',', '.', $input['price'] ?? '0') * 100));
+
+            $updateData = [
+                'price' => $price,
+                'commission_rate' => max(0, min(100, (float) str_replace(',', '.', $input['commission_rate'] ?? '0'))),
+                'max_services' => max(1, (int) ($input['max_services'] ?? 1)),
+                'max_portfolio_images' => max(1, (int) ($input['max_portfolio_images'] ?? 1)),
+                'max_options_per_service' => max(0, (int) ($input['max_options_per_service'] ?? 0)),
+            ];
+
+            if ($plan['name'] !== 'Commission' && $price !== (int) $plan['price'] && !empty($plan['stripe_price_id'])) {
+                $stripe = new \App\Core\StripeService();
+                $newPriceId = $stripe->createPriceForSamePlan($plan['stripe_price_id'], $price);
+                $updateData['stripe_price_id'] = $newPriceId;
+
+                foreach ($this->subscriptionModel->findActiveByPlanId($plan['id']) as $activeSubscription) {
+                    if (empty($activeSubscription['stripe_subscription_id'])) {
+                        continue;
+                    }
+
+                    try {
+                        $stripe->migrateSubscriptionToPrice($activeSubscription['stripe_subscription_id'], $newPriceId);
+                        $this->notifySubscriptionPriceChange($activeSubscription, $plan['name'], (int) $plan['price'], $price);
+                    } catch (\Exception $e) {
+                        // Un abonnement isolé peut échouer (ex: déjà annulé
+                        // côté Stripe) — n'interrompt pas la bascule des autres.
+                    }
+                }
+            }
+
+            $this->subscriptionPlanModel->update($plan['id'], $updateData);
+        }
+
+        header('Location: /admin/settings?section=subscriptions&success=1');
+        exit;
+    }
+
+    /**
+     * Notifie (in-app + email) l'artiste dont l'abonnement vient d'être
+     * basculé vers un nouveau tarif — voir updateSubscriptionPlans().
+     */
+    private function notifySubscriptionPriceChange(array $subscription, string $planName, int $oldPrice, int $newPrice): void
+    {
+        $shop = $this->shopModel->findById($subscription['shop_id']);
+        if ($shop === null) {
+            return;
+        }
+
+        $user = $this->userModel->findById($shop['user_id']);
+        if ($user === null) {
+            return;
+        }
+
+        $renewalDate = \App\Core\FrenchDate::format('d MMMM y', $subscription['current_period_end']);
+
+        (new \App\Models\Notification())->notify(
+            $user['id'],
+            'subscription_price_changed',
+            "Le prix de la formule {$planName} passe à " . number_format($newPrice / 100, 2) . ' € — effectif à ton prochain renouvellement le ' . $renewalDate . '.',
+            '/my-subscription'
+        );
+
+        $html = \App\Core\Mailer::renderTemplate('subscription-price-changed', [
+            'username' => $user['username'],
+            'planName' => $planName,
+            'oldPrice' => $oldPrice,
+            'newPrice' => $newPrice,
+            'renewalDate' => $renewalDate,
+        ]);
+        \App\Core\Mailer::send($user['email'], 'Le tarif de ton abonnement évolue', $html, 'subscription_price_changed');
     }
 
     public function updateMaintenanceSettings(): void

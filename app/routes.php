@@ -529,6 +529,14 @@ $router->map('POST', '/admin/settings/raffle', [
     ],
 ]);
 
+$router->map('POST', '/admin/settings/subscriptions', [
+    'controller' => ['App\Controllers\AdminController', 'updateSubscriptionPlans'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('POST', '/admin/settings/maintenance', [
     'controller' => ['App\Controllers\AdminController', 'updateMaintenanceSettings'],
     'middlewares' => [

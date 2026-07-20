@@ -81,6 +81,7 @@ class Notification extends BaseModel
             'new_review' => ['label' => 'Nouvel avis', 'icon' => 'star'],
             'artist_approved' => ['label' => 'Demande acceptée', 'icon' => 'check'],
             'artist_rejected' => ['label' => 'Demande refusée', 'icon' => 'x'],
+            'subscription_price_changed' => ['label' => 'Abonnement mis à jour', 'icon' => 'money'],
         ];
 
         return $map[$type] ?? ['label' => 'Notification', 'icon' => 'bell'];

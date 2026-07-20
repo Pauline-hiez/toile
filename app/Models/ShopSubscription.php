@@ -22,6 +22,22 @@ class ShopSubscription extends BaseModel
         return $result ?: null;
     }
 
+    /**
+     * Abonnements actifs sur un plan donné (voir
+     * AdminController::updateSubscriptionPlans() — bascule tous les
+     * abonnés déjà actifs vers le nouveau Price Stripe quand le prix
+     * du plan change).
+     */
+    public function findActiveByPlanId(int $planId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM shop_subscription WHERE plan_id = :plan_id AND status = 'active'"
+        );
+        $stmt->execute(['plan_id' => $planId]);
+
+        return $stmt->fetchAll();
+    }
+
     // Trouve l'abonnement d'une boutique quel que soit son statut (shop_id est unique)
     public function findByShopId(int $shopId): ?array
     {
