@@ -33,7 +33,7 @@ $socialLinks = [
             <h4>À propos</h4>
             <a href="/a-propos">Qui sommes-nous ?</a>
             <a href="/become-artist">Devenir Artiste</a>
-            <a href="/contact">Contact</a>
+            <a href="/contact" data-contact-open>Contact</a>
         </div>
 
         <div class="site-footer__col">

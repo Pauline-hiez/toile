@@ -281,6 +281,10 @@ $navIcons = [
             overlay.addEventListener('click', closeSidebar);
         })();
     </script>
+
+    <?php require __DIR__ . '/../components/contact-modal.php'; ?>
+    <script src="/assets/js/input-sparks.js"></script>
+    <script src="/assets/js/contact-modal.js"></script>
 </body>
 
 </html>

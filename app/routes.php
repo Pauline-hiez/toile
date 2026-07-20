@@ -24,6 +24,11 @@ $router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
 $router->map('GET', '/cgu', ['App\Controllers\HomeController', 'terms']);
 $router->map('GET', '/confidentialite', ['App\Controllers\HomeController', 'privacy']);
 $router->map('GET', '/reglement-interieur', ['App\Controllers\HomeController', 'rules']);
+$router->map('GET', '/a-propos', ['App\Controllers\HomeController', 'about']);
+
+// Contact
+$router->map('GET', '/contact', ['App\Controllers\ContactController', 'index']);
+$router->map('POST', '/contact', ['App\Controllers\ContactController', 'submit']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);

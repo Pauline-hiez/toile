@@ -192,6 +192,10 @@ $navIcons = [
     </main>
 
     <?php require __DIR__ . '/../partials/footer.php'; ?>
+
+    <?php require __DIR__ . '/../components/contact-modal.php'; ?>
+    <script src="/assets/js/input-sparks.js"></script>
+    <script src="/assets/js/contact-modal.js"></script>
 </body>
 
 </html>

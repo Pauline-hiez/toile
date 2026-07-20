@@ -88,6 +88,14 @@ class HomeController
         ]);
     }
 
+    // Page "Qui sommes-nous ?"
+    public function about(): void
+    {
+        $this->renderer->render('about', [
+            'pageTitle' => 'Qui sommes-nous ? — Toile',
+        ]);
+    }
+
     public function testDb(): void
     {
         try {
