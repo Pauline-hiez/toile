@@ -236,8 +236,10 @@ class AdminController
 
         $this->renderer->render('admin/artist-requests', [
             'requests' => $requests,
-            'pageTitle' => 'Demande artiste - Administration',
-        ]);
+            'pageTitle' => 'Demandes artiste - Administration',
+            'pageHeading' => 'Demandes artiste',
+            'pageSubtitle' => 'Examine les candidatures et décide qui rejoint la plateforme en tant qu\'artiste.',
+        ], 'layouts/admin');
     }
 
     public function approveArtistRequest(int $id): void
@@ -261,7 +263,7 @@ class AdminController
             $id,
             'artist_approved',
             'Félicitations ! Ta demande a été acceptée, tu es maintenant un Artiste !',
-            '/my-shop'
+            '/my-subscription'
         );
         header('Location: /admin/artist-requests');
         exit;

@@ -4,12 +4,14 @@
  * extract($data) (voir ArtistController::showRequest()/submitRequest()).
  *
  * @var array $user
+ * @var array<string, string> $errors
+ * @var array<string, string> $old
  * @var string|null $success
  */
 $pageTitle = 'Devenir artiste — Toile';
 
 $steps = [
-    ['icon' => 'create.png', 'label' => 'Envoyez une demande'],
+    ['icon' => 'envoyer-demande.png', 'label' => 'Envoyez une demande'],
     ['icon' => 'abonnements.png', 'label' => 'Choisissez votre abonnement'],
     ['icon' => 'boutique.png', 'label' => 'Création de votre boutique'],
 ];
@@ -60,14 +62,15 @@ $steps = [
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="/become-artist" class="flex flex-col items-center gap-5 max-w-[560px]">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
-                <button type="submit" class="btn btn--primary px-10 py-3 text-base">Envoyer ma demande</button>
-                <p class="text-muted text-[0.9rem] leading-[1.5]">
-                    En soumettant cette demande, tu confirmes vouloir proposer tes services
-                    artistiques sur Toile. Un administrateur examinera ta demande prochainement.
+            <div class="flex flex-col items-center gap-3">
+                <button type="button" data-become-artist-open class="btn btn--primary px-10 py-3 text-base">Envoyer ma demande</button>
+                <p class="text-muted text-[0.85rem] leading-[1.5] max-w-[400px] text-center">
+                    Un administrateur examinera ta demande prochainement.
                 </p>
-            </form>
+            </div>
         <?php endif; ?>
     </div>
 </section>
+
+<?php require __DIR__ . '/../components/become-artist-modal.php'; ?>
+<script src="/assets/js/become-artist-modal.js"></script>

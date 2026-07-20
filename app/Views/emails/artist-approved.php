@@ -5,10 +5,10 @@ ob_start();
 
 <p>Bonjour <?= htmlspecialchars($username) ?>,</p>
 
-<p>Ta demande pour devenir artiste sur Toile a été <strong>acceptée</strong>. Tu peux dès maintenant créer ta boutique et proposer tes prestations.</p>
+<p>Ta demande pour devenir artiste sur Toile a été <strong>acceptée</strong>. Choisis ta formule d'abonnement pour commencer à créer ta boutique et proposer tes prestations.</p>
 
-<a href="<?= $_ENV['APP_URL'] ?>/my-shop" class="btn">
-    Créer ma boutique
+<a href="<?= $_ENV['APP_URL'] ?>/my-subscription" class="btn">
+    Choisir mon abonnement
 </a>
 
 <p><strong>L'équipe Toile</strong></p>
