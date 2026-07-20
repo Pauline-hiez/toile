@@ -19,6 +19,7 @@
 
 // Accueil
 $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
+$router->map('GET', '/comment-ca-marche', ['App\Controllers\HomeController', 'howItWorks']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);

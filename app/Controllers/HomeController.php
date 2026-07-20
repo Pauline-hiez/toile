@@ -48,6 +48,14 @@ class HomeController
         ]);
     }
 
+    // Page "Comment ça marche ?"
+    public function howItWorks(): void
+    {
+        $this->renderer->render('how-it-works', [
+            'pageTitle' => 'Comment ça marche ? — Toile',
+        ]);
+    }
+
     public function testDb(): void
     {
         try {
