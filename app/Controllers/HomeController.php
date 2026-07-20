@@ -56,6 +56,14 @@ class HomeController
         ]);
     }
 
+    // Page "Aide et FAQ"
+    public function faq(): void
+    {
+        $this->renderer->render('faq', [
+            'pageTitle' => 'Aide et FAQ — Toile',
+        ]);
+    }
+
     public function testDb(): void
     {
         try {

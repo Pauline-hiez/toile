@@ -20,6 +20,7 @@
 // Accueil
 $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
 $router->map('GET', '/comment-ca-marche', ['App\Controllers\HomeController', 'howItWorks']);
+$router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);
