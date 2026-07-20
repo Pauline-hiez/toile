@@ -636,6 +636,39 @@ $router->map('POST', '/my-subscription/confirm-free', [
     ],
 ]);
 
+// Paiements artiste (Stripe Connect)
+$router->map('GET', '/my-payouts', [
+    'controller' => ['App\Controllers\PayoutController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-payouts/connect', [
+    'controller' => ['App\Controllers\PayoutController', 'connect'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-payouts/return', [
+    'controller' => ['App\Controllers\PayoutController', 'returnFromOnboarding'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-payouts/refresh', [
+    'controller' => ['App\Controllers\PayoutController', 'refresh'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Tirage au sort
 $router->map('GET', '/raffle', [
     'controller' => ['App\Controllers\RaffleController', 'index'],

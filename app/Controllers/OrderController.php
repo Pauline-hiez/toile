@@ -112,6 +112,20 @@ class OrderController
         $isQuote = isset($_POST['is_quote']) && !empty($shop['accepts_quotes']);
         $selectedOptionIds = array_map('intval', $_POST['options'] ?? []);
 
+        // Adresse de livraison : uniquement si le client a coché "je
+        // souhaite recevoir une version physique" (sinon livraison
+        // numérique, aucune adresse enregistrée même si des champs cachés
+        // contenaient encore une valeur d'une requête forgée).
+        $wantsShipping = isset($_POST['wants_shipping']);
+        $shippingFields = [
+            'shipping_name' => null,
+            'shipping_address_line1' => null,
+            'shipping_address_line2' => null,
+            'shipping_city' => null,
+            'shipping_postal_code' => null,
+            'shipping_country' => null,
+        ];
+
         $errors = [];
 
         if (mb_strlen($title) < 3) {
@@ -120,6 +134,23 @@ class OrderController
 
         if (mb_strlen($description) < 10) {
             $errors['description'] = 'La description doit faire au moins 10 caractères.';
+        }
+
+        if ($wantsShipping) {
+            $shippingFields = [
+                'shipping_name' => trim($_POST['shipping_name'] ?? ''),
+                'shipping_address_line1' => trim($_POST['shipping_address_line1'] ?? ''),
+                'shipping_address_line2' => trim($_POST['shipping_address_line2'] ?? ''),
+                'shipping_city' => trim($_POST['shipping_city'] ?? ''),
+                'shipping_postal_code' => trim($_POST['shipping_postal_code'] ?? ''),
+                'shipping_country' => trim($_POST['shipping_country'] ?? ''),
+            ];
+
+            if ($shippingFields['shipping_address_line1'] === '' || $shippingFields['shipping_city'] === '' || $shippingFields['shipping_postal_code'] === '') {
+                $errors['shipping'] = 'Renseigne au moins l\'adresse, la ville et le code postal pour une livraison physique.';
+            }
+
+            $shippingFields = array_map(fn($v) => $v !== '' ? $v : null, $shippingFields);
         }
 
         // Éléments de base : choix purement descriptifs groupés par
@@ -188,7 +219,7 @@ class OrderController
 
         // Si demande de devis, pas de paiement — on crée directement la commande.
         if ($isQuote) {
-            $orderId = $this->orderModel->create([
+            $orderId = $this->orderModel->create(array_merge([
                 'client_id' => $_SESSION['user_id'],
                 'shop_id' => $shop['id'],
                 'service_id' => $service['id'],
@@ -197,7 +228,7 @@ class OrderController
                 'total_price' => $totalPrice,
                 'status' => 'quote_requested',
                 'delivery_file' => $referenceFile,
-            ]);
+            ], $shippingFields));
 
             $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $flatBases);
 
@@ -222,11 +253,23 @@ class OrderController
             $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
         }
 
+        // Si la boutique a connecté son compte bancaire (Stripe Connect),
+        // sa part est reversée automatiquement via un paiement à
+        // destination — sinon le paiement reste inchangé (tout reste sur
+        // le compte plateforme, comme avant la mise en place de Connect).
+        $connectedAccountId = null;
+        $applicationFeeAmount = null;
+        if (!empty($shop['stripe_account_id']) && !empty($shop['stripe_payouts_enabled'])) {
+            $connectedAccountId = $shop['stripe_account_id'];
+            $commissionRate = $this->subscriptionModel->getCommissionRate($shop['id']);
+            $applicationFeeAmount = (int) round($totalPrice * $commissionRate / 100);
+        }
+
         // Crée le PaymentIntent Stripe (autorisation différée).
         $paymentData = $stripe->createPaymentIntent($totalPrice, 'eur', [
             'service_id' => $service['id'],
             'client_id' => $_SESSION['user_id'],
-        ], $stripeCustomerId);
+        ], $stripeCustomerId, 'manual', $connectedAccountId, $applicationFeeAmount);
 
         // Nécessaire pour que le Payment Element affiche la case
         // "Mémoriser cette carte" et les cartes déjà enregistrées.
@@ -234,7 +277,7 @@ class OrderController
 
         // Stocke les données de commande en session pour les récupérer
         // après la confirmation Stripe (étape suivante).
-        $_SESSION['pending_order'] = [
+        $_SESSION['pending_order'] = array_merge([
             'client_id' => $_SESSION['user_id'],
             'shop_id' => $shop['id'],
             'service_id' => $service['id'],
@@ -243,7 +286,7 @@ class OrderController
             'total_price' => $totalPrice,
             'delivery_file' => $referenceFile,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
-        ];
+        ], $shippingFields);
         // Stocké à part : ce n'est pas une colonne de orders, seulement
         // utilisé après coup pour peupler order_service_base (voir confirm()).
         $_SESSION['pending_order_base_ids'] = $selectedBaseIds;
@@ -676,10 +719,21 @@ class OrderController
             $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
         }
 
+        // Voir store() : reversement automatique de la part de l'artiste
+        // si sa boutique a connecté son compte bancaire (Stripe Connect).
+        $shop = $this->shopModel->findById($order['shop_id']);
+        $connectedAccountId = null;
+        $applicationFeeAmount = null;
+        if (!empty($shop['stripe_account_id']) && !empty($shop['stripe_payouts_enabled'])) {
+            $connectedAccountId = $shop['stripe_account_id'];
+            $commissionRate = $this->subscriptionModel->getCommissionRate($shop['id']);
+            $applicationFeeAmount = (int) round($order['total_price'] * $commissionRate / 100);
+        }
+
         $paymentData = $stripe->createPaymentIntent($order['total_price'], 'eur', [
             'order_id' => $order['id'],
             'client_id' => $order['client_id'],
-        ], $stripeCustomerId);
+        ], $stripeCustomerId, 'manual', $connectedAccountId, $applicationFeeAmount);
 
         $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
 

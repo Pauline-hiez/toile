@@ -124,6 +124,54 @@
             <?php endif; ?>
         </div>
 
+        <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4">
+            <h2 class="font-cursive text-[1.1rem] font-semibold text-ink">Livraison</h2>
+
+            <label class="inline-flex items-center gap-2 text-[0.85rem] text-ink cursor-pointer">
+                <input type="checkbox" id="wants-shipping" name="wants_shipping" value="1" class="w-4 h-4 accent-primary cursor-pointer">
+                Je souhaite recevoir une version physique de ma création
+            </label>
+            <p class="text-[0.78rem] text-muted -mt-3">Si tu ne coches pas cette case, tu recevras ta création au format numérique.</p>
+            <?php if (isset($errors['shipping'])): ?>
+                <p class="text-danger text-[0.78rem] -mt-2"><?= htmlspecialchars($errors['shipping']) ?></p>
+            <?php endif; ?>
+
+            <div id="shipping-fields" class="hidden flex-col gap-4">
+                <div>
+                    <label for="shipping_name" class="block text-[0.85rem] font-semibold text-ink mb-1">Nom complet</label>
+                    <input type="text" id="shipping_name" name="shipping_name"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+
+                <div>
+                    <label for="shipping_address_line1" class="block text-[0.85rem] font-semibold text-ink mb-1">Adresse</label>
+                    <input type="text" id="shipping_address_line1" name="shipping_address_line1"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary mb-2">
+                    <input type="text" id="shipping_address_line2" name="shipping_address_line2" placeholder="Complément d'adresse (optionnel)"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+
+                <div class="flex flex-col min-[480px]:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="shipping_postal_code" class="block text-[0.85rem] font-semibold text-ink mb-1">Code postal</label>
+                        <input type="text" id="shipping_postal_code" name="shipping_postal_code"
+                            class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    </div>
+                    <div class="flex-[2]">
+                        <label for="shipping_city" class="block text-[0.85rem] font-semibold text-ink mb-1">Ville</label>
+                        <input type="text" id="shipping_city" name="shipping_city"
+                            class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="shipping_country" class="block text-[0.85rem] font-semibold text-ink mb-1">Pays</label>
+                    <input type="text" id="shipping_country" name="shipping_country" placeholder="France"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+            </div>
+        </div>
+
         <div class="flex items-center justify-between gap-3 bg-primary-light rounded-xl px-5 py-4">
             <span class="text-[0.85rem] font-semibold text-primary">Total estimé</span>
             <span class="text-[1.3rem] font-cursive font-semibold text-primary"><span id="total-price"><?= number_format($service['base_price'] / 100, 2) ?></span> €</span>
@@ -156,5 +204,13 @@
     }
 
     checkboxes.forEach(cb => cb.addEventListener('change', updateTotal));
+
+    const wantsShippingInput = document.getElementById('wants-shipping');
+    const shippingFields = document.getElementById('shipping-fields');
+
+    wantsShippingInput.addEventListener('change', () => {
+        shippingFields.classList.toggle('hidden', !wantsShippingInput.checked);
+        shippingFields.classList.toggle('flex', wantsShippingInput.checked);
+    });
 </script>
 <script src="/assets/js/input-sparks.js"></script>

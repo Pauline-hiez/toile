@@ -69,6 +69,11 @@ CREATE TABLE shop (
 
     monetization_type ENUM('subscription', 'commission') NOT NULL DEFAULT 'commission',
 
+    -- Compte Stripe Connect (Express) pour le reversement automatique
+    -- de la part de l'artiste sur chaque commande.
+    stripe_account_id VARCHAR(255) NULL,
+    stripe_payouts_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_shop_user
@@ -176,6 +181,14 @@ CREATE TABLE orders (
 
     stripe_payment_intent_id VARCHAR(255) NULL,
     delivery_file VARCHAR(255) NULL,
+
+    -- Adresse de livraison, facultative (création numérique = pas besoin).
+    shipping_name VARCHAR(150) NULL,
+    shipping_address_line1 VARCHAR(255) NULL,
+    shipping_address_line2 VARCHAR(255) NULL,
+    shipping_city VARCHAR(100) NULL,
+    shipping_postal_code VARCHAR(20) NULL,
+    shipping_country VARCHAR(100) NULL,
 
     is_archived BOOLEAN NOT NULL DEFAULT FALSE,
 

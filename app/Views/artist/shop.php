@@ -78,6 +78,14 @@ $bannerShapeRatio = '579 / 226';
     </div>
 <?php endif; ?>
 
+<?php if ($shop !== null && empty($shop['stripe_payouts_enabled'])): ?>
+    <div class="bg-warning-bg border border-warning/25 text-warning rounded-md px-5 py-4 mb-6 text-[0.9rem]">
+        <strong>Ton compte bancaire n'est pas encore connecté.</strong>
+        Connecte-le pour recevoir directement ta part de chaque commande.
+        <a href="/my-payouts" class="font-semibold underline">Connecter mon compte →</a>
+    </div>
+<?php endif; ?>
+
 <?php if ($shop === null): ?>
     <p class="text-[0.85rem] text-muted mb-5">Configure ta boutique pour qu'elle apparaisse sur Toile.</p>
 <?php endif; ?>

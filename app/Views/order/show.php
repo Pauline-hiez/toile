@@ -156,6 +156,25 @@ $stepIcons = [
                         <span class="text-ink font-medium text-right"><?= htmlspecialchars($selectedBase['label']) ?></span>
                     </div>
                 <?php endforeach; ?>
+
+                <?php if (!empty($order['shipping_address_line1'])): ?>
+                    <div class="flex justify-between gap-3">
+                        <span class="text-muted">Livraison</span>
+                        <span class="text-ink font-medium text-right">
+                            <?php if (!empty($order['shipping_name'])): ?>
+                                <?= htmlspecialchars($order['shipping_name']) ?><br>
+                            <?php endif; ?>
+                            <?= htmlspecialchars($order['shipping_address_line1']) ?><br>
+                            <?php if (!empty($order['shipping_address_line2'])): ?>
+                                <?= htmlspecialchars($order['shipping_address_line2']) ?><br>
+                            <?php endif; ?>
+                            <?= htmlspecialchars(trim($order['shipping_postal_code'] . ' ' . $order['shipping_city'], ' ')) ?>
+                            <?php if (!empty($order['shipping_country'])): ?>
+                                <br><?= htmlspecialchars($order['shipping_country']) ?>
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="flex items-center justify-between gap-3 flex-wrap bg-primary-light rounded-xl px-4 py-3 mb-4">

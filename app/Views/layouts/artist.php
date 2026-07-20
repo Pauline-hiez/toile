@@ -37,6 +37,7 @@ $navItems = [
     ['label' => 'Mes prestations', 'href' => '/my-services', 'icon' => 'tag', 'match' => 'prefix'],
     ['label' => 'Portfolio', 'href' => '/my-portfolio', 'icon' => 'image', 'match' => 'prefix'],
     ['label' => 'Ma boutique', 'href' => '/my-shop', 'icon' => 'shop', 'match' => 'exact'],
+    ['label' => 'Mes paiements', 'href' => '/my-payouts', 'icon' => 'card', 'match' => 'exact'],
 ];
 
 // SVG des icônes de la sidebar (remplace les anciens PNG) — même
@@ -48,6 +49,7 @@ $navIcons = [
     'tag' => '<path d="M12.6 2H4a2 2 0 0 0-2 2v8.6a2 2 0 0 0 .6 1.4l9 9a2 2 0 0 0 2.8 0l7.6-7.6a2 2 0 0 0 0-2.8l-9-9a2 2 0 0 0-1.4-.6Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle>',
     'image' => '<rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path>',
     'shop' => '<path d="M3 9.5 4.5 3h15L21 9.5"></path><path d="M3 9.5V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9.5"></path><path d="M9 21v-6h6v6"></path><path d="M3 9.5h18"></path>',
+    'card' => '<rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line>',
 ];
 ?>
 <!DOCTYPE html>
@@ -76,7 +78,10 @@ $navIcons = [
             border-radius: 999px;
         }
 
-        @media (max-height: 750px) {
+        /* Un item de nav a été ajouté (Mes paiements) — masquer
+           l'illustration décorative un peu plus tôt pour ne pas
+           chevaucher le dernier item en bas de liste. */
+        @media (max-height: 800px) {
             #artistSidebarIllustration {
                 display: none;
             }
