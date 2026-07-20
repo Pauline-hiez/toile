@@ -80,6 +80,14 @@ class HomeController
         ]);
     }
 
+    // Page "Règlement intérieur"
+    public function rules(): void
+    {
+        $this->renderer->render('rules', [
+            'pageTitle' => 'Règlement intérieur — Toile',
+        ]);
+    }
+
     public function testDb(): void
     {
         try {

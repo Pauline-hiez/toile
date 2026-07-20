@@ -41,6 +41,7 @@ $socialLinks = [
             <a href="/aide">Aide et FAQ</a>
             <a href="/cgu">Conditions d'utilisation</a>
             <a href="/confidentialite">Politique de confidentialité</a>
+            <a href="/reglement-interieur">Règlement intérieur</a>
         </div>
 
         <div class="site-footer__col">

@@ -23,6 +23,7 @@ $router->map('GET', '/comment-ca-marche', ['App\Controllers\HomeController', 'ho
 $router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
 $router->map('GET', '/cgu', ['App\Controllers\HomeController', 'terms']);
 $router->map('GET', '/confidentialite', ['App\Controllers\HomeController', 'privacy']);
+$router->map('GET', '/reglement-interieur', ['App\Controllers\HomeController', 'rules']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);
