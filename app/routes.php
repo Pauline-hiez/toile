@@ -22,6 +22,7 @@ $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
 $router->map('GET', '/comment-ca-marche', ['App\Controllers\HomeController', 'howItWorks']);
 $router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
 $router->map('GET', '/cgu', ['App\Controllers\HomeController', 'terms']);
+$router->map('GET', '/confidentialite', ['App\Controllers\HomeController', 'privacy']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);

@@ -72,6 +72,14 @@ class HomeController
         ]);
     }
 
+    // Page "Politique de confidentialité"
+    public function privacy(): void
+    {
+        $this->renderer->render('privacy', [
+            'pageTitle' => 'Politique de confidentialité — Toile',
+        ]);
+    }
+
     public function testDb(): void
     {
         try {
