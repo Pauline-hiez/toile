@@ -11,11 +11,11 @@
  */
 ?>
 <header class="site-header">
-    <div class="site-header__inner">
+    <a href="/" class="site-header__logo">
+        <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
+    </a>
 
-        <a href="/" class="site-header__logo">
-            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
-        </a>
+    <div class="site-header__inner">
 
         <button type="button" class="site-header__menu-btn" id="siteMenuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="siteNav">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -172,5 +172,18 @@
             var isOpen = nav.classList.toggle('is-open');
             menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         });
+
+        var header = document.querySelector('.site-header');
+        function updateHeaderScroll() {
+            header.classList.toggle('is-scrolled', window.scrollY > 10);
+        }
+        updateHeaderScroll();
+        window.addEventListener('scroll', updateHeaderScroll, { passive: true });
+
+        function updateHeaderHeight() {
+            document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+        }
+        updateHeaderHeight();
+        window.addEventListener('resize', updateHeaderHeight);
     })();
 </script>

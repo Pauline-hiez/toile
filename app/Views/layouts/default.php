@@ -47,7 +47,7 @@ $siteFavicon = $settingModel->get('site_favicon');
 
     <?php require __DIR__ . '/../partials/header.php'; ?>
 
-    <main>
+    <main class="site-main">
         <?= $content ?>
     </main>
 
