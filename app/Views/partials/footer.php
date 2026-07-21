@@ -20,13 +20,7 @@ $socialLinks = [
             <a href="/">
                 <img src="<?= $footerLogo ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>">
             </a>
-        </div>
-
-        <div class="site-footer__col">
-            <h4>Plateforme</h4>
-            <a href="/boutiques">Découvrir</a>
-            <a href="/boutiques">Prestations</a>
-            <a href="/comment-ca-marche">Comment ça marche ?</a>
+            <p class="site-footer__tagline">Le marketplace des artistes</p>
         </div>
 
         <div class="site-footer__col">
@@ -40,6 +34,7 @@ $socialLinks = [
             <h4>Ressources</h4>
             <a href="/aide">Aide et FAQ</a>
             <a href="/cgu">Conditions d'utilisation</a>
+            <a href="/cgv">Conditions générales de vente</a>
             <a href="/confidentialite">Politique de confidentialité</a>
             <a href="/reglement-interieur">Règlement intérieur</a>
         </div>
@@ -57,7 +52,7 @@ $socialLinks = [
                     <img src="/assets/images/reseaux/pinterest.png" alt="Pinterest">
                 </a>
                 <a href="<?= htmlspecialchars($socialLinks['tiktok'] ?: '#') ?>" aria-label="TikTok">
-                    <img src="/assets/images/reseaux/tiktok.png" alt="TikTok">
+                    <img src="/assets/images/reseaux/tiktok.png" alt="TikTok" class="site-footer__social-tiktok">
                 </a>
             </div>
         </div>

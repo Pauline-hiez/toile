@@ -24,6 +24,7 @@ $router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
 $router->map('GET', '/cgu', ['App\Controllers\HomeController', 'terms']);
 $router->map('GET', '/confidentialite', ['App\Controllers\HomeController', 'privacy']);
 $router->map('GET', '/reglement-interieur', ['App\Controllers\HomeController', 'rules']);
+$router->map('GET', '/cgv', ['App\Controllers\HomeController', 'salesTerms']);
 $router->map('GET', '/a-propos', ['App\Controllers\HomeController', 'about']);
 
 // Contact

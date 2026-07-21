@@ -96,6 +96,14 @@ class HomeController
         ]);
     }
 
+    // Page "Conditions générales de vente"
+    public function salesTerms(): void
+    {
+        $this->renderer->render('sales-terms', [
+            'pageTitle' => 'Conditions générales de vente — Toile',
+        ]);
+    }
+
     public function testDb(): void
     {
         try {
