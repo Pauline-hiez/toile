@@ -194,26 +194,32 @@ body::before {
     border-color: var(--color-primary);
 }
 
-/* ---- Bannière boutique en forme déchirée ---- */
+/* ---- Bannière boutique ---- */
 
-.shop-banner-shape {
-    -webkit-mask-image: url('/assets/images/decor/crop-banniere.png');
-    mask-image: url('/assets/images/decor/crop-banniere.png');
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
+.shop-banner-frame {
+    border-radius: 24px;
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 10px 25px -8px rgba(23, 51, 27, 0.3);
+    animation: shopBannerShine 3s ease-in-out infinite;
 }
 
-/* ---- Avatar en forme déchirée ---- */
+@keyframes shopBannerShine {
+    0%, 100% {
+        border-color: var(--color-primary);
+        box-shadow: 0 10px 25px -8px rgba(23, 51, 27, 0.3);
+    }
+    50% {
+        border-color: var(--color-title);
+        box-shadow: 0 10px 25px -8px rgba(23, 51, 27, 0.3), 0 0 18px 2px rgba(168, 154, 130, 0.6);
+    }
+}
 
-.avatar-shape {
-    -webkit-mask-image: url('/assets/images/decor/crop-avatar.png');
-    mask-image: url('/assets/images/decor/crop-avatar.png');
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
+/* ---- Avatar (cercle) ---- */
+
+.avatar-circle {
+    border-radius: 9999px;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 10px rgba(23, 51, 27, 0.25);
 }
 
 /* ---- Barre de recherche ---- */
@@ -403,6 +409,26 @@ body::before {
 
 .auth-modal::backdrop {
     background: rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Lightbox portfolio ---- */
+
+.portfolio-lightbox {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    border: none;
+    padding: 0;
+    background: transparent;
+    max-width: 92vw;
+    max-height: 92vh;
+    overflow: visible;
+}
+
+.portfolio-lightbox::backdrop {
+    background: rgba(0, 0, 0, 0.75);
 }
 
 /* ---- Alerte de page (public) ---- */

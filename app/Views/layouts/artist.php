@@ -176,7 +176,7 @@ $navIcons = [
                 </header>
 
                 <?php $heroBanner = !empty($artistShop['banner']) ? '/uploads/banners/' . htmlspecialchars($artistShop['banner']) : '/assets/images/decor/hero.png'; ?>
-                <img src="<?= $heroBanner ?>" alt="" class="relative w-full aspect-[579/226] object-cover shop-banner-shape -mb-10">
+                <img src="<?= $heroBanner ?>" alt="" class="relative w-full aspect-[579/160] object-cover shop-banner-frame -mb-10">
 
                 <div class="relative">
                     <?= $content ?>

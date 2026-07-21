@@ -12,9 +12,6 @@
 $pageTitle = 'Mon profil — Toile';
 ?>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-
 <?php if ($success !== null): ?>
     <div class="bg-success-bg border border-success/25 text-success rounded-md px-5 py-[0.9rem] mb-6 text-[0.9rem]">
         <?= htmlspecialchars($success) ?>
@@ -66,7 +63,7 @@ $pageTitle = 'Mon profil — Toile';
                 <img id="avatarPreviewImg"
                     src="<?= !empty($user['avatar']) ? '/uploads/avatars/' . htmlspecialchars($user['avatar']) : '/uploads/avatars/default.png' ?>"
                     alt="Avatar"
-                    class="w-36 aspect-[463/431] object-cover <?= !empty($user['avatar']) ? 'avatar-shape' : 'rounded-full border border-border' ?>">
+                    class="w-36 aspect-square object-cover rounded-full border border-border">
 
                 <label class="btn btn--primary cursor-pointer">
                     Choisir un fichier
@@ -121,32 +118,10 @@ $pageTitle = 'Mon profil — Toile';
 </div>
 </div>
 
-<div id="avatarCropModal" class="hidden fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
-    <div class="bg-white rounded-md p-5 max-w-[440px] w-full shadow-sm">
-        <h3 class="text-base font-semibold text-ink mb-1">Recadre ton avatar</h3>
-        <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ta photo pour qu'elle s'adapte bien à la découpe (aperçu en filigrane).</p>
-
-        <div id="avatarCropWrapper" class="relative w-full aspect-[463/431] bg-bg overflow-hidden mb-4">
-            <img id="avatarCropImage" src="" alt="" class="block max-w-full">
-            <img src="/assets/images/decor/crop-avatar.png" alt="" class="absolute inset-0 w-full h-full pointer-events-none opacity-90 z-10">
-        </div>
-
-        <div class="flex justify-end gap-3">
-            <button type="button" id="avatarCropCancel" class="btn btn--outline">Annuler</button>
-            <button type="button" id="avatarCropConfirm" class="btn btn--primary">Valider le cadrage</button>
-        </div>
-    </div>
-</div>
-
 <script>
     (function () {
         var fileInput = document.getElementById('avatarInput');
-        var modal = document.getElementById('avatarCropModal');
-        var cropImage = document.getElementById('avatarCropImage');
-        var confirmBtn = document.getElementById('avatarCropConfirm');
-        var cancelBtn = document.getElementById('avatarCropCancel');
         var previewImg = document.getElementById('avatarPreviewImg');
-        var cropper = null;
         var objectUrl = null;
 
         fileInput.addEventListener('change', function () {
@@ -155,52 +130,7 @@ $pageTitle = 'Mon profil — Toile';
 
             if (objectUrl) URL.revokeObjectURL(objectUrl);
             objectUrl = URL.createObjectURL(file);
-            cropImage.src = objectUrl;
-            modal.classList.remove('hidden');
-
-            cropImage.onload = function () {
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(cropImage, {
-                    aspectRatio: 463 / 431,
-                    viewMode: 1,
-                    dragMode: 'move',
-                    autoCropArea: 1,
-                    cropBoxMovable: false,
-                    cropBoxResizable: false,
-                    toggleDragModeOnDblclick: false,
-                    background: false,
-                });
-            };
-        });
-
-        function closeModal() {
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-            modal.classList.add('hidden');
-        }
-
-        cancelBtn.addEventListener('click', function () {
-            fileInput.value = '';
-            closeModal();
-        });
-
-        confirmBtn.addEventListener('click', function () {
-            if (!cropper) return;
-
-            cropper.getCroppedCanvas({ width: 926, height: 862 }).toBlob(function (blob) {
-                var croppedFile = new File([blob], 'avatar.png', { type: 'image/png' });
-                var dt = new DataTransfer();
-                dt.items.add(croppedFile);
-                fileInput.files = dt.files;
-
-                previewImg.src = URL.createObjectURL(blob);
-                previewImg.classList.remove('rounded-full', 'border', 'border-border');
-                previewImg.classList.add('avatar-shape');
-
-                closeModal();
-            }, 'image/png');
+            previewImg.src = objectUrl;
         });
     })();
 </script>

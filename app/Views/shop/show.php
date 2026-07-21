@@ -40,17 +40,23 @@ $renderStars = function (?float $rating, int $size = 14): string {
 };
 ?>
 
+<?php
+$avatarSrc = !empty($artist['avatar']) ? '/uploads/avatars/' . htmlspecialchars($artist['avatar']) : '/uploads/avatars/default.png';
+$hasBanner = !empty($shop['banner']);
+?>
+
 <div class="max-w-[1100px] mx-auto px-5 min-[641px]:px-10 pt-4">
-    <?php if (!empty($shop['banner'])): ?>
-        <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" class="w-full aspect-[579/226] object-cover shop-banner-shape">
+    <?php if ($hasBanner): ?>
+        <div class="relative">
+            <img src="/uploads/banners/<?= htmlspecialchars($shop['banner']) ?>" alt="Bannière" class="w-full aspect-[579/120] object-cover shop-banner-frame">
+            <img src="<?= $avatarSrc ?>" alt="<?= htmlspecialchars($shop['name']) ?>" class="absolute left-0 bottom-0 translate-y-1/2 w-28 min-[641px]:w-40 aspect-square object-cover avatar-circle bg-bg">
+        </div>
     <?php endif; ?>
 
-    <div class="flex flex-col min-[641px]:flex-row min-[641px]:items-center justify-between gap-3 <?= !empty($shop['banner']) ? '-mt-28 min-[641px]:-mt-40' : 'mt-4' ?> relative z-10">
-        <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4">
-            <?php if (!empty($artist['avatar'])): ?>
-                <img src="/uploads/avatars/<?= htmlspecialchars($artist['avatar']) ?>" alt="<?= htmlspecialchars($shop['name']) ?>" class="w-56 min-[641px]:w-80 aspect-[463/431] object-cover avatar-shape border-4 border-white bg-bg shadow-sm shrink-0">
-            <?php else: ?>
-                <img src="/uploads/avatars/default.png" alt="" class="w-56 min-[641px]:w-80 aspect-[463/431] object-cover avatar-shape border-4 border-white bg-bg shadow-sm shrink-0">
+    <div class="flex flex-col min-[641px]:flex-row min-[641px]:items-start justify-between gap-3 mt-4 relative z-10">
+        <div class="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4 <?= $hasBanner ? 'pl-36 min-[641px]:pl-52' : '' ?>">
+            <?php if (!$hasBanner): ?>
+                <img src="<?= $avatarSrc ?>" alt="<?= htmlspecialchars($shop['name']) ?>" class="w-36 aspect-square object-cover avatar-circle bg-bg shrink-0">
             <?php endif; ?>
 
             <div class="pb-1">
@@ -136,25 +142,6 @@ $renderStars = function (?float $rating, int $size = 14): string {
         </div>
     <?php endif; ?>
 
-    <?php if (isset($_GET['quote_sent'])): ?>
-        <div class="bg-success-bg border border-success/25 text-success rounded-md px-4 py-[0.7rem] mt-4 text-[0.8rem] text-center max-w-[420px] mx-auto">
-            Ta demande de devis a bien été envoyée. L'artiste va l'examiner et te proposer un prix.
-        </div>
-    <?php endif; ?>
-
-    <?php if (!empty($shop['accepts_quotes'])): ?>
-        <?php if (isset($_GET['quote_error'])): ?>
-            <div class="bg-danger-bg border border-danger/25 text-danger rounded-md px-4 py-[0.7rem] mt-4 text-[0.8rem] text-center max-w-[420px] mx-auto">
-                Décris ton projet en au moins 10 caractères pour envoyer ta demande.
-            </div>
-        <?php endif; ?>
-        <div class="flex justify-center mt-6">
-            <button type="button" data-quote-open class="inline-flex items-center justify-center w-[190px] h-[62px] bg-[url('/assets/images/decor/btn.png')] bg-contain bg-no-repeat bg-center font-cursive font-semibold text-success text-[0.85rem] border-0 cursor-pointer hover:opacity-85 transition-opacity">
-                Demander un devis
-            </button>
-        </div>
-    <?php endif; ?>
-
     <nav class="flex items-center justify-center gap-5 min-[641px]:gap-8 mt-6 mb-6 border-b border-border">
         <a href="<?= $tabUrl('portfolio') ?>" class="pb-2 font-cursive text-[0.9rem] min-[641px]:text-[0.98rem] font-semibold no-underline border-b-2 -mb-px transition-colors <?= $tab === 'portfolio' ? 'text-primary border-primary' : 'text-muted border-transparent hover:text-ink' ?>">Portfolio</a>
         <a href="<?= $tabUrl('prestations') ?>" class="pb-2 font-cursive text-[0.9rem] min-[641px]:text-[0.98rem] font-semibold no-underline border-b-2 -mb-px transition-colors <?= $tab === 'prestations' ? 'text-primary border-primary' : 'text-muted border-transparent hover:text-ink' ?>">Prestations</a>
@@ -169,7 +156,9 @@ $renderStars = function (?float $rating, int $size = 14): string {
                 <div class="grid grid-cols-2 min-[500px]:grid-cols-3 min-[768px]:grid-cols-4 min-[1000px]:grid-cols-5 gap-3">
                     <?php foreach ($portfolioImages as $image): ?>
                         <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
-                            <img src="/uploads/portfolio/<?= htmlspecialchars($image['filename']) ?>" alt="<?= htmlspecialchars($image['label'] ?? '') ?>" class="w-full aspect-[3/4] object-cover block">
+                            <button type="button" data-lightbox-open data-lightbox-src="/uploads/portfolio/<?= htmlspecialchars($image['filename']) ?>" data-lightbox-alt="<?= htmlspecialchars($image['label'] ?? '') ?>" class="block w-full p-0 border-0 bg-transparent cursor-zoom-in">
+                                <img src="/uploads/portfolio/<?= htmlspecialchars($image['filename']) ?>" alt="<?= htmlspecialchars($image['label'] ?? '') ?>" class="w-full aspect-[3/4] object-cover block">
+                            </button>
                             <?php if (!empty($image['label'])): ?>
                                 <p class="text-[0.7rem] text-muted px-2 py-1 truncate"><?= htmlspecialchars($image['label']) ?></p>
                             <?php endif; ?>
@@ -182,6 +171,23 @@ $renderStars = function (?float $rating, int $size = 14): string {
 
     <?php if ($tab === 'prestations'): ?>
         <div class="pb-8">
+            <?php if (isset($_GET['quote_sent'])): ?>
+                <div class="bg-success-bg border border-success/25 text-success rounded-md px-4 py-[0.7rem] mb-4 text-[0.8rem] text-center max-w-[420px] mx-auto">
+                    Ta demande de devis a bien été envoyée. L'artiste va l'examiner et te proposer un prix.
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($shop['accepts_quotes'])): ?>
+                <?php if (isset($_GET['quote_error'])): ?>
+                    <div class="bg-danger-bg border border-danger/25 text-danger rounded-md px-4 py-[0.7rem] mb-4 text-[0.8rem] text-center max-w-[420px] mx-auto">
+                        Décris ton projet en au moins 10 caractères pour envoyer ta demande.
+                    </div>
+                <?php endif; ?>
+                <div class="flex justify-center mb-4">
+                    <button type="button" data-quote-open class="btn btn--primary">Demander un devis</button>
+                </div>
+            <?php endif; ?>
+
             <?php if (empty($services)): ?>
                 <p class="text-muted text-[0.8rem] text-center py-8">Aucune prestation disponible pour le moment.</p>
             <?php else: ?>
@@ -265,4 +271,14 @@ $renderStars = function (?float $rating, int $size = 14): string {
 <?php if (!empty($shop['accepts_quotes'])): ?>
     <?php require __DIR__ . '/../components/quote-modal.php'; ?>
     <script src="/assets/js/quote-modal.js"></script>
+<?php endif; ?>
+
+<?php if (!empty($portfolioImages)): ?>
+    <dialog id="portfolioLightbox" class="portfolio-lightbox">
+        <button type="button" class="absolute top-3 right-4 text-white text-3xl leading-none z-20" data-lightbox-close aria-label="Fermer">&times;</button>
+        <button type="button" class="absolute left-2 min-[641px]:-left-14 top-1/2 -translate-y-1/2 text-white text-4xl leading-none z-20 hover:opacity-70 transition-opacity" data-lightbox-prev aria-label="Image précédente">&#8249;</button>
+        <button type="button" class="absolute right-2 min-[641px]:-right-14 top-1/2 -translate-y-1/2 text-white text-4xl leading-none z-20 hover:opacity-70 transition-opacity" data-lightbox-next aria-label="Image suivante">&#8250;</button>
+        <img src="" alt="" data-lightbox-img class="block w-auto h-auto max-w-[90vw] max-h-[85vh] object-contain rounded-md">
+    </dialog>
+    <script src="/assets/js/portfolio-lightbox.js"></script>
 <?php endif; ?>
