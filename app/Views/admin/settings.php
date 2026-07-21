@@ -252,34 +252,63 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
 
 <div data-settings-panel="homepage_styles" class="<?= $activeTab === 'homepage_styles' ? '' : 'hidden' ?>">
     <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
-        <h2 class="text-base font-semibold mb-2 text-ink">Styles à la une</h2>
+        <div class="flex items-center gap-2 mb-2">
+            <h2 class="text-base font-semibold text-ink">Styles à la une</h2>
+            <button type="button" id="newCategoryOpenBtn" title="Ajouter un nouveau style ou type"
+                class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-base leading-none border-0 cursor-pointer hover:bg-primary/90 transition-colors">+</button>
+        </div>
         <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
             Choisis jusqu'à 5 styles à afficher dans la section "Explorez l'univers de la création" de la page d'accueil. Les autres styles restent accessibles depuis la recherche.
         </p>
 
-        <form method="POST" action="/admin/settings/homepage-styles">
+        <?php
+        $candidatesByName = [];
+        foreach ($homepageStyleCandidates as $candidate) {
+            $candidatesByName[$candidate['name']] = $candidate;
+        }
+        $availableCandidates = array_filter($homepageStyleCandidates, fn($c) => !in_array($c['name'], $homepageStyleSelected, true));
+        ?>
+
+        <form method="POST" action="/admin/settings/homepage-styles" id="homepageStylesForm">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+            <div data-hidden-inputs></div>
 
             <p data-homepage-styles-counter style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">
                 <?= count($homepageStyleSelected) ?>/5 sélectionnés
             </p>
-            <p style="font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 1rem;">Glisse-dépose les vignettes pour changer l'ordre d'affichage sur la page d'accueil.</p>
+            <p style="font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 0.75rem;">Styles affichés, dans cet ordre — utilise les flèches pour réordonner, ✕ pour retirer.</p>
 
-            <div data-style-grid style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                <?php foreach ($homepageStyleCandidates as $candidate): ?>
-                    <?php $isChecked = in_array($candidate['name'], $homepageStyleSelected, true); ?>
-                    <div data-style-card draggable="true" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; cursor: grab;" class="has-[:checked]:border-primary">
+            <div data-selected-list style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <?php foreach ($homepageStyleSelected as $name): ?>
+                    <?php if (!isset($candidatesByName[$name])) continue; ?>
+                    <?php $candidate = $candidatesByName[$name]; ?>
+                    <div data-selected-item data-name="<?= htmlspecialchars($name) ?>" data-image="<?= htmlspecialchars($candidate['image'] ?? '') ?>" data-request-id="<?= isset($candidate['requestId']) ? (int) $candidate['requestId'] : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; cursor: grab; touch-action: none;">
+                        <span data-drag-handle title="Glisser pour réordonner" style="color: var(--color-text-muted); flex-shrink: 0;">⠿</span>
+                        <span style="width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--color-primary-light); overflow: hidden; flex-shrink: 0; pointer-events: none;">
+                            <?php if ($candidate['image']): ?>
+                                <img src="<?= htmlspecialchars($candidate['image']) ?>" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                            <?php endif; ?>
+                        </span>
+                        <span style="flex: 1; min-width: 0; font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none;"><?= htmlspecialchars(ucfirst($name)) ?></span>
+                        <?php if (isset($candidate['requestId'])): ?>
+                            <button type="button" title="Modifier" data-edit-style-open
+                                data-id="<?= (int) $candidate['requestId'] ?>" data-name="<?= htmlspecialchars($name) ?>" data-image="<?= htmlspecialchars($candidate['image'] ?? '') ?>"
+                                style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-bg); border: 1px solid var(--color-border); cursor: pointer; font-size: 0.7rem; flex-shrink: 0;">✎</button>
+                        <?php endif; ?>
+                        <button type="button" data-remove-selected title="Retirer" style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-danger-bg); color: var(--color-danger); border: 1px solid var(--color-border); cursor: pointer; font-size: 0.7rem; flex-shrink: 0;">✕</button>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <p style="font-size: 0.82rem; font-weight: 600; margin-bottom: 0.75rem;">Autres styles disponibles</p>
+
+            <div data-available-list style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <?php foreach ($availableCandidates as $candidate): ?>
+                    <div data-available-item data-name="<?= htmlspecialchars($candidate['name']) ?>" data-image="<?= htmlspecialchars($candidate['image'] ?? '') ?>" data-request-id="<?= isset($candidate['requestId']) ? (int) $candidate['requestId'] : '' ?>" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden;">
                         <div style="height: 90px; background: var(--color-primary-light); position: relative;">
                             <?php if ($candidate['image']): ?>
-                                <img src="<?= htmlspecialchars($candidate['image']) ?>" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;">
+                                <img src="<?= htmlspecialchars($candidate['image']) ?>" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                             <?php endif; ?>
-
-                            <span title="Glisser pour réordonner" style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.85); border-radius: var(--radius-sm); padding: 1px 6px; font-size: 0.75rem; line-height: 1.4;">⠿</span>
-
-                            <label style="position: absolute; top: 6px; right: 6px; cursor: pointer;">
-                                <input type="checkbox" name="homepage_styles[]" value="<?= htmlspecialchars($candidate['name']) ?>" data-homepage-style-checkbox <?= $isChecked ? 'checked' : '' ?>
-                                    style="width: 18px; height: 18px;" class="accent-primary">
-                            </label>
 
                             <?php if (isset($candidate['requestId'])): ?>
                                 <div style="position: absolute; top: 6px; left: 6px; display: flex; gap: 4px;">
@@ -292,7 +321,10 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <div style="padding: 0.5rem 0.7rem; font-size: 0.82rem; font-weight: 600;"><?= htmlspecialchars(ucfirst($candidate['name'])) ?></div>
+                        <div style="padding: 0.5rem 0.7rem;">
+                            <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?= htmlspecialchars(ucfirst($candidate['name'])) ?></div>
+                            <button type="button" data-add-selected style="width: 100%; font-size: 0.78rem; padding: 0.25rem 0; border-radius: var(--radius-sm); background: var(--color-bg); border: 1px solid var(--color-border); cursor: pointer;">+ Ajouter</button>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -350,6 +382,63 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
                 <div class="flex justify-end gap-3">
                     <button type="button" id="editStyleCropCancel" class="btn btn--outline">Annuler</button>
                     <button type="button" id="editStyleCropConfirm" class="btn btn--primary">Valider le cadrage</button>
+                </div>
+            </div>
+        </dialog>
+
+        <dialog id="newCategoryModal" class="auth-modal"<?= isset($_GET['category_error']) ? ' data-new-category-reopen' : '' ?>>
+            <button type="button" class="absolute top-3 right-4 text-title text-3xl leading-none z-20" data-new-category-close aria-label="Fermer">&times;</button>
+
+            <div class="relative bg-bg rounded-2xl border border-border shadow-lg px-6 py-8 min-[481px]:px-10 min-[481px]:py-10">
+                <h2 class="font-title text-[1.6rem] text-title font-semibold text-center leading-none mb-5">Ajouter une catégorie</h2>
+
+                <?php if (isset($_GET['category_error'])): ?>
+                    <p class="text-danger text-[0.8rem] text-center mb-4">Vérifie les champs (nom, visuel pour un style).</p>
+                <?php endif; ?>
+
+                <form method="POST" action="/admin/category-requests" enctype="multipart/form-data" class="flex flex-col gap-4 max-w-[340px] mx-auto text-left">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+                    <div>
+                        <label for="newCategoryType" class="block font-semibold text-[0.9rem] mb-2">Catégorie</label>
+                        <select id="newCategoryType" name="category_type" data-new-category-type
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] bg-white font-main outline-none focus:border-primary">
+                            <option value="style">Nouveau style</option>
+                            <option value="type">Nouveau type / spécialité</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="newCategoryName" class="block font-semibold text-[0.9rem] mb-2">Nom</label>
+                        <input type="text" id="newCategoryName" name="name" required
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] bg-white font-main outline-none focus:border-primary">
+                    </div>
+
+                    <div data-new-category-image>
+                        <label for="newCategoryImage" class="block font-semibold text-[0.9rem] mb-2">Visuel</label>
+                        <input type="file" id="newCategoryImage" name="image" accept="image/png,image/jpeg,image/webp" class="w-full text-[0.85rem]">
+                        <img id="newCategoryImagePreview" src="" alt="" class="hidden w-24 h-24 object-cover rounded-md border border-border mt-2">
+                    </div>
+
+                    <div class="text-center mt-1">
+                        <button type="submit" class="btn btn--primary px-10">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <dialog id="newCategoryCropModal" class="auth-modal">
+            <div class="bg-white rounded-md p-5 shadow-sm">
+                <h3 class="text-base font-semibold text-ink mb-1">Recadre ton visuel</h3>
+                <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour bien centrer le sujet.</p>
+
+                <div class="relative w-full aspect-[4/3] bg-bg overflow-hidden mb-4">
+                    <img id="newCategoryCropImage" src="" alt="" class="block max-w-full">
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="newCategoryCropCancel" class="btn btn--outline">Annuler</button>
+                    <button type="button" id="newCategoryCropConfirm" class="btn btn--primary">Valider le cadrage</button>
                 </div>
             </div>
         </dialog>
@@ -412,62 +501,163 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
     })();
 
     (function () {
-        var checkboxes = document.querySelectorAll('[data-homepage-style-checkbox]');
+        var form = document.getElementById('homepageStylesForm');
+        var selectedList = document.querySelector('[data-selected-list]');
+        var availableList = document.querySelector('[data-available-list]');
+        var hiddenInputsContainer = document.querySelector('[data-hidden-inputs]');
         var counter = document.querySelector('[data-homepage-styles-counter]');
-        if (checkboxes.length === 0) return;
+        if (!form || !selectedList || !availableList || !hiddenInputsContainer) return;
 
-        function update() {
-            var checkedCount = document.querySelectorAll('[data-homepage-style-checkbox]:checked').length;
-            if (counter) counter.textContent = checkedCount + '/5 sélectionnés';
-            checkboxes.forEach(function (checkbox) {
-                checkbox.disabled = !checkbox.checked && checkedCount >= 5;
+        function selectedItems() {
+            return Array.prototype.slice.call(selectedList.querySelectorAll('[data-selected-item]'));
+        }
+
+        // Régénère les <input type="hidden" name="homepage_styles[]"> à
+        // partir de l'ordre actuel des cartes dans #data-selected-list —
+        // c'est ÇA, et uniquement ça, qui part au serveur au clic sur
+        // "Enregistrer la sélection".
+        function syncHiddenInputs() {
+            hiddenInputsContainer.innerHTML = '';
+            selectedItems().forEach(function (item) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'homepage_styles[]';
+                input.value = item.dataset.name;
+                hiddenInputsContainer.appendChild(input);
+            });
+
+            if (counter) counter.textContent = selectedItems().length + '/5 sélectionnés';
+            availableList.querySelectorAll('[data-add-selected]').forEach(function (btn) {
+                btn.disabled = selectedItems().length >= 5;
             });
         }
 
-        checkboxes.forEach(function (checkbox) {
-            checkbox.addEventListener('change', update);
+        function buildSelectedItem(name, image, requestId) {
+            var div = document.createElement('div');
+            div.setAttribute('data-selected-item', '');
+            div.dataset.name = name;
+            div.dataset.image = image || '';
+            div.dataset.requestId = requestId || '';
+            div.style.cssText = 'display:flex;align-items:center;gap:0.75rem;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0.5rem 0.75rem;cursor:grab;touch-action:none;';
+
+            var handle = '<span data-drag-handle title="Glisser pour réordonner" style="color:var(--color-text-muted);flex-shrink:0;">⠿</span>';
+            var thumb = '<span style="width:48px;height:48px;border-radius:var(--radius-sm);background:var(--color-primary-light);overflow:hidden;flex-shrink:0;pointer-events:none;">' +
+                (image ? '<img src="' + image + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">' : '') + '</span>';
+            var nameSpan = '<span style="flex:1;min-width:0;font-size:0.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none;">' + (name.charAt(0).toUpperCase() + name.slice(1)) + '</span>';
+            var editBtn = requestId ? '<button type="button" title="Modifier" data-edit-style-open data-id="' + requestId + '" data-name="' + name + '" data-image="' + image + '" style="width:24px;height:24px;border-radius:50%;background:var(--color-bg);border:1px solid var(--color-border);cursor:pointer;font-size:0.7rem;flex-shrink:0;">✎</button>' : '';
+            var removeBtn = '<button type="button" data-remove-selected title="Retirer" style="width:24px;height:24px;border-radius:50%;background:var(--color-danger-bg);color:var(--color-danger);border:1px solid var(--color-border);cursor:pointer;font-size:0.7rem;flex-shrink:0;">✕</button>';
+
+            div.innerHTML = handle + thumb + nameSpan + editBtn + removeBtn;
+            return div;
+        }
+
+        function buildAvailableItem(name, image, requestId) {
+            var div = document.createElement('div');
+            div.setAttribute('data-available-item', '');
+            div.dataset.name = name;
+            div.dataset.image = image || '';
+            div.dataset.requestId = requestId || '';
+            div.style.cssText = 'border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;';
+
+            var img = '<div style="height:90px;background:var(--color-primary-light);position:relative;">' +
+                (image ? '<img src="' + image + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">' : '') + '</div>';
+            var label = '<div style="padding:0.5rem 0.7rem;"><div style="font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (name.charAt(0).toUpperCase() + name.slice(1)) + '</div>' +
+                '<button type="button" data-add-selected style="width:100%;font-size:0.78rem;padding:0.25rem 0;border-radius:var(--radius-sm);background:var(--color-bg);border:1px solid var(--color-border);cursor:pointer;">+ Ajouter</button></div>';
+
+            div.innerHTML = img + label;
+            return div;
+        }
+
+        selectedList.addEventListener('click', function (e) {
+            var item = e.target.closest('[data-selected-item]');
+            if (!item) return;
+
+            if (e.target.matches('[data-remove-selected]')) {
+                availableList.appendChild(buildAvailableItem(item.dataset.name, item.dataset.image, item.dataset.requestId));
+                item.remove();
+                syncHiddenInputs();
+            }
         });
-        update();
-    })();
 
-    (function () {
-        var grid = document.querySelector('[data-style-grid]');
-        if (!grid) return;
+        // Glisser-déposer (Pointer Events, pas l'API drag and drop native)
+        // pour réordonner la liste des styles affichés — la même
+        // fonction syncHiddenInputs() que les autres actions (déjà
+        // vérifiée fonctionnelle) régénère les champs cachés à la fin.
+        (function () {
+            var dragged = null;
 
-        var dragged = null;
+            function onPointerMove(e) {
+                if (!dragged) return;
 
-        grid.querySelectorAll('[data-style-card]').forEach(function (card) {
-            card.addEventListener('dragstart', function (e) {
-                dragged = card;
-                card.style.opacity = '0.4';
-                // Firefox exige un appel à setData() pour considérer le
-                // glissement comme valide et déclencher dragover/drop
-                // ailleurs sur la page.
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', '');
-            });
+                var items = Array.prototype.slice.call(selectedList.querySelectorAll('[data-selected-item]')).filter(function (i) {
+                    return i !== dragged;
+                });
 
-            card.addEventListener('dragend', function () {
-                card.style.opacity = '';
-                dragged = null;
-            });
+                var closest = null;
+                var closestDistance = Infinity;
+                items.forEach(function (item) {
+                    var box = item.getBoundingClientRect();
+                    var centerY = box.top + box.height / 2;
+                    var distance = Math.abs(e.clientY - centerY);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closest = { item: item, after: e.clientY > centerY };
+                    }
+                });
 
-            card.addEventListener('dragover', function (e) {
-                e.preventDefault();
-            });
-
-            card.addEventListener('drop', function (e) {
-                e.preventDefault();
-                if (!dragged || dragged === card) return;
-
-                var cards = Array.prototype.slice.call(grid.children);
-                if (cards.indexOf(dragged) < cards.indexOf(card)) {
-                    card.after(dragged);
+                if (!closest) return;
+                if (closest.after) {
+                    closest.item.after(dragged);
                 } else {
-                    card.before(dragged);
+                    closest.item.before(dragged);
                 }
+            }
+
+            function onPointerUp() {
+                if (dragged) {
+                    dragged.style.opacity = '';
+                    syncHiddenInputs();
+                }
+                dragged = null;
+                document.removeEventListener('pointermove', onPointerMove);
+                document.removeEventListener('pointerup', onPointerUp);
+            }
+
+            selectedList.addEventListener('pointerdown', function (e) {
+                if (!e.target.closest('[data-drag-handle]')) return;
+
+                var item = e.target.closest('[data-selected-item]');
+                if (!item) return;
+
+                e.preventDefault();
+                dragged = item;
+                item.style.opacity = '0.4';
+                document.addEventListener('pointermove', onPointerMove);
+                document.addEventListener('pointerup', onPointerUp);
             });
+        })();
+
+        availableList.addEventListener('click', function (e) {
+            if (!e.target.matches('[data-add-selected]')) return;
+            if (selectedItems().length >= 5) return;
+
+            var item = e.target.closest('[data-available-item]');
+            if (!item) return;
+
+            selectedList.appendChild(buildSelectedItem(item.dataset.name, item.dataset.image, item.dataset.requestId));
+            item.remove();
+            syncHiddenInputs();
         });
+
+        // Diagnostic : montre exactement ce qui part au serveur au clic sur
+        // "Enregistrer la sélection", pour vérifier que l'ordre visible à
+        // l'écran correspond bien à ce qui est réellement soumis.
+        form.addEventListener('submit', function () {
+            var order = selectedItems().map(function (item) { return item.dataset.name; });
+            console.log('[Styles à la une] Ordre envoyé au serveur :', order);
+        });
+
+        syncHiddenInputs();
     })();
 
     (function () {
@@ -525,4 +715,58 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
         outputWidth: 800,
         outputHeight: 600,
     });
+
+    setupImageCrop({
+        fileInputId: 'newCategoryImage',
+        modalId: 'newCategoryCropModal',
+        imageId: 'newCategoryCropImage',
+        confirmId: 'newCategoryCropConfirm',
+        cancelId: 'newCategoryCropCancel',
+        previewId: 'newCategoryImagePreview',
+        aspectRatio: 4 / 3,
+        outputWidth: 800,
+        outputHeight: 600,
+    });
+</script>
+
+<script>
+    (function () {
+        var dialog = document.getElementById('newCategoryModal');
+        var openBtn = document.getElementById('newCategoryOpenBtn');
+        if (!dialog || !openBtn) return;
+
+        var closeBtn = dialog.querySelector('[data-new-category-close]');
+        var typeSelect = document.getElementById('newCategoryType');
+        var imageField = document.querySelector('[data-new-category-image]');
+
+        function toggleImageField() {
+            if (!typeSelect || !imageField) return;
+            imageField.style.display = typeSelect.value === 'style' ? '' : 'none';
+        }
+
+        if (typeSelect) {
+            typeSelect.addEventListener('change', toggleImageField);
+            toggleImageField();
+        }
+
+        openBtn.addEventListener('click', function () {
+            dialog.showModal();
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                dialog.close();
+            });
+        }
+
+        dialog.addEventListener('click', function (e) {
+            if (e.target === dialog) {
+                dialog.close();
+            }
+        });
+
+        if (dialog.hasAttribute('data-new-category-reopen')) {
+            dialog.showModal();
+        }
+    })();
 </script>

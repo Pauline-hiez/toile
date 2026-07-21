@@ -71,9 +71,20 @@ class HomeController
     {
         $candidateImages = $this->buildStyleCandidates();
 
+        // Même ordre que la sélection curée dans Paramètres → Styles à la
+        // une, puis le reste des styles à la suite — cohérent avec l'ordre
+        // vu en page d'accueil plutôt qu'un ordre arbitraire.
+        $orderedNames = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: Shop::STYLES;
+        $orderedNames = array_merge($orderedNames, array_keys($candidateImages));
+
         $styleTiles = [];
-        foreach ($candidateImages as $name => $image) {
-            $styleTiles[] = ['name' => $name, 'image' => $image];
+        $seen = [];
+        foreach ($orderedNames as $name) {
+            if (isset($seen[$name]) || !array_key_exists($name, $candidateImages)) {
+                continue;
+            }
+            $seen[$name] = true;
+            $styleTiles[] = ['name' => $name, 'image' => $candidateImages[$name]];
         }
 
         $this->renderer->render('styles', [

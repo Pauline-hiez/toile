@@ -413,6 +413,14 @@ $router->map('GET', '/admin/category-requests', [
     ],
 ]);
 
+$router->map('POST', '/admin/category-requests', [
+    'controller' => ['App\Controllers\AdminController', 'submitCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('POST', '/admin/category-requests/[i:id]/approve', [
     'controller' => ['App\Controllers\AdminController', 'approveCategoryRequest'],
     'middlewares' => [

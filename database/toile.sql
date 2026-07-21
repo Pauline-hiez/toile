@@ -539,7 +539,7 @@ CREATE TABLE report (
 CREATE TABLE category_request (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    shop_id INT NOT NULL,
+    shop_id INT NULL,
 
     category_type ENUM('style', 'type') NOT NULL,
     name VARCHAR(100) NOT NULL,
