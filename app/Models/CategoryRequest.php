@@ -30,6 +30,12 @@ class CategoryRequest extends BaseModel
         return $stmt->fetchAll();
     }
 
+    public function countPending(): int
+    {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM category_request WHERE status = 'pending'");
+        return (int) $stmt->fetchColumn();
+    }
+
     /**
      * Noms distincts des styles approuvés, à fusionner avec Shop::STYLES.
      */

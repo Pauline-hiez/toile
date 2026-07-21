@@ -21,7 +21,9 @@ $shopModel = new Shop();
 $currentArtist = $userModel->findById($_SESSION['user_id']);
 $artistShop = $shopModel->findByUserId($_SESSION['user_id']);
 
-$unreadCount = (new Notification())->countUnread($_SESSION['user_id']);
+$notificationModel = new Notification();
+$unreadCount = $notificationModel->countUnread($_SESSION['user_id']);
+$recentNotifications = $notificationModel->findRecentByUserId($_SESSION['user_id']);
 $userShop = $artistShop;
 
 // Pastille "Mes commandes" — nombre de commandes en attente d'action,
@@ -140,15 +142,7 @@ $navIcons = [
                     </div>
 
                     <div class="flex items-center gap-5">
-                        <a href="/notifications" aria-label="Notifications" title="Notifications" class="relative cursor-pointer">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-title">
-                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <?php if ($unreadCount > 0): ?>
-                                <span class="absolute -top-1 -right-1 bg-danger text-white text-[0.65rem] font-semibold rounded-full px-1 min-w-[16px] h-4 flex items-center justify-center"><?= $unreadCount ?></span>
-                            <?php endif; ?>
-                        </a>
+                        <?php require __DIR__ . '/../components/notif-dropdown.php'; ?>
 
                         <div class="site-header__account">
                             <a href="/profile" class="flex items-center gap-3 cursor-pointer no-underline text-inherit">
@@ -196,6 +190,7 @@ $navIcons = [
     <?php require __DIR__ . '/../components/contact-modal.php'; ?>
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
+    <script src="/assets/js/notif-dropdown.js"></script>
 </body>
 
 </html>

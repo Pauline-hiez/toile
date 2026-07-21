@@ -15,6 +15,12 @@ class User extends BaseModel
         return $result ?: null;
     }
 
+    public function countPendingArtistRequests(): int
+    {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM users WHERE artist_request_status = 'pending'");
+        return (int) $stmt->fetchColumn();
+    }
+
     public function setArtistRequestStatus(int $userId, string $status): bool
     {
         return $this->update($userId, ['artist_request_status' => $status]);

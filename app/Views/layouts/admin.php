@@ -13,15 +13,19 @@ use App\Models\Notification;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\Setting;
+use App\Models\CategoryRequest;
 
 $adminUsername = 'Admin';
 $adminAvatar = null;
 $adminShop = null;
 $settingModel = new Setting();
+$pendingArtistRequestsCount = 0;
+$pendingCategoryRequestsCount = 0;
 
 if (isset($_SESSION['user_id'])) {
     $notificationModel = new Notification();
     $unreadCount = $notificationModel->countUnread($_SESSION['user_id']);
+    $recentNotifications = $notificationModel->findRecentByUserId($_SESSION['user_id']);
 
     $userModel = new User();
     $currentAdmin = $userModel->findById($_SESSION['user_id']);
@@ -32,8 +36,14 @@ if (isset($_SESSION['user_id'])) {
 
     $shopModel = new Shop();
     $adminShop = $shopModel->findByUserId($_SESSION['user_id']);
+
+    // Pastilles de la sidebar : nombre de demandes en attente de traitement
+    // (même principe que le badge "Mes commandes" côté artiste).
+    $pendingArtistRequestsCount = $userModel->countPendingArtistRequests();
+    $pendingCategoryRequestsCount = (new CategoryRequest())->countPending();
 } else {
     $unreadCount = 0;
+    $recentNotifications = [];
 }
 
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
@@ -42,8 +52,8 @@ $navItems = [
     ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard', 'match' => 'exact'],
     ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'stats', 'match' => 'prefix'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users', 'match' => 'prefix'],
-    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix'],
-    ['label' => 'Demandes de catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix'],
+    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix', 'badge' => $pendingArtistRequestsCount],
+    ['label' => 'Demandes de catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix', 'badge' => $pendingCategoryRequestsCount],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'shop', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'package', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'card', 'match' => 'prefix'],
@@ -179,6 +189,9 @@ $navIcons = [
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
                         </span>
                         <?= htmlspecialchars($item['label']) ?>
+                        <?php if (!empty($item['badge'])): ?>
+                            <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
+                        <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
@@ -215,15 +228,7 @@ $navIcons = [
                     ?>
                     <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
-                    <a href="/notifications" aria-label="Notifications" title="Notifications" class="relative cursor-pointer">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-title">
-                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                        <?php if ($unreadCount > 0): ?>
-                            <span class="absolute -top-1 -right-1 bg-danger text-white text-[0.65rem] font-semibold rounded-full px-1 min-w-[16px] h-4 flex items-center justify-center"><?= $unreadCount ?></span>
-                        <?php endif; ?>
-                    </a>
+                    <?php require __DIR__ . '/../components/notif-dropdown.php'; ?>
 
                     <div class="site-header__account">
                         <a href="/profile" class="flex items-center gap-3 cursor-pointer no-underline text-inherit">
@@ -287,6 +292,7 @@ $navIcons = [
     <?php require __DIR__ . '/../components/contact-modal.php'; ?>
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
+    <script src="/assets/js/notif-dropdown.js"></script>
 </body>
 
 </html>
