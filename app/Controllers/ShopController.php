@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Models\PortfolioImage;
 use App\Models\Favorite;
 use App\Models\User;
+use App\Models\CategoryRequest;
 
 class ShopController
 {
@@ -21,6 +22,7 @@ class ShopController
     private PortfolioImage $portfolioModel;
     private Favorite $favoriteModel;
     private User $userModel;
+    private CategoryRequest $categoryRequestModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -32,6 +34,7 @@ class ShopController
         $this->portfolioModel = new PortfolioImage();
         $this->favoriteModel = new Favorite();
         $this->userModel = new User();
+        $this->categoryRequestModel = new CategoryRequest();
     }
 
     public function manage(): void
@@ -54,7 +57,7 @@ class ShopController
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], $this->shopStats($shop)), 'layouts/artist');
+        ], $this->shopStats($shop), $this->shopFormExtras($shop)), 'layouts/artist');
     }
 
     /**
@@ -74,6 +77,19 @@ class ShopController
         ];
     }
 
+    /**
+     * Listes de styles/types (fixes + validés par l'admin) et demandes de
+     * catégorie de l'artiste, pour le formulaire /my-shop.
+     */
+    private function shopFormExtras(?array $shop): array
+    {
+        return [
+            'availableStyles' => $this->shopModel->getAllStyles(),
+            'availableTypes' => $this->shopModel->getAllTypes(),
+            'categoryRequests' => $shop !== null ? $this->categoryRequestModel->findByShopId($shop['id']) : [],
+        ];
+    }
+
     public function save(): void
     {
         $existingShop = $this->shopModel->findByUserId($_SESSION['user_id']);
@@ -84,8 +100,8 @@ class ShopController
         $socialFacebook = trim($_POST['social_facebook'] ?? '');
         $socialPinterest = trim($_POST['social_pinterest'] ?? '');
         $socialTiktok = trim($_POST['social_tiktok'] ?? '');
-        $styles = array_values(array_intersect($_POST['styles'] ?? [], Shop::STYLES));
-        $types = array_values(array_intersect($_POST['types'] ?? [], Shop::TYPES));
+        $styles = array_values(array_intersect($_POST['styles'] ?? [], $this->shopModel->getAllStyles()));
+        $types = array_values(array_intersect($_POST['types'] ?? [], $this->shopModel->getAllTypes()));
 
         $errors = [];
 
@@ -116,7 +132,7 @@ class ShopController
                 'pageTitle' => 'Ma boutique — Toile',
                 'pageHeading' => 'Ma boutique',
                 'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-            ], $this->shopStats($existingShop)), 'layouts/artist');
+            ], $this->shopStats($existingShop), $this->shopFormExtras($existingShop)), 'layouts/artist');
             return;
         }
 
@@ -189,7 +205,68 @@ class ShopController
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], $this->shopStats($shop)), 'layouts/artist');
+        ], $this->shopStats($shop), $this->shopFormExtras($shop)), 'layouts/artist');
+    }
+
+    // Soumission d'une demande de nouveau style/type (POST /my-shop/category-requests)
+    public function submitCategoryRequest(): void
+    {
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+
+        if ($shop === null) {
+            header('Location: /my-shop');
+            exit;
+        }
+
+        $categoryType = $_POST['category_type'] ?? '';
+        $name = trim($_POST['name'] ?? '');
+
+        $errors = [];
+
+        if (!in_array($categoryType, ['style', 'type'], true)) {
+            $errors['category_request'] = 'Type de catégorie invalide.';
+        }
+
+        if (mb_strlen($name) < 2) {
+            $errors['category_request'] = 'Le nom proposé doit faire au moins 2 caractères.';
+        }
+
+        $imageFilename = null;
+
+        if ($categoryType === 'style') {
+            if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                $errors['category_request'] = 'Un visuel est requis pour proposer un nouveau style.';
+            } else {
+                $uploadResult = \App\Core\FileUploader::upload(
+                    $_FILES['image'],
+                    __DIR__ . '/../../public/uploads/category-requests'
+                );
+
+                if ($uploadResult['error'] !== null) {
+                    $errors['category_request'] = $uploadResult['error'];
+                } else {
+                    $imageFilename = $uploadResult['filename'];
+                }
+            }
+        }
+
+        if (empty($errors)) {
+            $this->categoryRequestModel->create([
+                'shop_id' => $shop['id'],
+                'category_type' => $categoryType,
+                'name' => $name,
+                'image' => $imageFilename,
+            ]);
+        }
+
+        $this->renderer->render('artist/shop', array_merge([
+            'shop' => $shop,
+            'errors' => $errors,
+            'success' => empty($errors) ? 'Ta proposition a bien été envoyée, elle est en attente de validation.' : null,
+            'pageTitle' => 'Ma boutique — Toile',
+            'pageHeading' => 'Ma boutique',
+            'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
+        ], $this->shopStats($shop), $this->shopFormExtras($shop)), 'layouts/artist');
     }
 
     public function show(string $slug): void
@@ -292,7 +369,7 @@ class ShopController
             'perPage' => $perPage,
             'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
-            'availableStyles' => Shop::STYLES,
+            'availableStyles' => $this->shopModel->getAllStyles(),
             'pageTitle' => 'Découvrir les artistes — Toile',
         ]);
     }

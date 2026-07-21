@@ -18,6 +18,43 @@ class Shop extends BaseModel
      */
     public const TYPES = ['illustrateur', 'portraitiste', 'character designer', 'concept artist', 'designer graphique', 'tatoueur', 'autre'];
 
+    /**
+     * Illustrations fixes des tuiles de style (page d'accueil, onglet admin
+     * "Styles à la une") — une image choisie par style fixe plutôt qu'une
+     * image de portfolio piochée dynamiquement (pouvait se répéter d'une
+     * tuile à l'autre quand une boutique cochait plusieurs styles à la fois).
+     */
+    public const STYLE_TILE_IMAGES = [
+        'anime' => 'anime.png',
+        'réaliste' => 'realiste.png',
+        'chibi' => 'chibi.png',
+        'pixel art' => 'pixel-art.png',
+        'concept art' => 'concept-art.png',
+    ];
+
+    /**
+     * Styles sélectionnables : la liste figée STYLES, complétée des styles
+     * proposés par des artistes et validés par l'admin (voir
+     * CategoryRequest::findApprovedStyleNames()).
+     */
+    public function getAllStyles(): array
+    {
+        $approved = (new CategoryRequest())->findApprovedStyleNames();
+
+        return array_values(array_unique(array_merge(self::STYLES, $approved)));
+    }
+
+    /**
+     * Types/spécialités sélectionnables : la liste figée TYPES, complétée
+     * des types validés par l'admin.
+     */
+    public function getAllTypes(): array
+    {
+        $approved = (new CategoryRequest())->findApprovedTypeNames();
+
+        return array_values(array_unique(array_merge(self::TYPES, $approved)));
+    }
+
     public function findByUserId(int $userId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM shop WHERE user_id = :user_id');

@@ -7,13 +7,20 @@
  * @var array $plans
  * @var string $section
  * @var bool $success
+ * @var array<int, array{name: string, image: string|null}> $homepageStyleCandidates Styles fixes + validés (voir Shop::STYLES / CategoryRequest::findApprovedStyleRows()).
+ * @var array<int, string> $homepageStyleSelected Noms actuellement choisis pour la page d'accueil (max 5).
  */
+?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<?php
 
 $tabs = [
     'general' => 'Général',
     'social' => 'Réseaux sociaux',
     'raffle' => 'Tirage au sort',
     'subscriptions' => 'Abonnements',
+    'homepage_styles' => 'Styles à la une',
     'maintenance' => 'Maintenance',
 ];
 
@@ -243,6 +250,112 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
     </div>
 </div>
 
+<div data-settings-panel="homepage_styles" class="<?= $activeTab === 'homepage_styles' ? '' : 'hidden' ?>">
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+        <h2 class="text-base font-semibold mb-2 text-ink">Styles à la une</h2>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Choisis jusqu'à 5 styles à afficher dans la section "Explorez l'univers de la création" de la page d'accueil. Les autres styles restent accessibles depuis la recherche.
+        </p>
+
+        <form method="POST" action="/admin/settings/homepage-styles">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <p data-homepage-styles-counter style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">
+                <?= count($homepageStyleSelected) ?>/5 sélectionnés
+            </p>
+            <p style="font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 1rem;">Glisse-dépose les vignettes pour changer l'ordre d'affichage sur la page d'accueil.</p>
+
+            <div data-style-grid style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <?php foreach ($homepageStyleCandidates as $candidate): ?>
+                    <?php $isChecked = in_array($candidate['name'], $homepageStyleSelected, true); ?>
+                    <div data-style-card draggable="true" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; cursor: grab;" class="has-[:checked]:border-primary">
+                        <div style="height: 90px; background: var(--color-primary-light); position: relative;">
+                            <?php if ($candidate['image']): ?>
+                                <img src="<?= htmlspecialchars($candidate['image']) ?>" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;">
+                            <?php endif; ?>
+
+                            <span title="Glisser pour réordonner" style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.85); border-radius: var(--radius-sm); padding: 1px 6px; font-size: 0.75rem; line-height: 1.4;">⠿</span>
+
+                            <label style="position: absolute; top: 6px; right: 6px; cursor: pointer;">
+                                <input type="checkbox" name="homepage_styles[]" value="<?= htmlspecialchars($candidate['name']) ?>" data-homepage-style-checkbox <?= $isChecked ? 'checked' : '' ?>
+                                    style="width: 18px; height: 18px;" class="accent-primary">
+                            </label>
+
+                            <?php if (isset($candidate['requestId'])): ?>
+                                <div style="position: absolute; top: 6px; left: 6px; display: flex; gap: 4px;">
+                                    <button type="button" title="Modifier" data-edit-style-open
+                                        data-id="<?= (int) $candidate['requestId'] ?>" data-name="<?= htmlspecialchars($candidate['name']) ?>" data-image="<?= htmlspecialchars($candidate['image'] ?? '') ?>"
+                                        style="width: 22px; height: 22px; border-radius: 50%; background: white; border: 1px solid var(--color-border); cursor: pointer; font-size: 0.7rem; line-height: 1;">✎</button>
+                                    <button type="submit" form="deleteStyleForm<?= (int) $candidate['requestId'] ?>" title="Supprimer"
+                                        onclick="return confirm('Supprimer le style « <?= htmlspecialchars(addslashes($candidate['name'])) ?> » ?');"
+                                        style="width: 22px; height: 22px; border-radius: 50%; background: white; border: 1px solid var(--color-border); cursor: pointer; font-size: 0.7rem; line-height: 1;">🗑</button>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div style="padding: 0.5rem 0.7rem; font-size: 0.82rem; font-weight: 600;"><?= htmlspecialchars(ucfirst($candidate['name'])) ?></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <button type="submit" class="btn btn--primary">Enregistrer la sélection</button>
+        </form>
+
+        <?php foreach ($homepageStyleCandidates as $candidate): ?>
+            <?php if (isset($candidate['requestId'])): ?>
+                <form id="deleteStyleForm<?= (int) $candidate['requestId'] ?>" method="POST" action="/admin/category-requests/<?= (int) $candidate['requestId'] ?>/delete" style="display: none;">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+                </form>
+            <?php endif; ?>
+        <?php endforeach; ?>
+
+        <dialog id="editStyleModal" class="auth-modal">
+            <button type="button" class="absolute top-3 right-4 text-title text-3xl leading-none z-20" data-edit-style-close aria-label="Fermer">&times;</button>
+
+            <div class="relative bg-bg rounded-2xl border border-border shadow-lg px-6 py-8 min-[481px]:px-10 min-[481px]:py-10">
+                <h2 class="font-title text-[1.6rem] text-title font-semibold text-center leading-none mb-5">Modifier le style</h2>
+
+                <form id="editStyleForm" method="POST" action="" enctype="multipart/form-data" class="flex flex-col gap-4 max-w-[340px] mx-auto text-left">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+                    <div>
+                        <label for="editStyleName" class="block font-semibold text-[0.9rem] mb-2">Nom</label>
+                        <input type="text" id="editStyleName" name="name" required
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] bg-white font-main outline-none focus:border-primary">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-[0.9rem] mb-2">Visuel</label>
+                        <button type="button" id="editStyleRecropBtn" class="btn btn--outline" style="font-size: 0.82rem; padding: 0.3rem 0.9rem;">Ajuster le cadrage de l'image actuelle</button>
+                        <p class="text-[0.78rem] text-muted mt-2 mb-1">Ou remplace-la par un nouveau fichier :</p>
+                        <input type="file" id="editStyleImage" name="image" accept="image/png,image/jpeg,image/webp" class="w-full text-[0.85rem]">
+                        <img id="editStyleImagePreview" src="" alt="" class="hidden w-24 h-24 object-cover rounded-md border border-border mt-2">
+                    </div>
+
+                    <div class="text-center mt-1">
+                        <button type="submit" class="btn btn--primary px-10">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <dialog id="editStyleCropModal" class="auth-modal">
+            <div class="bg-white rounded-md p-5 shadow-sm">
+                <h3 class="text-base font-semibold text-ink mb-1">Recadre le visuel</h3>
+                <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour bien centrer le sujet.</p>
+
+                <div class="relative w-full aspect-[4/3] bg-bg overflow-hidden mb-4">
+                    <img id="editStyleCropImage" src="" alt="" class="block max-w-full">
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="editStyleCropCancel" class="btn btn--outline">Annuler</button>
+                    <button type="button" id="editStyleCropConfirm" class="btn btn--primary">Valider le cadrage</button>
+                </div>
+            </div>
+        </dialog>
+    </div>
+</div>
+
 <div data-settings-panel="maintenance" class="<?= $activeTab === 'maintenance' ? '' : 'hidden' ?>">
     <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
         <h2 class="text-base font-semibold mb-5 text-ink">Mode maintenance</h2>
@@ -297,4 +410,119 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
             });
         });
     })();
+
+    (function () {
+        var checkboxes = document.querySelectorAll('[data-homepage-style-checkbox]');
+        var counter = document.querySelector('[data-homepage-styles-counter]');
+        if (checkboxes.length === 0) return;
+
+        function update() {
+            var checkedCount = document.querySelectorAll('[data-homepage-style-checkbox]:checked').length;
+            if (counter) counter.textContent = checkedCount + '/5 sélectionnés';
+            checkboxes.forEach(function (checkbox) {
+                checkbox.disabled = !checkbox.checked && checkedCount >= 5;
+            });
+        }
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener('change', update);
+        });
+        update();
+    })();
+
+    (function () {
+        var grid = document.querySelector('[data-style-grid]');
+        if (!grid) return;
+
+        var dragged = null;
+
+        grid.querySelectorAll('[data-style-card]').forEach(function (card) {
+            card.addEventListener('dragstart', function (e) {
+                dragged = card;
+                card.style.opacity = '0.4';
+                // Firefox exige un appel à setData() pour considérer le
+                // glissement comme valide et déclencher dragover/drop
+                // ailleurs sur la page.
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', '');
+            });
+
+            card.addEventListener('dragend', function () {
+                card.style.opacity = '';
+                dragged = null;
+            });
+
+            card.addEventListener('dragover', function (e) {
+                e.preventDefault();
+            });
+
+            card.addEventListener('drop', function (e) {
+                e.preventDefault();
+                if (!dragged || dragged === card) return;
+
+                var cards = Array.prototype.slice.call(grid.children);
+                if (cards.indexOf(dragged) < cards.indexOf(card)) {
+                    card.after(dragged);
+                } else {
+                    card.before(dragged);
+                }
+            });
+        });
+    })();
+
+    (function () {
+        var dialog = document.getElementById('editStyleModal');
+        if (!dialog) return;
+
+        var form = document.getElementById('editStyleForm');
+        var nameInput = document.getElementById('editStyleName');
+        var closeBtn = dialog.querySelector('[data-edit-style-close]');
+        var recropBtn = document.getElementById('editStyleRecropBtn');
+        var currentImageUrl = '';
+
+        document.querySelectorAll('[data-edit-style-open]').forEach(function (trigger) {
+            trigger.addEventListener('click', function () {
+                form.action = '/admin/category-requests/' + trigger.dataset.id + '/edit';
+                nameInput.value = trigger.dataset.name;
+                currentImageUrl = trigger.dataset.image || '';
+                if (recropBtn) recropBtn.style.display = currentImageUrl ? '' : 'none';
+                dialog.showModal();
+            });
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                dialog.close();
+            });
+        }
+
+        dialog.addEventListener('click', function (e) {
+            if (e.target === dialog) {
+                dialog.close();
+            }
+        });
+
+        if (recropBtn) {
+            recropBtn.addEventListener('click', function () {
+                if (currentImageUrl && window.editStyleCropTool) {
+                    window.editStyleCropTool.openWithUrl(currentImageUrl);
+                }
+            });
+        }
+    })();
+</script>
+
+<script src="/assets/js/image-crop.js"></script>
+<script>
+    window.editStyleCropTool = setupImageCrop({
+        fileInputId: 'editStyleImage',
+        modalId: 'editStyleCropModal',
+        imageId: 'editStyleCropImage',
+        confirmId: 'editStyleCropConfirm',
+        cancelId: 'editStyleCropCancel',
+        previewId: 'editStyleImagePreview',
+        aspectRatio: 4 / 3,
+        outputWidth: 800,
+        outputHeight: 600,
+    });
 </script>
