@@ -53,7 +53,7 @@ $navItems = [
     ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'stats', 'match' => 'prefix'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users', 'match' => 'prefix'],
     ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix', 'badge' => $pendingArtistRequestsCount],
-    ['label' => 'Demandes de catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix', 'badge' => $pendingCategoryRequestsCount],
+    ['label' => 'Catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix', 'badge' => $pendingCategoryRequestsCount],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'shop', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'package', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'card', 'match' => 'prefix'],
@@ -188,9 +188,9 @@ $navIcons = [
                         <span class="w-9 h-9 shrink-0 flex items-center justify-center">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
                         </span>
-                        <?= htmlspecialchars($item['label']) ?>
+                        <span class="flex-1 min-w-0 truncate"><?= htmlspecialchars($item['label']) ?></span>
                         <?php if (!empty($item['badge'])): ?>
-                            <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
+                            <span class="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
