@@ -174,8 +174,8 @@ $navIcons = [
         <div id="adminSidebarOverlay" class="hidden"></div>
 
         <aside id="adminSidebar" class="w-[220px] bg-bg border-r border-border flex flex-col fixed top-0 left-0 h-screen overflow-y-auto z-[100]">
-            <a href="/admin" class="pt-[1.1rem] px-5 pb-[0.85rem] text-center border-b border-border">
-                <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[120px] h-auto mx-auto">
+            <a href="/admin" class="text-center border-b border-border">
+                <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[190px] h-auto mx-auto block m-0 p-0">
             </a>
 
             <nav id="adminSidebarNav" class="py-4 flex-1">

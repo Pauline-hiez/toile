@@ -103,8 +103,8 @@ $navIcons = [
 
 <body>
     <aside id="artistSidebar" class="flex flex-col min-[900px]:fixed min-[900px]:top-0 min-[900px]:left-0 min-[900px]:w-[220px] min-[900px]:h-screen min-[900px]:bg-bg min-[900px]:border-r min-[900px]:border-border min-[900px]:z-[100] max-[899px]:max-w-[1400px] max-[899px]:mx-auto max-[899px]:w-full max-[899px]:px-5 max-[899px]:pt-6 min-[641px]:max-[899px]:px-10 min-[641px]:max-[899px]:pt-8">
-        <a href="/my-dashboard" class="shrink-0 pt-[1.1rem] px-5 pb-[0.85rem] text-center border-b border-border">
-            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[120px] h-auto mx-auto">
+        <a href="/my-dashboard" class="shrink-0 text-center border-b border-border">
+            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[190px] h-auto mx-auto block m-0 p-0">
         </a>
 
         <nav id="artistSidebarNav" class="flex flex-row min-[900px]:flex-col flex-wrap min-[900px]:flex-nowrap gap-1 pt-2 min-[900px]:py-4 min-[900px]:overflow-y-auto min-[900px]:min-h-0 min-[900px]:shrink-0">

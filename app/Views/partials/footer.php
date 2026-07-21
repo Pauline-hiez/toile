@@ -28,15 +28,7 @@ $socialLinks = [
             <a href="/a-propos">Qui sommes-nous ?</a>
             <a href="/become-artist">Devenir Artiste</a>
             <a href="/contact" data-contact-open>Contact</a>
-        </div>
-
-        <div class="site-footer__col">
-            <h4>Ressources</h4>
             <a href="/aide">Aide et FAQ</a>
-            <a href="/cgu">Conditions d'utilisation</a>
-            <a href="/cgv">Conditions générales de vente</a>
-            <a href="/confidentialite">Politique de confidentialité</a>
-            <a href="/reglement-interieur">Règlement intérieur</a>
         </div>
 
         <div class="site-footer__col">
@@ -60,5 +52,12 @@ $socialLinks = [
 
     <div class="site-footer__bottom">
         <p>&copy; <?= date('Y') ?> <?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?> — La marketplace de commissions artistiques.</p>
+
+        <nav class="site-footer__legal">
+            <a href="/cgu">Conditions d'utilisation</a>
+            <a href="/cgv">Conditions générales de vente</a>
+            <a href="/confidentialite">Politique de confidentialité</a>
+            <a href="/reglement-interieur">Règlement intérieur</a>
+        </nav>
     </div>
 </footer>
