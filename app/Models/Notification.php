@@ -82,6 +82,8 @@ class Notification extends BaseModel
             'artist_approved' => ['label' => 'Demande acceptée', 'icon' => 'check'],
             'artist_rejected' => ['label' => 'Demande refusée', 'icon' => 'x'],
             'subscription_price_changed' => ['label' => 'Abonnement mis à jour', 'icon' => 'money'],
+            'category_request_approved' => ['label' => 'Catégorie approuvée', 'icon' => 'check'],
+            'category_request_rejected' => ['label' => 'Catégorie refusée', 'icon' => 'x'],
         ];
 
         return $map[$type] ?? ['label' => 'Notification', 'icon' => 'bell'];

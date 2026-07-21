@@ -13,15 +13,19 @@ use App\Models\Notification;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\Setting;
+use App\Models\CategoryRequest;
 
 $adminUsername = 'Admin';
 $adminAvatar = null;
 $adminShop = null;
 $settingModel = new Setting();
+$pendingArtistRequestsCount = 0;
+$pendingCategoryRequestsCount = 0;
 
 if (isset($_SESSION['user_id'])) {
     $notificationModel = new Notification();
     $unreadCount = $notificationModel->countUnread($_SESSION['user_id']);
+    $recentNotifications = $notificationModel->findRecentByUserId($_SESSION['user_id']);
 
     $userModel = new User();
     $currentAdmin = $userModel->findById($_SESSION['user_id']);
@@ -32,8 +36,14 @@ if (isset($_SESSION['user_id'])) {
 
     $shopModel = new Shop();
     $adminShop = $shopModel->findByUserId($_SESSION['user_id']);
+
+    // Pastilles de la sidebar : nombre de demandes en attente de traitement
+    // (même principe que le badge "Mes commandes" côté artiste).
+    $pendingArtistRequestsCount = $userModel->countPendingArtistRequests();
+    $pendingCategoryRequestsCount = (new CategoryRequest())->countPending();
 } else {
     $unreadCount = 0;
+    $recentNotifications = [];
 }
 
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
@@ -42,7 +52,8 @@ $navItems = [
     ['label' => 'Dashboard', 'href' => '/admin', 'icon' => 'dashboard', 'match' => 'exact'],
     ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'stats', 'match' => 'prefix'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users', 'match' => 'prefix'],
-    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix'],
+    ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix', 'badge' => $pendingArtistRequestsCount],
+    ['label' => 'Demandes de catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix', 'badge' => $pendingCategoryRequestsCount],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'shop', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'package', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'card', 'match' => 'prefix'],
@@ -65,6 +76,7 @@ $navIcons = [
     'ticket' => '<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"></path><line x1="13" y1="6.5" x2="13" y2="8"></line><line x1="13" y1="11" x2="13" y2="13"></line><line x1="13" y1="16" x2="13" y2="17.5"></line>',
     'flag' => '<path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>',
     'settings' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.63.78 1.05 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>',
+    'tag' => '<path d="M20.6 12.6 12.6 20.6a2 2 0 0 1-2.83 0l-7.37-7.37a2 2 0 0 1 0-2.83l8-8A2 2 0 0 1 11.83 2H18a2 2 0 0 1 2 2v6.17a2 2 0 0 1-.59 1.43Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle>',
 ];
 ?>
 <!DOCTYPE html>
@@ -120,11 +132,11 @@ $navIcons = [
             }
         }
 
-        /* Deux items de nav ont été ajoutés (Statistiques, Demandes
-           artistes) — la liste est plus haute qu'avant, il faut masquer
+        /* La liste de nav s'est allongée au fil des ajouts (Statistiques,
+           Demandes artistes, Demandes de catégories...) — il faut masquer
            l'illustration décorative plus tôt pour ne plus chevaucher
            "Paramètres" en bas de liste. */
-        @media (max-height: 800px) {
+        @media (max-height: 840px) {
             #adminSidebarIllustration {
                 display: none;
             }
@@ -177,6 +189,9 @@ $navIcons = [
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
                         </span>
                         <?= htmlspecialchars($item['label']) ?>
+                        <?php if (!empty($item['badge'])): ?>
+                            <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
+                        <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
             </nav>
@@ -213,15 +228,7 @@ $navIcons = [
                     ?>
                     <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
-                    <a href="/notifications" aria-label="Notifications" title="Notifications" class="relative cursor-pointer">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-title">
-                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                        <?php if ($unreadCount > 0): ?>
-                            <span class="absolute -top-1 -right-1 bg-danger text-white text-[0.65rem] font-semibold rounded-full px-1 min-w-[16px] h-4 flex items-center justify-center"><?= $unreadCount ?></span>
-                        <?php endif; ?>
-                    </a>
+                    <?php require __DIR__ . '/../components/notif-dropdown.php'; ?>
 
                     <div class="site-header__account">
                         <a href="/profile" class="flex items-center gap-3 cursor-pointer no-underline text-inherit">
@@ -281,6 +288,11 @@ $navIcons = [
             overlay.addEventListener('click', closeSidebar);
         })();
     </script>
+
+    <?php require __DIR__ . '/../components/contact-modal.php'; ?>
+    <script src="/assets/js/input-sparks.js"></script>
+    <script src="/assets/js/contact-modal.js"></script>
+    <script src="/assets/js/notif-dropdown.js"></script>
 </body>
 
 </html>

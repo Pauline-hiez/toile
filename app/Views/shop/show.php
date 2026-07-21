@@ -101,8 +101,9 @@ $renderStars = function (?float $rating, int $size = 14): string {
             <?php if (!empty($socialLinks)): ?>
                 <div class="flex items-center gap-2">
                     <?php foreach ($socialLinks as $network => $url): ?>
-                        <a href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= htmlspecialchars(ucfirst($network)) ?>">
-                            <img src="/assets/images/reseaux/<?= $network ?>.png" alt="<?= htmlspecialchars(ucfirst($network)) ?>" class="w-8 h-8 object-contain">
+                        <a href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= htmlspecialchars(ucfirst($network)) ?>"
+                            class="w-9 h-9 rounded-full border border-border flex items-center justify-center transition-colors hover:border-primary hover:bg-primary-light">
+                            <img src="/assets/images/reseaux/<?= $network ?>.png" alt="<?= htmlspecialchars(ucfirst($network)) ?>" class="w-4 h-4 object-contain<?= $network === 'tiktok' ? ' scale-[1.45]' : '' ?>">
                         </a>
                     <?php endforeach; ?>
                 </div>

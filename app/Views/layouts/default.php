@@ -57,10 +57,13 @@ $siteFavicon = $settingModel->get('site_favicon');
         <script src="/assets/js/notif-dropdown.js"></script>
     <?php else: ?>
         <?php require __DIR__ . '/../components/auth-modal.php'; ?>
-        <script src="/assets/js/input-sparks.js"></script>
         <script src="/assets/js/password-toggle.js"></script>
         <script src="/assets/js/auth-modal.js"></script>
     <?php endif; ?>
+
+    <?php require __DIR__ . '/../components/contact-modal.php'; ?>
+    <script src="/assets/js/input-sparks.js"></script>
+    <script src="/assets/js/contact-modal.js"></script>
 </body>
 
 </html>

@@ -8,6 +8,9 @@
  * @var string|null $success
  * @var array{average: float, count: int}|null $ratingStats Null si $shop est null.
  * @var int|null $favoriteCount Null si $shop est null.
+ * @var array<int, string> $availableStyles Styles fixes + validés par l'admin (voir Shop::getAllStyles()).
+ * @var array<int, string> $availableTypes Types fixes + validés par l'admin (voir Shop::getAllTypes()).
+ * @var array $categoryRequests Demandes de style/type de cette boutique, toutes statuts confondus.
  */
 $pageTitle = 'Ma boutique — Toile';
 
@@ -139,7 +142,13 @@ $bannerShapeRatio = '579 / 226';
     </div>
 
     <div class="bg-white border border-border rounded-md p-6 shadow-sm mb-6">
-        <h2 class="text-base font-semibold text-ink mb-5">Style & spécialité</h2>
+        <div class="flex items-center gap-2 mb-5">
+            <h2 class="text-base font-semibold text-ink">Style & spécialité</h2>
+            <?php if ($shop !== null): ?>
+                <button type="button" data-category-request-open title="Proposer un nouveau style ou type"
+                    class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-base leading-none border-0 cursor-pointer hover:bg-primary/90 transition-colors">+</button>
+            <?php endif; ?>
+        </div>
 
         <?php
         $selectedStyles = !empty($shop['styles']) ? json_decode($shop['styles'], true) : [];
@@ -149,7 +158,7 @@ $bannerShapeRatio = '579 / 226';
         <div class="mb-5">
             <p class="text-[0.82rem] font-semibold text-ink mb-2">Styles artistiques</p>
             <div class="flex flex-wrap gap-2">
-                <?php foreach (\App\Models\Shop::STYLES as $style): ?>
+                <?php foreach ($availableStyles as $style): ?>
                     <label class="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-[0.4rem] text-[0.82rem] text-ink cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:text-primary transition-colors">
                         <input type="checkbox" name="styles[]" value="<?= htmlspecialchars($style) ?>" <?= in_array($style, $selectedStyles, true) ? 'checked' : '' ?> class="accent-primary">
                         <?= htmlspecialchars(ucfirst($style)) ?>
@@ -161,7 +170,7 @@ $bannerShapeRatio = '579 / 226';
         <div>
             <p class="text-[0.82rem] font-semibold text-ink mb-2">Type / spécialité</p>
             <div class="flex flex-wrap gap-2">
-                <?php foreach (\App\Models\Shop::TYPES as $type): ?>
+                <?php foreach ($availableTypes as $type): ?>
                     <label class="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-[0.4rem] text-[0.82rem] text-ink cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:text-primary transition-colors">
                         <input type="checkbox" name="types[]" value="<?= htmlspecialchars($type) ?>" <?= in_array($type, $selectedTypes, true) ? 'checked' : '' ?> class="accent-primary">
                         <?= htmlspecialchars(ucfirst($type)) ?>
@@ -206,6 +215,11 @@ $bannerShapeRatio = '579 / 226';
         <button type="submit" class="btn btn--primary">Enregistrer</button>
     </div>
 </form>
+
+<?php if ($shop !== null): ?>
+    <?php require __DIR__ . '/../components/category-request-modal.php'; ?>
+    <script src="/assets/js/category-request-modal.js"></script>
+<?php endif; ?>
 
 <div id="bannerCropModal" class="hidden fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
     <div class="bg-white rounded-md p-5 max-w-[640px] w-full shadow-sm">

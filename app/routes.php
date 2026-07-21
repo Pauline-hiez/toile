@@ -19,6 +19,18 @@
 
 // Accueil
 $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
+$router->map('GET', '/comment-ca-marche', ['App\Controllers\HomeController', 'howItWorks']);
+$router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
+$router->map('GET', '/cgu', ['App\Controllers\HomeController', 'terms']);
+$router->map('GET', '/confidentialite', ['App\Controllers\HomeController', 'privacy']);
+$router->map('GET', '/reglement-interieur', ['App\Controllers\HomeController', 'rules']);
+$router->map('GET', '/cgv', ['App\Controllers\HomeController', 'salesTerms']);
+$router->map('GET', '/a-propos', ['App\Controllers\HomeController', 'about']);
+$router->map('GET', '/styles', ['App\Controllers\HomeController', 'styles']);
+
+// Contact
+$router->map('GET', '/contact', ['App\Controllers\ContactController', 'index']);
+$router->map('POST', '/contact', ['App\Controllers\ContactController', 'submit']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);
@@ -84,6 +96,14 @@ $router->map('POST', '/my-shop', [
 
 $router->map('POST', '/my-shop/toggle', [
     'controller' => ['App\Controllers\ShopController', 'toggleOpen'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-shop/category-requests', [
+    'controller' => ['App\Controllers\ShopController', 'submitCategoryRequest'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
@@ -385,6 +405,46 @@ $router->map('POST', '/admin/artist-requests/[i:id]/reject', [
     ],
 ]);
 
+$router->map('GET', '/admin/category-requests', [
+    'controller' => ['App\Controllers\AdminController', 'categoryRequests'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/approve', [
+    'controller' => ['App\Controllers\AdminController', 'approveCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/reject', [
+    'controller' => ['App\Controllers\AdminController', 'rejectCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/edit', [
+    'controller' => ['App\Controllers\AdminController', 'updateApprovedStyle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/delete', [
+    'controller' => ['App\Controllers\AdminController', 'deleteApprovedStyle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/shops', [
     'controller' => ['App\Controllers\AdminController', 'shops'],
     'middlewares' => [
@@ -539,6 +599,14 @@ $router->map('POST', '/admin/settings/subscriptions', [
 
 $router->map('POST', '/admin/settings/maintenance', [
     'controller' => ['App\Controllers\AdminController', 'updateMaintenanceSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/homepage-styles', [
+    'controller' => ['App\Controllers\AdminController', 'updateHomepageStylesSettings'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

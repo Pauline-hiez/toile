@@ -13,6 +13,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\RaffleEntry;
 use App\Models\Report;
 use App\Models\Setting;
+use App\Models\CategoryRequest;
 
 class AdminController
 {
@@ -26,6 +27,7 @@ class AdminController
     private RaffleEntry $raffleModel;
     private Report $reportModel;
     private Setting $settingModel;
+    private CategoryRequest $categoryRequestModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -39,6 +41,7 @@ class AdminController
         $this->raffleModel = new RaffleEntry();
         $this->reportModel = new Report();
         $this->settingModel = new Setting();
+        $this->categoryRequestModel = new CategoryRequest();
     }
 
     /**
@@ -437,6 +440,71 @@ class AdminController
         );
 
         header('Location: /admin/artist-requests');
+        exit;
+    }
+
+    // Liste des demandes de nouveau style/type en attente
+    public function categoryRequests(): void
+    {
+        $requests = $this->categoryRequestModel->findPending();
+
+        $this->renderer->render('admin/category-requests', [
+            'requests' => $requests,
+            'pageTitle' => 'Demandes de catégories - Administration',
+            'pageHeading' => 'Demandes de catégories',
+            'pageSubtitle' => 'Valide les nouveaux styles et types proposés par les artistes.',
+        ], 'layouts/admin');
+    }
+
+    public function approveCategoryRequest(int $id): void
+    {
+        $request = $this->categoryRequestModel->findById($id);
+        if ($request === null || $request['status'] !== 'pending') {
+            http_response_code(404);
+            echo 'Demande introuvable.';
+            exit;
+        }
+
+        $this->categoryRequestModel->approve($id);
+
+        $shop = $this->shopModel->findById($request['shop_id']);
+        if ($shop !== null) {
+            $notificationModel = new \App\Models\Notification();
+            $notificationModel->notify(
+                $shop['user_id'],
+                'category_request_approved',
+                'Ta proposition "' . $request['name'] . '" a été acceptée !',
+                '/my-shop'
+            );
+        }
+
+        header('Location: /admin/category-requests');
+        exit;
+    }
+
+    public function rejectCategoryRequest(int $id): void
+    {
+        $request = $this->categoryRequestModel->findById($id);
+        if ($request === null || $request['status'] !== 'pending') {
+            http_response_code(404);
+            echo 'Demande introuvable.';
+            exit;
+        }
+
+        $this->categoryRequestModel->reject($id);
+
+        $shop = $this->shopModel->findById($request['shop_id']);
+        if ($shop !== null) {
+            $notificationModel = new \App\Models\Notification();
+            $notificationModel->notify(
+                $shop['user_id'],
+                'category_request_rejected',
+                'Ta proposition "' . $request['name'] . '" n\'a pas été retenue.',
+                '/my-shop'
+            );
+        }
+
+        header('Location: /admin/category-requests');
         exit;
     }
 
@@ -1121,7 +1189,7 @@ class AdminController
 
     public function settings(): void
     {
-        $this->renderer->render('admin/settings', [
+        $this->renderer->render('admin/settings', array_merge([
             'settings' => $this->settingModel->all(),
             'plans' => $this->subscriptionPlanModel->findAll(),
             'section' => $_GET['section'] ?? '',
@@ -1129,7 +1197,107 @@ class AdminController
             'pageTitle' => 'Paramètres - Administration',
             'pageHeading' => 'Paramètres',
             'pageSubtitle' => "Configure les informations générales, les réseaux sociaux et les réglages de la plateforme.",
-        ], 'layouts/admin');
+        ], $this->homepageStylesExtras()), 'layouts/admin');
+    }
+
+    /**
+     * Styles candidats (5 fixes + approuvés) et sélection actuelle, pour
+     * l'onglet "Styles à la une" de /admin/settings.
+     */
+    private function homepageStylesExtras(): array
+    {
+        $candidates = [];
+        foreach (Shop::STYLES as $style) {
+            $candidates[] = ['name' => $style, 'image' => isset(Shop::STYLE_TILE_IMAGES[$style]) ? '/assets/images/decor/' . Shop::STYLE_TILE_IMAGES[$style] : null];
+        }
+        foreach ($this->categoryRequestModel->findApprovedStyleRows() as $request) {
+            $candidates[] = ['name' => $request['name'], 'image' => '/uploads/category-requests/' . $request['image'], 'requestId' => $request['id']];
+        }
+
+        $selected = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: array_column($candidates, 'name');
+        $selected = array_slice($selected, 0, 5);
+
+        return [
+            'homepageStyleCandidates' => $candidates,
+            'homepageStyleSelected' => $selected,
+        ];
+    }
+
+    public function updateHomepageStylesSettings(): void
+    {
+        $selected = array_slice(array_values($_POST['homepage_styles'] ?? []), 0, 5);
+        $this->settingModel->set('homepage_styles', json_encode($selected));
+
+        header('Location: /admin/settings?section=homepage_styles&success=1');
+        exit;
+    }
+
+    // Renomme un style validé et/ou remplace son visuel (POST /admin/category-requests/[id]/edit)
+    public function updateApprovedStyle(int $id): void
+    {
+        $request = $this->categoryRequestModel->findById($id);
+        if ($request === null || $request['category_type'] !== 'style' || $request['status'] !== 'approved') {
+            http_response_code(404);
+            echo 'Style introuvable.';
+            exit;
+        }
+
+        $newName = trim($_POST['name'] ?? '');
+        if (mb_strlen($newName) < 2) {
+            header('Location: /admin/settings?section=homepage_styles');
+            exit;
+        }
+
+        $imageFilename = $request['image'];
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = FileUploader::upload(
+                $_FILES['image'],
+                __DIR__ . '/../../public/uploads/category-requests'
+            );
+            if ($uploadResult['filename'] !== null) {
+                if ($request['image'] !== null) {
+                    @unlink(__DIR__ . '/../../public/uploads/category-requests/' . $request['image']);
+                }
+                $imageFilename = $uploadResult['filename'];
+            }
+        }
+
+        $this->categoryRequestModel->update($id, ['name' => $newName, 'image' => $imageFilename]);
+
+        // Garde la sélection page d'accueil cohérente si ce style y figurait
+        // sous son ancien nom.
+        $selected = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: [];
+        $index = array_search($request['name'], $selected, true);
+        if ($index !== false) {
+            $selected[$index] = $newName;
+            $this->settingModel->set('homepage_styles', json_encode($selected));
+        }
+
+        header('Location: /admin/settings?section=homepage_styles&success=1');
+        exit;
+    }
+
+    // Supprime définitivement un style validé (POST /admin/category-requests/[id]/delete)
+    public function deleteApprovedStyle(int $id): void
+    {
+        $request = $this->categoryRequestModel->findById($id);
+        if ($request === null || $request['category_type'] !== 'style' || $request['status'] !== 'approved') {
+            http_response_code(404);
+            echo 'Style introuvable.';
+            exit;
+        }
+
+        if ($request['image'] !== null) {
+            @unlink(__DIR__ . '/../../public/uploads/category-requests/' . $request['image']);
+        }
+        $this->categoryRequestModel->delete($id);
+
+        $selected = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: [];
+        $selected = array_values(array_diff($selected, [$request['name']]));
+        $this->settingModel->set('homepage_styles', json_encode($selected));
+
+        header('Location: /admin/settings?section=homepage_styles&success=1');
+        exit;
     }
 
     public function updateGeneralSettings(): void

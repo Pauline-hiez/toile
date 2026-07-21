@@ -67,7 +67,7 @@
             <div>
                 <label class="inline-flex items-start gap-2 text-[0.85rem] text-ink cursor-pointer">
                     <input type="checkbox" name="terms" value="1" class="mt-1 w-4 h-4 accent-primary cursor-pointer">
-                    <span>J'accepte le <a href="/cgu" target="_blank" class="text-primary underline">règlement intérieur du site</a>.</span>
+                    <span>J'accepte le <a href="/reglement-interieur" target="_blank" class="text-primary underline">règlement intérieur du site</a>.</span>
                 </label>
                 <?php if (isset($errors['terms'])): ?>
                     <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['terms']) ?></p>
