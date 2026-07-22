@@ -71,7 +71,9 @@ $settingModel = new \App\Models\Setting();
 if ($settingModel->get('maintenance_mode', '0') === '1') {
     $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
-    $isExemptPath = in_array($requestPath, ['/login', '/logout'], true) || str_starts_with($requestPath, '/admin');
+    $isExemptPath = in_array($requestPath, ['/login', '/logout'], true)
+        || str_starts_with($requestPath, '/admin')
+        || str_starts_with($requestPath, '/webhooks/');
 
     if (!$isAdmin && !$isExemptPath) {
         http_response_code(503);

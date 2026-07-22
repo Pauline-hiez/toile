@@ -49,6 +49,22 @@ class ShopSubscription extends BaseModel
         return $result ?: null;
     }
 
+    // Retrouve l'abonnement à partir de l'id Stripe (webhook — voir
+    // StripeWebhookController), avec la boutique associée pour notifier
+    // le bon utilisateur.
+    public function findByStripeSubscriptionId(string $stripeSubscriptionId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT ss.*, s.user_id
+            FROM shop_subscription ss
+            INNER JOIN shop s ON s.id = ss.shop_id
+            WHERE ss.stripe_subscription_id = :stripe_subscription_id'
+        );
+        $stmt->execute(['stripe_subscription_id' => $stripeSubscriptionId]);
+        $result = $stmt->fetch();
+        return $result ?: null;
+    }
+
     /**
      * Place (ou repasse) une boutique sur le palier gratuit "Commission".
      * Utilisé à la création d'une boutique et lors de l'annulation d'un

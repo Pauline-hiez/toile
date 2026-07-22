@@ -14,10 +14,15 @@ if (($options['secret'] ?? '') !== ($_ENV['CRON_SECRET'] ?? '')) {
 use App\Core\Database;
 use App\Core\StripeService;
 use App\Models\Notification;
+use App\Models\ShopSubscription;
+use App\Models\SubscriptionPlan;
 
 $pdo = Database::getInstance()->getConnection();
 $stripe = new StripeService();
 $notificationModel = new Notification();
+$subscriptionModel = new ShopSubscription();
+$planModel = new SubscriptionPlan();
+$freePlan = $planModel->findByName('Commission');
 
 $stmt = $pdo->prepare(
     "SELECT ss.*, s.user_id, s.name AS shop_name
@@ -42,7 +47,10 @@ foreach ($subscriptions as $subscription) {
         );
 
         $stripeStatus = $stripeSubscription->status;
-        $currentPeriodEnd = date('Y-m-d H:i:s', $stripeSubscription->current_period_end);
+        // current_period_end vit sur la ligne de l'abonnement (items),
+        // plus sur l'abonnement lui-même, depuis les versions récentes de
+        // l'API Stripe (voir StripeService::createSubscription()).
+        $currentPeriodEnd = date('Y-m-d H:i:s', $stripeSubscription->items->data[0]->current_period_end);
 
         echo "Abonnement {$subscription['stripe_subscription_id']} : Stripe={$stripeStatus}\n";
 
@@ -54,16 +62,26 @@ foreach ($subscriptions as $subscription) {
         };
 
         if ($newStatus !== $subscription['status']) {
-            $stmt = $pdo->prepare(
-                'UPDATE shop_subscription
-                 SET status = :status, current_period_end = :period_end
-                 WHERE id = :id'
-            );
-            $stmt->execute([
-                'status' => $newStatus,
-                'period_end' => $currentPeriodEnd,
-                'id' => $subscription['id'],
-            ]);
+            if ($newStatus === 'cancelled' && $freePlan !== null) {
+                // Repasse la boutique sur le palier gratuit "Commission"
+                // plutôt que de laisser la ligne sur 'cancelled' — chaque
+                // boutique doit toujours avoir un palier actif (même
+                // invariant que SubscriptionController::cancel()), sinon
+                // la commission retombe sur un défaut codé en dur qui peut
+                // diverger du vrai taux "Commission".
+                $subscriptionModel->assignFreePlan($subscription['shop_id'], $freePlan['id']);
+            } else {
+                $stmt = $pdo->prepare(
+                    'UPDATE shop_subscription
+                     SET status = :status, current_period_end = :period_end
+                     WHERE id = :id'
+                );
+                $stmt->execute([
+                    'status' => $newStatus,
+                    'period_end' => $currentPeriodEnd,
+                    'id' => $subscription['id'],
+                ]);
+            }
 
             echo "→ Statut mis à jour : {$subscription['status']} → {$newStatus}\n";
 

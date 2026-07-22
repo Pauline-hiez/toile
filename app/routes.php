@@ -715,6 +715,11 @@ $router->map('POST', '/my-subscription/confirm-free', [
     ],
 ]);
 
+// Webhook Stripe (appelé par Stripe, pas par un navigateur — pas de
+// session/CSRF ; exempté explicitement dans CsrfMiddleware et le mode
+// maintenance, voir public/index.php).
+$router->map('POST', '/webhooks/stripe', ['App\Controllers\StripeWebhookController', 'handle']);
+
 // Paiements artiste (Stripe Connect)
 $router->map('GET', '/my-payouts', [
     'controller' => ['App\Controllers\PayoutController', 'index'],
