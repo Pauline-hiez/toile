@@ -82,7 +82,7 @@
         <h3 class="text-base font-semibold text-ink mb-1">Recadre ton visuel</h3>
         <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour bien centrer le sujet — c'est ce cadrage qui sera utilisé sur la tuile.</p>
 
-        <div class="relative w-full aspect-[4/3] bg-bg overflow-hidden mb-4">
+        <div class="relative w-full h-[420px] bg-bg overflow-hidden mb-4">
             <img id="categoryRequestCropImage" src="" alt="" class="block max-w-full">
         </div>
 

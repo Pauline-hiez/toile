@@ -387,7 +387,7 @@ $bannerShapeRatio = '579 / 160';
         <h3 class="text-base font-semibold text-ink mb-1">Recadre ta bannière</h3>
         <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour qu'elle s'adapte bien au cadre.</p>
 
-        <div id="bannerCropWrapper" class="relative w-full aspect-[<?= $bannerShapeRatio ?>] bg-bg overflow-hidden mb-4">
+        <div id="bannerCropWrapper" class="relative w-full h-[420px] bg-bg overflow-hidden mb-4">
             <img id="bannerCropImage" src="" alt="" class="block max-w-full">
         </div>
 
