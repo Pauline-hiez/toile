@@ -1036,7 +1036,8 @@ class AdminController
         $this->renderer->render('admin/reviews', [
             'reviews' => $reviews,
             'pageTitle' => 'Avis - Administration',
-        ]);
+            'pageHeading' => 'Avis',
+        ], 'layouts/admin');
     }
 
     public function deleteReview(int $id): void

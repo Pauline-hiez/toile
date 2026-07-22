@@ -59,6 +59,7 @@ $navItems = [
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'card', 'match' => 'prefix'],
     ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'ticket', 'match' => 'prefix'],
     ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'flag', 'match' => 'prefix'],
+    ['label' => 'Avis', 'href' => '/admin/reviews', 'icon' => 'star', 'match' => 'prefix'],
     ['label' => 'Paramètres', 'href' => '/admin/settings', 'icon' => 'settings', 'match' => 'prefix'],
 ];
 
@@ -77,6 +78,7 @@ $navIcons = [
     'flag' => '<path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>',
     'settings' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.63.78 1.05 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>',
     'tag' => '<path d="M20.6 12.6 12.6 20.6a2 2 0 0 1-2.83 0l-7.37-7.37a2 2 0 0 1 0-2.83l8-8A2 2 0 0 1 11.83 2H18a2 2 0 0 1 2 2v6.17a2 2 0 0 1-.59 1.43Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle>',
+    'star' => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon>',
 ];
 ?>
 <!DOCTYPE html>
