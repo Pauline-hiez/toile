@@ -86,7 +86,7 @@ class AdminController
             'commissionsChart' => $commissionsChart,
             'subscriptionsChart' => $subscriptionsChart,
             'raffleChart' => $raffleChart,
-            'totalRevenueChart' => $this->sumSeries([$commissionsChart, $subscriptionsChart, $raffleChart]),
+            'totalRevenueChart' => \App\Core\ChartHelper::sumSeries([$commissionsChart, $subscriptionsChart, $raffleChart]),
             'pageTitle' => 'Statistiques - Administration',
             'pageHeading' => 'Statistiques',
             'pageSubtitle' => "Suis l'évolution de l'activité de la plateforme dans le temps.",
@@ -240,7 +240,7 @@ class AdminController
      */
     private function getActivityChartData(int $days = 14): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COUNT(*) AS total
              FROM orders
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
@@ -252,7 +252,7 @@ class AdminController
     // Nombre d'inscriptions par jour (page Statistiques).
     private function getSignupsChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COUNT(*) AS total
              FROM users
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
@@ -264,7 +264,7 @@ class AdminController
     // Revenus (montant total des commandes capturées) par jour (page Statistiques).
     private function getRevenueChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COALESCE(SUM(total_price), 0) / 100 AS total
              FROM orders
              WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')
@@ -278,7 +278,7 @@ class AdminController
     // Commissions perçues par la plateforme par jour (page Statistiques).
     private function getCommissionsChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COALESCE(SUM(commission_amount), 0) / 100 AS total
              FROM orders
              WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')
@@ -296,7 +296,7 @@ class AdminController
      */
     private function getRaffleRevenueChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COALESCE(SUM(amount_paid), 0) / 100 AS total
              FROM raffle_entry
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
@@ -314,7 +314,7 @@ class AdminController
      */
     private function getSubscriptionRevenueChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(ss.created_at) AS day, COALESCE(SUM(sp.price), 0) / 100 AS total
              FROM shop_subscription ss
              INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
@@ -325,54 +325,8 @@ class AdminController
         );
     }
 
-    /**
-     * Additionne plusieurs séries temporelles (même format labels/values,
-     * mêmes jours) point par point — utilisé pour "Revenus totaux
-     * plateforme" (commissions + abonnements + tirage au sort).
-     */
-    private function sumSeries(array $series): array
-    {
-        $labels = $series[0]['labels'] ?? [];
-        $values = array_fill(0, count($labels), 0.0);
-
-        foreach ($series as $s) {
-            foreach ($s['values'] as $i => $v) {
-                $values[$i] += $v;
-            }
-        }
-
-        return ['labels' => $labels, 'values' => array_map(fn($v) => round($v, 2), $values)];
-    }
-
-    /**
-     * Série temporelle jour par jour à partir d'une requête SQL fournie
-     * (doit retourner les colonnes day/total, avec un paramètre nommé
-     * :days) — comble les jours sans donnée à 0, pour que le graphique
-     * (voir admin-chart.js) ait toujours une courbe continue. $asFloat
-     * pour les montants (revenus/commissions), int par défaut (compteurs).
-     */
-    private function getDailySeries(string $sql, int $days, bool $asFloat = false): array
-    {
-        $pdo = \App\Core\Database::getInstance()->getConnection();
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue('days', $days - 1, \PDO::PARAM_INT);
-        $stmt->execute();
-
-        $countsByDay = array_column($stmt->fetchAll(), 'total', 'day');
-
-        $labels = [];
-        $values = [];
-
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-{$i} days"));
-            $labels[] = date('d/m', strtotime($date));
-            $rawValue = $countsByDay[$date] ?? 0;
-            $values[] = $asFloat ? round((float) $rawValue, 2) : (int) $rawValue;
-        }
-
-        return ['labels' => $labels, 'values' => $values];
-    }
+    // sumSeries()/getDailySeries() ont été extraites vers App\Core\ChartHelper
+    // (réutilisées par ShopController pour les statistiques boutique côté artiste).
 
     // Liste des demandes artistes en attente
     public function artistRequests(): void

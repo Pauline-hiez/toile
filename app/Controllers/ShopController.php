@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Core\ChartHelper;
 use App\Core\Renderer;
+use App\Models\Order;
 use App\Models\Shop;
 use App\Models\ShopSubscription;
 use App\Models\Review;
@@ -23,6 +25,7 @@ class ShopController
     private Favorite $favoriteModel;
     private User $userModel;
     private CategoryRequest $categoryRequestModel;
+    private Order $orderModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -35,6 +38,7 @@ class ShopController
         $this->favoriteModel = new Favorite();
         $this->userModel = new User();
         $this->categoryRequestModel = new CategoryRequest();
+        $this->orderModel = new Order();
     }
 
     public function manage(): void
@@ -50,14 +54,62 @@ class ShopController
             exit;
         }
 
+        $tab = in_array($_GET['tab'] ?? '', ['infos', 'stats'], true) ? $_GET['tab'] : 'infos';
+        $days = (int) ($_GET['days'] ?? 30);
+        $days = in_array($days, [14, 30, 90], true) ? $days : 30;
+
         $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
             'errors' => [],
             'success' => null,
+            'tab' => $tab,
+            'days' => $days,
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], $this->shopStats($shop), $this->shopFormExtras($shop)), 'layouts/artist');
+        ], $this->shopStats($shop), $this->shopFormExtras($shop), $this->shopStatsCharts($shop, $days)), 'layouts/artist');
+    }
+
+    /**
+     * Courbes + chiffres "à vie" de l'onglet Statistiques de /my-shop —
+     * revenu net (après commission) et commandes, mêmes conventions que
+     * les graphiques de l'admin (voir ChartHelper, admin-chart.js).
+     * Null si la boutique n'existe pas encore.
+     */
+    private function shopStatsCharts(?array $shop, int $days): array
+    {
+        if ($shop === null) {
+            return ['revenueChart' => null, 'ordersChart' => null, 'lifetimeStats' => null];
+        }
+
+        $revenueChart = ChartHelper::dailySeries(
+            "SELECT DATE(created_at) AS day, COALESCE(SUM(total_price - commission_amount), 0) / 100 AS total
+             FROM orders
+             WHERE shop_id = :shop_id
+             AND status IN ('accepted', 'in_progress', 'delivered', 'completed')
+             AND created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            true,
+            ['shop_id' => $shop['id']]
+        );
+
+        $ordersChart = ChartHelper::dailySeries(
+            "SELECT DATE(created_at) AS day, COUNT(*) AS total
+             FROM orders
+             WHERE shop_id = :shop_id
+             AND created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            false,
+            ['shop_id' => $shop['id']]
+        );
+
+        return [
+            'revenueChart' => $revenueChart,
+            'ordersChart' => $ordersChart,
+            'lifetimeStats' => $this->orderModel->getShopLifetimeStats($shop['id']),
+        ];
     }
 
     /**

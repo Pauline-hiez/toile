@@ -11,6 +11,11 @@
  * @var array<int, string> $availableStyles Styles fixes + validés par l'admin (voir Shop::getAllStyles()).
  * @var array<int, string> $availableTypes Types fixes + validés par l'admin (voir Shop::getAllTypes()).
  * @var array $categoryRequests Demandes de style/type de cette boutique, toutes statuts confondus.
+ * @var string $tab 'infos'|'stats'
+ * @var int $days Période des graphiques de l'onglet Statistiques (14|30|90).
+ * @var array{labels: array, values: array}|null $revenueChart Revenu net (après commission) par jour — null si $shop est null.
+ * @var array{labels: array, values: array}|null $ordersChart Commandes par jour — null si $shop est null.
+ * @var array{total_orders: int, net_revenue: int}|null $lifetimeStats Chiffres à vie — null si $shop est null.
  */
 $pageTitle = 'Ma boutique — Toile';
 
@@ -27,6 +32,86 @@ $bannerShapeRatio = '579 / 160';
         <?= htmlspecialchars($success) ?>
     </div>
 <?php endif; ?>
+
+<?php if ($shop !== null): ?>
+    <nav class="flex items-center gap-2 mt-16 mb-6">
+        <a href="/my-shop?tab=infos" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'infos' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Ma boutique</a>
+        <a href="/my-shop?tab=stats" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'stats' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Statistiques</a>
+    </nav>
+<?php endif; ?>
+
+<?php if ($tab === 'stats' && $shop !== null): ?>
+    <?php
+    $periods = [14 => '14 jours', 30 => '30 jours', 90 => '90 jours'];
+    $revenueTotal = array_sum($revenueChart['values']);
+    $ordersTotal = array_sum($ordersChart['values']);
+    ?>
+
+    <div class="grid grid-cols-2 min-[721px]:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($lifetimeStats['net_revenue'] / 100, 2, ',', ' ') ?> €</div>
+            <div class="font-cursive text-[0.9rem] text-success">Revenu total</div>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $lifetimeStats['total_orders'] ?></div>
+            <div class="font-cursive text-[0.9rem] text-success">Total commandes</div>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1">
+                <?= $ratingStats['count'] > 0 ? number_format($ratingStats['average'], 1) . ' ⭐' : '—' ?>
+            </div>
+            <div class="font-cursive text-[0.9rem] text-success"><?= $ratingStats['count'] > 0 ? $ratingStats['count'] . ' avis' : "Pas encore d'avis" ?></div>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $favoriteCount ?></div>
+            <div class="font-cursive text-[0.9rem] text-success">Favoris</div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2 mb-6">
+        <?php foreach ($periods as $value => $label): ?>
+            <a href="/my-shop?tab=stats&days=<?= $value ?>"
+                class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $days === $value ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">
+                <?= htmlspecialchars($label) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
+    <p class="text-[0.8rem] text-muted mb-3">Totaux sur les <?= $days ?> derniers jours : <?= number_format($revenueTotal, 2, ',', ' ') ?> € · <?= $ordersTotal ?> commande(s)</p>
+
+    <div class="grid grid-cols-1 min-[1024px]:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+            <h2 class="text-base font-semibold mb-5 text-ink">Revenu net</h2>
+            <div class="relative min-h-[220px]"
+                data-admin-chart
+                data-labels="<?= htmlspecialchars(json_encode($revenueChart['labels']), ENT_QUOTES) ?>"
+                data-values="<?= htmlspecialchars(json_encode($revenueChart['values']), ENT_QUOTES) ?>"
+                data-suffix=" €"
+                role="img"
+                aria-label="Revenu net sur les <?= $days ?> derniers jours"
+            ></div>
+        </div>
+
+        <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+            <h2 class="text-base font-semibold mb-5 text-ink">Commandes</h2>
+            <div class="relative min-h-[220px]"
+                data-admin-chart
+                data-labels="<?= htmlspecialchars(json_encode($ordersChart['labels']), ENT_QUOTES) ?>"
+                data-values="<?= htmlspecialchars(json_encode($ordersChart['values']), ENT_QUOTES) ?>"
+                data-suffix=" commande(s)"
+                role="img"
+                aria-label="Commandes sur les <?= $days ?> derniers jours"
+            ></div>
+        </div>
+    </div>
+
+    <script src="/assets/js/admin-chart.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-chart.js') ?>"></script>
+<?php endif; ?>
+
+<?php if ($tab === 'infos'): ?>
 
 <?php if ($shop !== null): ?>
     <div class="grid grid-cols-2 min-[721px]:grid-cols-4 gap-4 mb-8">
@@ -301,3 +386,4 @@ $bannerShapeRatio = '579 / 160';
         });
     })();
 </script>
+<?php endif; ?>

@@ -50,6 +50,30 @@ class Order extends BaseModel
         return (int) $stmt->fetchColumn();
     }
 
+    /**
+     * Chiffres clés "à vie" d'une boutique (onglet Statistiques de
+     * /my-shop) : nombre de commandes réellement honorées et revenu net
+     * (après commission plateforme) sur ces commandes — même filtre de
+     * statuts que les graphiques de revenus de l'admin.
+     */
+    public function getShopLifetimeStats(int $shopId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) AS total_orders,
+                    COALESCE(SUM(total_price - commission_amount), 0) AS net_revenue
+             FROM orders
+             WHERE shop_id = :shop_id
+             AND status IN ('accepted', 'in_progress', 'delivered', 'completed')"
+        );
+        $stmt->execute(['shop_id' => $shopId]);
+        $result = $stmt->fetch();
+
+        return [
+            'total_orders' => (int) $result['total_orders'],
+            'net_revenue' => (int) $result['net_revenue'],
+        ];
+    }
+
     public function findByIdWithDetails(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
