@@ -22,7 +22,7 @@ $pageTitle = 'Accueil — Toile';
         </p>
 
         <form method="GET" action="/boutiques" class="flex items-center max-w-[480px] bg-white border border-border rounded-full p-[0.3rem] pl-5 shadow-sm">
-            <input type="text" name="q" placeholder="Que souhaitez-vous créer ? Ex: Illustration, portrait, paysage..." class="flex-1 border-0 outline-none bg-transparent font-main text-[0.9rem] text-ink placeholder:text-muted">
+            <input type="text" name="q" placeholder="Que souhaitez-vous créer ? Ex: Illustration, portrait, paysage..." autocomplete="off" data-autocomplete="/boutiques/autocomplete" class="flex-1 border-0 outline-none bg-transparent font-main text-[0.9rem] text-ink placeholder:text-muted">
             <button type="submit" aria-label="Rechercher" class="flex items-center justify-center w-[42px] h-[42px] rounded-full bg-primary text-white shrink-0 hover:bg-primary-hover transition-colors">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]">
                     <circle cx="11" cy="11" r="7"></circle>

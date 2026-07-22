@@ -45,6 +45,26 @@ class Shop extends BaseModel
     }
 
     /**
+     * Image de tuile par style, nom => URL : les 5 styles figés (voir
+     * STYLE_TILE_IMAGES) complétés des styles proposés par des artistes et
+     * validés par l'admin (image uploadée à la validation de la demande).
+     * Source commune à la page d'accueil, /styles, et aux suggestions
+     * d'autocomplétion de la recherche publique.
+     */
+    public function getStyleTileImages(): array
+    {
+        $images = [];
+        foreach (self::STYLES as $style) {
+            $images[$style] = isset(self::STYLE_TILE_IMAGES[$style]) ? '/assets/images/decor/' . self::STYLE_TILE_IMAGES[$style] : null;
+        }
+        foreach ((new CategoryRequest())->findApprovedStyleRows() as $request) {
+            $images[$request['name']] = '/uploads/category-requests/' . $request['image'];
+        }
+
+        return $images;
+    }
+
+    /**
      * Types/spécialités sélectionnables : la liste figée TYPES, complétée
      * des types validés par l'admin.
      */
@@ -153,10 +173,13 @@ class Shop extends BaseModel
 
         $params['current_month'] = date('Y-m');
 
-        // Recherche textuelle sur le nom de la boutique.
+        // Recherche textuelle multi-mots-clés sur le nom de la boutique.
         if (!empty($filters['q'])) {
-            $sql .= ' AND shop.name LIKE :q';
-            $params['q'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['shop.name'], 'q');
+            if ($keyword['sql'] !== '') {
+                $sql .= ' AND ' . $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         // Filtre par style
@@ -203,6 +226,40 @@ class Shop extends BaseModel
         $offset = ($page - 1) * $perPage;
 
         return ['shops' => array_slice($allShops, $offset, $perPage), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche publique (/boutiques) :
+     * noms de boutique correspondants. Les styles/types sont suggérés à
+     * part par le contrôleur (listes en mémoire, pas de requête nécessaire).
+     */
+    public function findNameSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'shop INNER JOIN users u ON u.id = shop.user_id',
+            [['column' => 'shop.name', 'avatarColumn' => 'u.avatar']],
+            $q,
+            $limit
+        );
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page Artistes) :
+     * noms de boutique et pseudos de propriétaire.
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'shop INNER JOIN users u ON u.id = shop.user_id',
+            [
+                ['column' => 'shop.name', 'avatarColumn' => 'u.avatar'],
+                ['column' => 'u.username', 'avatarColumn' => 'u.avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 
     private function slugify(string $text): string
@@ -263,9 +320,11 @@ class Shop extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(shop.name LIKE :q1 OR u.username LIKE :q2)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['shop.name', 'u.username'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (($filters['status'] ?? '') === 'active') {

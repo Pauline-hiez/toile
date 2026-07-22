@@ -228,10 +228,14 @@ $router->map('POST', '/boutiques/[*:slug]/devis', [
     ],
 ]);
 
+// Autocomplétion de la recherche publique (déclarée avant la route à slug
+// générique ci-dessous, sinon [*:slug] intercepterait "/boutiques/autocomplete").
+$router->map('GET', '/boutiques/autocomplete', ['App\Controllers\ShopController', 'autocomplete']);
+
 // Boutique
 $router->map('GET', '/boutiques/[*:slug]', ['App\Controllers\ShopController', 'show']);
 
-// Recherche 
+// Recherche
 $router->map('GET', '/boutiques', ['App\Controllers\ShopController', 'search']);
 
 // Tunnel de commande
@@ -464,6 +468,14 @@ $router->map('GET', '/admin/shops', [
     ],
 ]);
 
+$router->map('GET', '/admin/shops/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'shopsAutocomplete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('POST', '/admin/shops/[i:id]/delete', [
     'controller' => ['App\Controllers\AdminController', 'deleteShop'],
     'middlewares' => [
@@ -482,6 +494,14 @@ $router->map('POST', '/admin/shops/[i:id]/toggle', [
 
 $router->map('GET', '/admin/orders', [
     'controller' => ['App\Controllers\AdminController', 'orders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/orders/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'ordersAutocomplete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -512,6 +532,14 @@ $router->map('GET', '/admin/subscriptions', [
     ],
 ]);
 
+$router->map('GET', '/admin/subscriptions/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'subscriptionsAutocomplete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/raffle', [
     'controller' => ['App\Controllers\AdminController', 'raffle'],
     'middlewares' => [
@@ -520,8 +548,24 @@ $router->map('GET', '/admin/raffle', [
     ],
 ]);
 
+$router->map('GET', '/admin/raffle/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'raffleAutocomplete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/reports', [
     'controller' => ['App\Controllers\AdminController', 'reports'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/reports/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'reportsAutocomplete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -626,6 +670,14 @@ $router->map('POST', '/admin/settings/homepage-styles', [
 
 $router->map('GET', '/admin/users', [
     'controller' => ['App\Controllers\AdminController', 'users'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/users/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'usersAutocomplete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

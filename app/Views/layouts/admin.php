@@ -227,6 +227,7 @@ $navIcons = [
                     $searchAction = '/admin/users';
                     $searchStandalone = true;
                     $searchValue = '';
+                    $searchAutocompleteUrl = '/admin/users/autocomplete';
                     ?>
                     <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
@@ -295,6 +296,7 @@ $navIcons = [
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
     <script src="/assets/js/notif-dropdown.js"></script>
+    <script src="/assets/js/search-autocomplete.js"></script>
 </body>
 
 </html>

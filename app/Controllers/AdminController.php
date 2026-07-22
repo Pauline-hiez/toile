@@ -1060,6 +1060,65 @@ class AdminController
     // par RaffleController pour l'historique des tickets côté artiste).
 
     /**
+     * Suggestions d'autocomplétion pour la recherche de la page
+     * Utilisateurs (et la barre de recherche globale de la sidebar admin,
+     * qui pointe toujours vers /admin/users).
+     */
+    public function usersAutocomplete(): void
+    {
+        $this->respondSuggestions($this->userModel->findSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Artistes.
+     */
+    public function shopsAutocomplete(): void
+    {
+        $this->respondSuggestions($this->shopModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Commandes.
+     */
+    public function ordersAutocomplete(): void
+    {
+        $this->respondSuggestions($this->orderModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Abonnements.
+     */
+    public function subscriptionsAutocomplete(): void
+    {
+        $this->respondSuggestions($this->subscriptionModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Signalements.
+     */
+    public function reportsAutocomplete(): void
+    {
+        $this->respondSuggestions($this->reportModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Tirage au sort.
+     */
+    public function raffleAutocomplete(): void
+    {
+        $this->respondSuggestions($this->raffleModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * @param array<int, array{label: string, image: string|null}> $suggestions
+     */
+    private function respondSuggestions(array $suggestions): void
+    {
+        header('Content-Type: application/json');
+        echo json_encode(['suggestions' => $suggestions]);
+    }
+
+    /**
      * Indicateurs clés pour les cartes de la page Utilisateurs.
      */
     private function getUserStats(): array

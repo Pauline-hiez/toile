@@ -92,9 +92,11 @@ class User extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(username LIKE :q1 OR email LIKE :q2)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['username', 'email'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['role'])) {
@@ -139,6 +141,24 @@ class User extends BaseModel
         $stmt->execute();
 
         return ['users' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page
+     * Utilisateurs, et la barre de recherche globale de la sidebar admin).
+     */
+    public function findSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'users',
+            [
+                ['column' => 'username', 'avatarColumn' => 'avatar'],
+                ['column' => 'email', 'avatarColumn' => 'avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 
     public function ban(int $userId): bool

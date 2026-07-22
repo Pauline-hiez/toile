@@ -458,6 +458,35 @@ class ShopController
     }
 
     /**
+     * Suggestions d'autocomplétion de la recherche publique (/boutiques) :
+     * noms de boutique correspondants (avatar de l'artiste en miniature),
+     * complétés des styles (image de tuile si disponible) et types (pas
+     * d'image, purement textuels) dont le nom contient la saisie.
+     */
+    public function autocomplete(): void
+    {
+        $q = trim($_GET['q'] ?? '');
+        $suggestions = [];
+
+        if ($q !== '') {
+            $shopSuggestions = $this->shopModel->findNameSuggestions($q, 5);
+
+            $styleImages = $this->shopModel->getStyleTileImages();
+            $categorySuggestions = [];
+            foreach (array_merge($this->shopModel->getAllStyles(), $this->shopModel->getAllTypes()) as $label) {
+                if (stripos($label, $q) !== false) {
+                    $categorySuggestions[] = ['label' => $label, 'image' => $styleImages[$label] ?? null];
+                }
+            }
+
+            $suggestions = \App\Core\SearchHelper::mergeSuggestionLists([$shopSuggestions, $categorySuggestions], 8);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['suggestions' => $suggestions]);
+    }
+
+    /**
      * Construit une liste de numéros de page avec des '...' pour les
      * séquences non affichées (ex: 1 2 3 ... 12) — même logique que
      * AdminController::buildPageNumbers().

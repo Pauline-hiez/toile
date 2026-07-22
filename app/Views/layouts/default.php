@@ -64,6 +64,7 @@ $siteFavicon = $settingModel->get('site_favicon');
     <?php require __DIR__ . '/../components/contact-modal.php'; ?>
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
+    <script src="/assets/js/search-autocomplete.js"></script>
 </body>
 
 </html>

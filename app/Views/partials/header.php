@@ -42,6 +42,7 @@
             $searchAction = '/boutiques';
             $searchStandalone = true;
             $searchValue = '';
+            $searchAutocompleteUrl = '/boutiques/autocomplete';
             ?>
             <?php require __DIR__ . '/../components/search-bar.php'; ?>
 

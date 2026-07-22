@@ -157,9 +157,11 @@ class RaffleEntry extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(s.name LIKE :q1 OR u.username LIKE :q2)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['s.name', 'u.username'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['type'])) {
@@ -206,5 +208,22 @@ class RaffleEntry extends BaseModel
         $stmt->execute();
 
         return ['entries' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page Tirage au sort).
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'raffle_entry re INNER JOIN shop s ON s.id = re.shop_id INNER JOIN users u ON u.id = s.user_id',
+            [
+                ['column' => 's.name', 'avatarColumn' => 'u.avatar'],
+                ['column' => 'u.username', 'avatarColumn' => 'u.avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 }

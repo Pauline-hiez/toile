@@ -13,16 +13,20 @@
  *                                  <form> (pour s'insérer dans un
  *                                  formulaire englobant, ex: filtres
  *                                  de tableau avec d'autres champs).
+ * @var string|null $searchAutocompleteUrl URL de l'endpoint JSON de
+ *                                  suggestions (ex: '/boutiques/autocomplete').
+ *                                  Omis = pas d'autocomplétion sur ce champ.
  */
 $searchName = $searchName ?? 'q';
 $searchValue = $searchValue ?? '';
 $searchPlaceholder = $searchPlaceholder ?? 'Rechercher...';
 $searchStandalone = $searchStandalone ?? true;
+$searchAutocompleteUrl = $searchAutocompleteUrl ?? '';
 $formTag = $searchStandalone ? 'form' : 'div';
 ?>
 <div class="search-bar">
     <<?= $formTag ?><?= $searchStandalone ? ' action="' . htmlspecialchars($searchAction) . '" method="GET"' : '' ?> class="search-bar__form">
-        <input type="text" name="<?= htmlspecialchars($searchName) ?>" placeholder="<?= htmlspecialchars($searchPlaceholder) ?>" value="<?= htmlspecialchars($searchValue) ?>">
+        <input type="text" name="<?= htmlspecialchars($searchName) ?>" placeholder="<?= htmlspecialchars($searchPlaceholder) ?>" value="<?= htmlspecialchars($searchValue) ?>" autocomplete="off"<?= $searchAutocompleteUrl !== '' ? ' data-autocomplete="' . htmlspecialchars($searchAutocompleteUrl) . '"' : '' ?>>
         <button type="submit" class="search-bar__submit" aria-label="Rechercher" title="Rechercher">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="7"></circle>

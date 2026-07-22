@@ -164,10 +164,11 @@ class Order extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(o.title LIKE :q1 OR u.username LIKE :q2 OR s.name LIKE :q3)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
-            $params['q3'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['o.title', 'u.username', 's.name'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['status'])) {
@@ -223,6 +224,29 @@ class Order extends BaseModel
         $stmt->execute();
 
         return ['orders' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page Commandes).
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            // su : propriétaire de la boutique (avatar de la boutique) —
+            // distinct de u, le client de la commande.
+            'orders o
+             INNER JOIN users u ON u.id = o.client_id
+             INNER JOIN shop s ON s.id = o.shop_id
+             INNER JOIN users su ON su.id = s.user_id',
+            [
+                'o.title',
+                ['column' => 'u.username', 'avatarColumn' => 'u.avatar'],
+                ['column' => 's.name', 'avatarColumn' => 'su.avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 
     public function toggleArchived(int $id): bool

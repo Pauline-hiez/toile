@@ -95,9 +95,11 @@ class Report extends BaseModel
             END";
 
         if (!empty($filters['q'])) {
-            $where[] = "(u.username LIKE :q1 OR ({$shopNameSql}) LIKE :q2)";
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['u.username', "({$shopNameSql})"], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['type'])) {
@@ -143,5 +145,32 @@ class Report extends BaseModel
         $stmt->execute();
 
         return ['reports' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page
+     * Signalements) : pseudos des personnes ayant signalé, et noms de
+     * boutique (simple liste, sans la résolution polymorphe exacte de
+     * adminSearch — suffisant pour des suggestions).
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        $usernames = \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'report r INNER JOIN users u ON u.id = r.reporter_id',
+            [['column' => 'u.username', 'avatarColumn' => 'u.avatar']],
+            $q,
+            $limit
+        );
+
+        $shopNames = \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'shop INNER JOIN users su ON su.id = shop.user_id',
+            [['column' => 'shop.name', 'avatarColumn' => 'su.avatar']],
+            $q,
+            $limit
+        );
+
+        return \App\Core\SearchHelper::mergeSuggestionLists([$usernames, $shopNames], $limit);
     }
 }

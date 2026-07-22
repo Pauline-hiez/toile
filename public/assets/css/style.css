@@ -329,6 +329,57 @@ body::before {
     height: 15px;
 }
 
+/* En position fixed (pas absolute) et ajoutée à <body> par
+   search-autocomplete.js, left/top/width posés en JS d'après les
+   coordonnées réelles du champ : un ancêtre en overflow:hidden (ex: les
+   cartes de tableau admin, arrondies via ce overflow) couperait sinon la
+   liste malgré le z-index. */
+.search-bar__suggestions {
+    display: none;
+    position: fixed;
+    max-height: 280px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.35rem;
+    list-style: none;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 0.9rem;
+    box-shadow: var(--shadow-sm);
+    z-index: 9999;
+}
+
+.search-bar__suggestions.is-open {
+    display: block;
+}
+
+.search-bar__suggestion {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.6rem;
+    font-family: var(--font-main);
+    font-size: 0.88rem;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.search-bar__suggestion.is-active,
+.search-bar__suggestion:hover {
+    background: var(--color-primary-light);
+    color: var(--color-primary-hover);
+}
+
+.search-bar__suggestion-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--color-bg);
+}
+
 /* ---- Bouton "Signaler" ---- */
 
 .report-trigger {

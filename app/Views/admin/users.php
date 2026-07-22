@@ -73,6 +73,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <?php
         $searchStandalone = false;
         $searchValue = $filters['q'];
+        $searchAutocompleteUrl = '/admin/users/autocomplete';
         ?>
         <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
