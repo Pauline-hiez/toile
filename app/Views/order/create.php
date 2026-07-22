@@ -1,66 +1,190 @@
 <?php $pageTitle = 'Commander : ' . htmlspecialchars($service['title']) . ' — Toile'; ?>
 
-<h1>Commander : <?= htmlspecialchars($service['title']) ?></h1>
-<p>Boutique : <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>"><?= htmlspecialchars($shop['name']) ?></a></p>
+<div class="relative overflow-hidden">
+    <div class="max-w-[640px] mx-auto px-5 min-[641px]:px-10 py-6">
+        <div class="relative z-0 mb-1">
+            <img src="/assets/images/decor/envoyer-demande.png" alt="" class="hidden min-[1024px]:block absolute -top-8 -right-52 w-[240px] h-auto pointer-events-none select-none opacity-90 z-10">
+            <div class="flex items-center gap-3 flex-wrap">
+                <h1 class="font-title text-title text-shine text-[1.5rem] min-[641px]:text-[1.8rem] font-semibold leading-tight">Commander</h1>
+                <?php if (!empty($shop['accepts_quotes'])): ?>
+                    <span class="<?= \App\Core\Badge::classes('info') ?>">Devis possible</span>
+                <?php endif; ?>
+            </div>
+        </div>
+        <p class="text-[0.85rem] text-muted mb-5">
+            Boutique : <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>" class="text-primary hover:underline"><?= htmlspecialchars($shop['name']) ?></a>
+        </p>
 
-<form method="POST" action="/commander" enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
-    <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
+        <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-4 mb-5 flex flex-col min-[560px]:flex-row gap-4">
+            <?php if (!empty($service['image'])): ?>
+                <img src="/uploads/services/<?= htmlspecialchars($service['image']) ?>" alt="" class="w-full min-[560px]:w-40 h-[160px] object-cover rounded-xl border border-border shrink-0">
+            <?php else: ?>
+                <div class="w-full min-[560px]:w-40 h-[160px] rounded-xl border border-border bg-bg flex items-center justify-center shrink-0">
+                    <img src="/assets/images/icones/prestations.png" alt="" class="w-14 h-14 object-contain opacity-60">
+                </div>
+            <?php endif; ?>
+            <div class="flex-1">
+                <h2 class="font-cursive text-[1.15rem] font-semibold text-ink leading-tight mb-1"><?= htmlspecialchars($service['title']) ?></h2>
+                <p class="text-[0.8rem] text-muted mb-2">
+                    à partir de <strong class="text-ink"><?= number_format($service['base_price'] / 100, 2) ?> €</strong>
+                    · délai estimé : <?= (int) $service['delivery_days'] ?> jours
+                </p>
+                <?php if (!empty($service['description'])): ?>
+                    <p class="text-[0.8rem] text-ink leading-[1.5]"><?= nl2br(htmlspecialchars($service['description'])) ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
 
-    <div>
-        <label for="title">Titre de ton projet</label>
-        <input type="text" id="title" name="title" placeholder="Ex : Portrait de mon personnage" required>
-        <?php if (isset($errors['title'])): ?>
-            <p style="color: red;"><?= htmlspecialchars($errors['title']) ?></p>
+        <form method="POST" action="/commander" enctype="multipart/form-data" class="flex flex-col gap-5">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+            <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
+
+            <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4">
+                <img src="/assets/images/decor/trousse.png" alt="" class="hidden min-[1024px]:block absolute -left-28 -bottom-10 w-[210px] h-auto pointer-events-none select-none opacity-90 -z-10">
+                <img src="/assets/images/decor/tache7.png" alt="" class="hidden min-[1024px]:block absolute -top-28 -right-28 w-[260px] h-auto pointer-events-none select-none opacity-30 -z-10">
+                <div>
+                    <label for="title" class="block text-[0.85rem] font-semibold text-ink mb-1">Titre de ton projet</label>
+                    <input type="text" id="title" name="title" placeholder="Ex : Portrait de mon personnage" required
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    <?php if (isset($errors['title'])): ?>
+                        <p class="text-danger text-[0.78rem] mt-1"><?= htmlspecialchars($errors['title']) ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <div>
+                    <label for="description" class="block text-[0.85rem] font-semibold text-ink mb-1">Décris ton idée en détail</label>
+                    <textarea id="description" name="description" rows="6" required
+                        class="w-full bg-white border border-border rounded-2xl px-4 py-3 font-main text-[0.9rem] outline-none focus:border-primary resize-none"></textarea>
+                    <?php if (isset($errors['description'])): ?>
+                        <p class="text-danger text-[0.78rem] mt-1"><?= htmlspecialchars($errors['description']) ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+        <?php if (!empty($basesGrouped)): ?>
+            <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5">
+                <img src="/assets/images/decor/tache7.png" alt="" class="hidden min-[1024px]:block absolute -right-20 -bottom-16 w-[200px] h-auto pointer-events-none select-none opacity-40 z-10">
+                <img src="/assets/images/decor/plante9.png" alt="" class="hidden min-[1024px]:block absolute -right-10 -bottom-10 w-[120px] h-auto pointer-events-none select-none opacity-90 z-10">
+                <h2 class="font-cursive text-[1.1rem] font-semibold text-ink mb-3">Précise ta demande</h2>
+                <?php if (isset($errors['service_base'])): ?>
+                    <p class="text-danger text-[0.78rem] mb-3"><?= htmlspecialchars($errors['service_base']) ?></p>
+                <?php endif; ?>
+                <div class="flex flex-col gap-4">
+                    <?php foreach ($basesGrouped as $category => $categoryBases): ?>
+                        <div>
+                            <p class="text-[0.82rem] font-semibold text-ink mb-2"><?= htmlspecialchars($category) ?></p>
+                            <div class="flex flex-wrap gap-2">
+                                <?php foreach ($categoryBases as $base): ?>
+                                    <label class="inline-flex items-center gap-2 bg-white border border-border rounded-full px-4 py-[0.4rem] text-[0.82rem] text-ink cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light has-[:checked]:text-primary transition-colors">
+                                        <input type="radio" name="service_base[<?= htmlspecialchars($category) ?>]" value="<?= $base['id'] ?>" required class="accent-primary js-spark-input">
+                                        <?= htmlspecialchars($base['label']) ?>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         <?php endif; ?>
-    </div>
 
-    <div>
-        <label for="description">Décris ton idée en détail</label>
-        <textarea id="description" name="description" rows="6" required></textarea>
-        <?php if (isset($errors['description'])): ?>
-            <p style="color: red;"><?= htmlspecialchars($errors['description']) ?></p>
+        <?php if (!empty($options)): ?>
+            <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5">
+                <img src="/assets/images/decor/tache8.png" alt="" class="hidden min-[1024px]:block absolute -left-32 -bottom-10 w-[190px] h-auto pointer-events-none select-none opacity-40 -z-10">
+                <img src="/assets/images/decor/plante10.png" alt="" class="hidden min-[1024px]:block absolute -left-24 -bottom-6 w-[130px] h-auto pointer-events-none select-none opacity-90 -z-10 -scale-x-100">
+                <h2 class="font-cursive text-[1.1rem] font-semibold text-ink mb-3">Options</h2>
+                <div class="flex flex-col gap-2">
+                    <?php foreach ($options as $option): ?>
+                        <label class="flex items-center justify-between gap-3 bg-white border border-border rounded-full px-4 py-[0.45rem] text-[0.85rem] text-ink cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary-light transition-colors">
+                            <span class="flex items-center gap-2">
+                                <input type="checkbox" name="options[]" value="<?= $option['id'] ?>" data-price="<?= $option['extra_price'] ?>" class="option-checkbox accent-primary js-spark-input">
+                                <?= htmlspecialchars($option['label']) ?>
+                            </span>
+                            <span class="text-muted shrink-0">+<?= number_format($option['extra_price'] / 100, 2) ?> €</span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         <?php endif; ?>
-    </div>
 
-    <?php if (!empty($options)): ?>
-        <h2>Options</h2>
-        <?php foreach ($options as $option): ?>
-            <label>
-                <input
-                    type="checkbox"
-                    name="options[]"
-                    value="<?= $option['id'] ?>"
-                    data-price="<?= $option['extra_price'] ?>"
-                    class="option-checkbox">
-                <?= htmlspecialchars($option['label']) ?>
-                (+<?= number_format($option['extra_price'] / 100, 2) ?> €)
+        <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4">
+            <img src="/assets/images/decor/photo.png" alt="" class="hidden min-[1024px]:block absolute -right-32 -top-10 w-[210px] h-auto pointer-events-none select-none opacity-90 z-10">
+            <div>
+                <label for="reference" class="block text-[0.85rem] font-semibold text-ink mb-1">Fichier de référence (optionnel)</label>
+                <input type="file" id="reference" name="reference" accept="image/jpeg,image/png,image/webp" class="text-[0.82rem] text-muted">
+                <?php if (isset($errors['reference'])): ?>
+                    <p class="text-danger text-[0.78rem] mt-1"><?= htmlspecialchars($errors['reference']) ?></p>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($shop['accepts_quotes'])): ?>
+                <label class="inline-flex items-center gap-2 text-[0.85rem] text-ink cursor-pointer">
+                    <input type="checkbox" name="is_quote" class="w-4 h-4 accent-primary cursor-pointer">
+                    Je préfère demander un devis d'abord
+                </label>
+            <?php endif; ?>
+        </div>
+
+        <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4">
+            <h2 class="font-cursive text-[1.1rem] font-semibold text-ink">Livraison</h2>
+
+            <label class="inline-flex items-center gap-2 text-[0.85rem] text-ink cursor-pointer">
+                <input type="checkbox" id="wants-shipping" name="wants_shipping" value="1" class="w-4 h-4 accent-primary cursor-pointer">
+                Je souhaite recevoir une version physique de ma création
             </label>
-        <?php endforeach; ?>
-    <?php endif; ?>
+            <p class="text-[0.78rem] text-muted -mt-3">Si tu ne coches pas cette case, tu recevras ta création au format numérique.</p>
+            <?php if (isset($errors['shipping'])): ?>
+                <p class="text-danger text-[0.78rem] -mt-2"><?= htmlspecialchars($errors['shipping']) ?></p>
+            <?php endif; ?>
 
-    <div>
-        <label for="reference">Fichier de référence (optionnel)</label>
-        <input type="file" id="reference" name="reference" accept="image/jpeg,image/png,image/webp">
-        <?php if (isset($errors['reference'])): ?>
-            <p style="color: red;"><?= htmlspecialchars($errors['reference']) ?></p>
-        <?php endif; ?>
+            <div id="shipping-fields" class="hidden flex-col gap-4">
+                <div>
+                    <label for="shipping_name" class="block text-[0.85rem] font-semibold text-ink mb-1">Nom complet</label>
+                    <input type="text" id="shipping_name" name="shipping_name"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+
+                <div>
+                    <label for="shipping_address_line1" class="block text-[0.85rem] font-semibold text-ink mb-1">Adresse</label>
+                    <input type="text" id="shipping_address_line1" name="shipping_address_line1"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary mb-2">
+                    <input type="text" id="shipping_address_line2" name="shipping_address_line2" placeholder="Complément d'adresse (optionnel)"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+
+                <div class="flex flex-col min-[480px]:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="shipping_postal_code" class="block text-[0.85rem] font-semibold text-ink mb-1">Code postal</label>
+                        <input type="text" id="shipping_postal_code" name="shipping_postal_code"
+                            class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    </div>
+                    <div class="flex-[2]">
+                        <label for="shipping_city" class="block text-[0.85rem] font-semibold text-ink mb-1">Ville</label>
+                        <input type="text" id="shipping_city" name="shipping_city"
+                            class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="shipping_country" class="block text-[0.85rem] font-semibold text-ink mb-1">Pays</label>
+                    <input type="text" id="shipping_country" name="shipping_country" placeholder="France"
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 bg-primary-light rounded-xl px-5 py-4">
+            <span class="text-[0.85rem] font-semibold text-primary">Total estimé</span>
+            <span class="text-[1.3rem] font-cursive font-semibold text-primary"><span id="total-price"><?= number_format($service['base_price'] / 100, 2) ?></span> €</span>
+        </div>
+
+            <button type="submit" class="btn btn--primary self-center px-12">Envoyer ma demande</button>
+        </form>
+
+        <p class="text-center mt-5">
+            <a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>" class="text-[0.85rem] text-primary hover:underline">← Retour à la boutique</a>
+        </p>
     </div>
-
-    <div>
-        <label>
-            <input type="checkbox" name="is_quote">
-            Je préfère demander un devis d'abord
-        </label>
-    </div>
-
-    <h2>
-        Total estimé :
-        <span id="total-price"><?= number_format($service['base_price'] / 100, 2) ?></span> €
-    </h2>
-
-    <button type="submit">Envoyer ma demande</button>
-</form>
+</div>
 
 <script>
     const basePrice = <?= $service['base_price'] ?>;
@@ -80,6 +204,13 @@
     }
 
     checkboxes.forEach(cb => cb.addEventListener('change', updateTotal));
-</script>
 
-<p><a href="/boutiques/<?= htmlspecialchars($shop['slug']) ?>">Retour à la boutique</a></p>
+    const wantsShippingInput = document.getElementById('wants-shipping');
+    const shippingFields = document.getElementById('shipping-fields');
+
+    wantsShippingInput.addEventListener('change', () => {
+        shippingFields.classList.toggle('hidden', !wantsShippingInput.checked);
+        shippingFields.classList.toggle('flex', wantsShippingInput.checked);
+    });
+</script>
+<script src="/assets/js/input-sparks.js"></script>

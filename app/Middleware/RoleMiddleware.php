@@ -11,7 +11,9 @@ class RoleMiddleware
 
         if (!in_array($userRole, $allowedRoles, true)) {
             http_response_code(403);
-            echo 'Accès refusé : vous n\'avez pas les droits nécessaires.';
+            (new \App\Core\Renderer(__DIR__ . '/../Views'))->render('errors/403', [
+                'pageTitle' => 'Accès refusé — Toile',
+            ]);
             exit;
         }
     }

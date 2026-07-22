@@ -19,6 +19,18 @@
 
 // Accueil
 $router->map('GET', '/', ['App\Controllers\HomeController', 'index']);
+$router->map('GET', '/comment-ca-marche', ['App\Controllers\HomeController', 'howItWorks']);
+$router->map('GET', '/aide', ['App\Controllers\HomeController', 'faq']);
+$router->map('GET', '/cgu', ['App\Controllers\HomeController', 'terms']);
+$router->map('GET', '/confidentialite', ['App\Controllers\HomeController', 'privacy']);
+$router->map('GET', '/reglement-interieur', ['App\Controllers\HomeController', 'rules']);
+$router->map('GET', '/cgv', ['App\Controllers\HomeController', 'salesTerms']);
+$router->map('GET', '/a-propos', ['App\Controllers\HomeController', 'about']);
+$router->map('GET', '/styles', ['App\Controllers\HomeController', 'styles']);
+
+// Contact
+$router->map('GET', '/contact', ['App\Controllers\ContactController', 'index']);
+$router->map('POST', '/contact', ['App\Controllers\ContactController', 'submit']);
 
 // Auth
 $router->map('GET', '/register', ['App\Controllers\AuthController', 'showRegister']);
@@ -50,6 +62,9 @@ $router->map('POST', '/profile/password', [
     ],
 ]);
 
+// Profil public (accessible sans connexion)
+$router->map('GET', '/profil/[i:id]', ['App\Controllers\UserController', 'publicProfile']);
+
 // Devenir artiste
 $router->map('GET', '/become-artist', [
     'controller' => ['App\Controllers\ArtistController', 'showRequest'],
@@ -76,6 +91,30 @@ $router->map('GET', '/my-shop', [
 
 $router->map('POST', '/my-shop', [
     'controller' => ['App\Controllers\ShopController', 'save'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-shop/toggle', [
+    'controller' => ['App\Controllers\ShopController', 'toggleOpen'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-shop/category-requests', [
+    'controller' => ['App\Controllers\ShopController', 'submitCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-shop/toggle-quotes', [
+    'controller' => ['App\Controllers\ShopController', 'toggleAcceptsQuotes'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
@@ -123,6 +162,22 @@ $router->map('POST', '/my-services/[i:id]/delete', [
     ],
 ]);
 
+$router->map('POST', '/my-services/options/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'deleteOption'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-services/bases/[i:id]/delete', [
+    'controller' => ['App\Controllers\ServiceController', 'deleteBase'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 // Portfolio
 $router->map('GET', '/my-portfolio', [
     'controller' => ['App\Controllers\PortfolioController', 'index'],
@@ -140,11 +195,36 @@ $router->map('POST', '/my-portfolio/upload', [
     ],
 ]);
 
+$router->map('POST', '/my-portfolio/reorder', [
+    'controller' => ['App\Controllers\PortfolioController', 'reorder'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-portfolio/[i:id]/label', [
+    'controller' => ['App\Controllers\PortfolioController', 'updateLabel'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 $router->map('POST', '/my-portfolio/[i:id]/delete', [
     'controller' => ['App\Controllers\PortfolioController', 'delete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+// Demande de devis générale (sans prestation précise), soumise depuis la
+// modale de shop/show.php.
+$router->map('POST', '/boutiques/[*:slug]/devis', [
+    'controller' => ['App\Controllers\OrderController', 'storeGeneric'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
 ]);
 
@@ -178,6 +258,14 @@ $router->map('GET', '/mes-commandes', [
 ]);
 
 // Espace artiste
+$router->map('GET', '/my-dashboard', [
+    'controller' => ['App\Controllers\ArtistDashboardController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
 $router->map('GET', '/commandes-recues', [
     'controller' => ['App\Controllers\OrderController', 'receivedOrders'],
     'middlewares' => [
@@ -189,6 +277,21 @@ $router->map('GET', '/commandes-recues', [
 // Etats des commandes
 $router->map('POST', '/commandes/[i:id]/transition', [
     'controller' => ['App\Controllers\OrderController', 'transition'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Paiement du prix proposé sur un devis
+$router->map('GET', '/commandes/[i:id]/payer-devis', [
+    'controller' => ['App\Controllers\OrderController', 'payQuote'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('GET', '/commandes/[i:id]/confirmer-devis', [
+    'controller' => ['App\Controllers\OrderController', 'confirmQuotePayment'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
@@ -210,9 +313,24 @@ $router->map('POST', '/commandes/[i:id]/messages', [
     ],
 ]);
 
+// Signalements (avis / images de portfolio)
+$router->map('POST', '/reports', [
+    'controller' => ['App\Controllers\ReportController', 'store'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
 // Notifications
 $router->map('GET', '/notifications', [
     'controller' => ['App\Controllers\NotificationController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+$router->map('POST', '/notifications/mark-read', [
+    'controller' => ['App\Controllers\NotificationController', 'markRead'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
@@ -258,6 +376,14 @@ $router->map('GET', '/admin', [
     ],
 ]);
 
+$router->map('GET', '/admin/statistics', [
+    'controller' => ['App\Controllers\AdminController', 'statistics'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/artist-requests', [
     'controller' => ['App\Controllers\AdminController', 'artistRequests'],
     'middlewares' => [
@@ -282,6 +408,54 @@ $router->map('POST', '/admin/artist-requests/[i:id]/reject', [
     ],
 ]);
 
+$router->map('GET', '/admin/category-requests', [
+    'controller' => ['App\Controllers\AdminController', 'categoryRequests'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests', [
+    'controller' => ['App\Controllers\AdminController', 'submitCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/approve', [
+    'controller' => ['App\Controllers\AdminController', 'approveCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/reject', [
+    'controller' => ['App\Controllers\AdminController', 'rejectCategoryRequest'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/edit', [
+    'controller' => ['App\Controllers\AdminController', 'updateApprovedStyle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests/[i:id]/delete', [
+    'controller' => ['App\Controllers\AdminController', 'deleteApprovedStyle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/shops', [
     'controller' => ['App\Controllers\AdminController', 'shops'],
     'middlewares' => [
@@ -292,6 +466,86 @@ $router->map('GET', '/admin/shops', [
 
 $router->map('POST', '/admin/shops/[i:id]/delete', [
     'controller' => ['App\Controllers\AdminController', 'deleteShop'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/shops/[i:id]/toggle', [
+    'controller' => ['App\Controllers\AdminController', 'toggleShopOpen'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/orders', [
+    'controller' => ['App\Controllers\AdminController', 'orders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/orders/[i:id]/toggle-archive', [
+    'controller' => ['App\Controllers\AdminController', 'toggleOrderArchive'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/orders/bulk-archive', [
+    'controller' => ['App\Controllers\AdminController', 'bulkArchiveOrders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/subscriptions', [
+    'controller' => ['App\Controllers\AdminController', 'subscriptions'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/raffle', [
+    'controller' => ['App\Controllers\AdminController', 'raffle'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/reports', [
+    'controller' => ['App\Controllers\AdminController', 'reports'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reports/[i:id]/resolve', [
+    'controller' => ['App\Controllers\AdminController', 'resolveReport'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reports/[i:id]/dismiss', [
+    'controller' => ['App\Controllers\AdminController', 'dismissReport'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/reports/[i:id]/delete', [
+    'controller' => ['App\Controllers\AdminController', 'deleteReport'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -314,6 +568,62 @@ $router->map('POST', '/admin/reviews/[i:id]/delete', [
     ],
 ]);
 
+$router->map('GET', '/admin/settings', [
+    'controller' => ['App\Controllers\AdminController', 'settings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/general', [
+    'controller' => ['App\Controllers\AdminController', 'updateGeneralSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/social', [
+    'controller' => ['App\Controllers\AdminController', 'updateSocialSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/raffle', [
+    'controller' => ['App\Controllers\AdminController', 'updateRaffleSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/subscriptions', [
+    'controller' => ['App\Controllers\AdminController', 'updateSubscriptionPlans'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/maintenance', [
+    'controller' => ['App\Controllers\AdminController', 'updateMaintenanceSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/homepage-styles', [
+    'controller' => ['App\Controllers\AdminController', 'updateHomepageStylesSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/users', [
     'controller' => ['App\Controllers\AdminController', 'users'],
     'middlewares' => [
@@ -324,6 +634,14 @@ $router->map('GET', '/admin/users', [
 
 $router->map('POST', '/admin/users/[i:id]/ban', [
     'controller' => ['App\Controllers\AdminController', 'banUser'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/users/bulk-ban', [
+    'controller' => ['App\Controllers\AdminController', 'bulkBanUsers'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -383,6 +701,47 @@ $router->map('GET', '/my-subscription/confirm', [
 
 $router->map('POST', '/my-subscription/cancel', [
     'controller' => ['App\Controllers\SubscriptionController', 'cancel'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-subscription/confirm-free', [
+    'controller' => ['App\Controllers\SubscriptionController', 'confirmFree'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+// Paiements artiste (Stripe Connect)
+$router->map('GET', '/my-payouts', [
+    'controller' => ['App\Controllers\PayoutController', 'index'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('POST', '/my-payouts/connect', [
+    'controller' => ['App\Controllers\PayoutController', 'connect'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-payouts/return', [
+    'controller' => ['App\Controllers\PayoutController', 'returnFromOnboarding'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
+    ],
+]);
+
+$router->map('GET', '/my-payouts/refresh', [
+    'controller' => ['App\Controllers\PayoutController', 'refresh'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),

@@ -6,6 +6,7 @@ class OrderStatus
 {
     private const LABELS = [
         'quote_requested' => 'Devis demandé',
+        'price_proposed' => 'Prix proposé',
         'pending' => 'En attente',
         'accepted' => 'Acceptée',
         'rejected' => 'Refusée',

@@ -4,10 +4,13 @@ namespace App\Core;
 
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Price;
 use Stripe\Refund;
 use Stripe\Subscription;
 use Stripe\Customer;
 use Stripe\CustomerSession;
+use Stripe\Account;
+use Stripe\AccountLink;
 
 class StripeService
 {
@@ -16,12 +19,19 @@ class StripeService
         Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
     }
 
-    public function createPaymentIntent(int $amount, string $currency = 'eur', array $metadata = [], ?string $customerId = null): array
+    /**
+     * $connectedAccountId + $applicationFeeAmount : pour reverser
+     * automatiquement la part de l'artiste via un paiement à destination
+     * (voir StripeService::createConnectedAccount()) — laissés à null
+     * pour tout paiement ne concernant pas une boutique connectée
+     * (tirage au sort, abonnement, ou boutique pas encore connectée).
+     */
+    public function createPaymentIntent(int $amount, string $currency = 'eur', array $metadata = [], ?string $customerId = null, string $captureMethod = 'manual', ?string $connectedAccountId = null, ?int $applicationFeeAmount = null): array
     {
         $params = [
             'amount' => $amount,
             'currency' => $currency,
-            'capture_method' => 'manual',
+            'capture_method' => $captureMethod,
             'metadata' => $metadata,
             // Restreint à la carte pour éviter que Stripe Link ne remplace
             // la case "mémoriser cette carte" par son propre encart e-mail.
@@ -34,12 +44,71 @@ class StripeService
             $params['customer'] = $customerId;
         }
 
+        if ($connectedAccountId !== null && $applicationFeeAmount !== null) {
+            $params['transfer_data'] = ['destination' => $connectedAccountId];
+            $params['application_fee_amount'] = $applicationFeeAmount;
+        }
+
         $paymentIntent = PaymentIntent::create($params);
 
         return [
             'client_secret' => $paymentIntent->client_secret,
             'payment_intent_id' => $paymentIntent->id,
         ];
+    }
+
+    /**
+     * Crée un compte Stripe Connect Express pour un artiste — reçoit sa
+     * part des commandes via des paiements à destination une fois
+     * l'inscription (KYC) terminée côté Stripe.
+     */
+    public function createConnectedAccount(string $email): string
+    {
+        $account = Account::create([
+            'type' => 'express',
+            'country' => 'FR',
+            'email' => $email,
+            'capabilities' => [
+                'card_payments' => ['requested' => true],
+                'transfers' => ['requested' => true],
+            ],
+        ]);
+
+        return $account->id;
+    }
+
+    /**
+     * Lien d'inscription Stripe hébergé (KYC + coordonnées bancaires) —
+     * à usage unique et de courte durée, à régénérer si l'artiste ne le
+     * termine pas à temps (voir $refreshUrl).
+     */
+    public function createAccountOnboardingLink(string $accountId, string $refreshUrl, string $returnUrl): string
+    {
+        $link = AccountLink::create([
+            'account' => $accountId,
+            'refresh_url' => $refreshUrl,
+            'return_url' => $returnUrl,
+            'type' => 'account_onboarding',
+        ]);
+
+        return $link->url;
+    }
+
+    // true une fois l'inscription Stripe Connect suffisamment complète
+    // pour recevoir des reversements.
+    public function getAccountPayoutsEnabled(string $accountId): bool
+    {
+        $account = Account::retrieve($accountId);
+
+        return (bool) $account->payouts_enabled;
+    }
+
+    // Lien vers le mini-dashboard Stripe Express de l'artiste (une fois connecté).
+    public function createAccountLoginLink(string $accountId): string
+    {
+        $link = Account::createLoginLink($accountId);
+
+        return $link->url;
     }
 
     /**
@@ -116,6 +185,45 @@ class StripeService
         ]);
 
         return $setupIntent->client_secret;
+    }
+
+    /**
+     * Crée un nouveau Price pour le même produit qu'un Price existant,
+     * avec un nouveau montant. Les Price Stripe sont immuables (on ne
+     * peut pas changer le montant d'un Price déjà créé) — c'est la seule
+     * façon de faire évoluer le tarif d'un abonnement (voir aussi
+     * migrateSubscriptionToPrice() pour basculer les abonnés déjà actifs
+     * vers ce nouveau Price).
+     */
+    public function createPriceForSamePlan(string $existingPriceId, int $amount, string $currency = 'eur'): string
+    {
+        $existingPrice = Price::retrieve($existingPriceId);
+
+        $newPrice = Price::create([
+            'product' => $existingPrice->product,
+            'unit_amount' => $amount,
+            'currency' => $currency,
+            'recurring' => ['interval' => 'month'],
+        ]);
+
+        return $newPrice->id;
+    }
+
+    /**
+     * Bascule un abonnement Stripe actif vers un nouveau Price.
+     * proration_behavior 'none' : le nouveau montant s'applique à partir
+     * du prochain renouvellement, pas de facturation/remboursement
+     * immédiat en plein milieu du cycle en cours.
+     */
+    public function migrateSubscriptionToPrice(string $stripeSubscriptionId, string $newPriceId): void
+    {
+        $subscription = Subscription::retrieve($stripeSubscriptionId);
+        $itemId = $subscription->items->data[0]->id;
+
+        Subscription::update($stripeSubscriptionId, [
+            'items' => [['id' => $itemId, 'price' => $newPriceId]],
+            'proration_behavior' => 'none',
+        ]);
     }
 
     /**

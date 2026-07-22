@@ -7,6 +7,8 @@ use App\Core\Renderer;
 use App\Models\Order;
 use App\Models\Service;
 use App\Models\ServiceOption;
+use App\Models\ServiceBase;
+use App\Models\OrderServiceBase;
 use App\Models\Shop;
 use App\Models\OrderMessage;
 use App\Models\Notification;
@@ -20,6 +22,8 @@ class OrderController
     private Order $orderModel;
     private Service $serviceModel;
     private ServiceOption $optionModel;
+    private ServiceBase $baseModel;
+    private OrderServiceBase $orderBaseModel;
     private Shop $shopModel;
     private OrderMessage $messageModel;
     private Notification $notificationModel;
@@ -33,6 +37,8 @@ class OrderController
         $this->orderModel = new Order();
         $this->serviceModel = new Service();
         $this->optionModel = new ServiceOption();
+        $this->baseModel = new ServiceBase();
+        $this->orderBaseModel = new OrderServiceBase();
         $this->shopModel = new Shop();
         $this->messageModel = new OrderMessage();
         $this->notificationModel = new Notification();
@@ -52,12 +58,21 @@ class OrderController
         }
 
         $shop = $this->shopModel->findById($service['shop_id']);
+
+        if ($shop === null || !$shop['is_open']) {
+            http_response_code(403);
+            echo 'Cette boutique est actuellement fermée aux commandes.';
+            exit;
+        }
+
         $options = $this->optionModel->findByServiceId($service['id']);
+        $basesGrouped = $this->baseModel->findByServiceIdGrouped($service['id']);
 
         $this->renderer->render('order/create', [
             'service' => $service,
             'shop' => $shop,
             'options' => $options,
+            'basesGrouped' => $basesGrouped,
             'errors' => [],
         ]);
     }
@@ -79,12 +94,37 @@ class OrderController
         }
 
         $shop = $this->shopModel->findById($service['shop_id']);
+
+        if ($shop === null || !$shop['is_open']) {
+            http_response_code(403);
+            echo 'Cette boutique est actuellement fermée aux commandes.';
+            exit;
+        }
+
         $options = $this->optionModel->findByServiceId($service['id']);
+        $basesGrouped = $this->baseModel->findByServiceIdGrouped($service['id']);
 
         $title = trim($_POST['title'] ?? '');
         $description = trim($_POST['description'] ?? '');
-        $isQuote = isset($_POST['is_quote']);
+        // Ne fait confiance à la case "demander un devis" que si la
+        // boutique accepte les devis — évite qu'un client la force via une
+        // requête directe alors que order/create.php ne l'affiche même pas.
+        $isQuote = isset($_POST['is_quote']) && !empty($shop['accepts_quotes']);
         $selectedOptionIds = array_map('intval', $_POST['options'] ?? []);
+
+        // Adresse de livraison : uniquement si le client a coché "je
+        // souhaite recevoir une version physique" (sinon livraison
+        // numérique, aucune adresse enregistrée même si des champs cachés
+        // contenaient encore une valeur d'une requête forgée).
+        $wantsShipping = isset($_POST['wants_shipping']);
+        $shippingFields = [
+            'shipping_name' => null,
+            'shipping_address_line1' => null,
+            'shipping_address_line2' => null,
+            'shipping_city' => null,
+            'shipping_postal_code' => null,
+            'shipping_country' => null,
+        ];
 
         $errors = [];
 
@@ -96,11 +136,47 @@ class OrderController
             $errors['description'] = 'La description doit faire au moins 10 caractères.';
         }
 
+        if ($wantsShipping) {
+            $shippingFields = [
+                'shipping_name' => trim($_POST['shipping_name'] ?? ''),
+                'shipping_address_line1' => trim($_POST['shipping_address_line1'] ?? ''),
+                'shipping_address_line2' => trim($_POST['shipping_address_line2'] ?? ''),
+                'shipping_city' => trim($_POST['shipping_city'] ?? ''),
+                'shipping_postal_code' => trim($_POST['shipping_postal_code'] ?? ''),
+                'shipping_country' => trim($_POST['shipping_country'] ?? ''),
+            ];
+
+            if ($shippingFields['shipping_address_line1'] === '' || $shippingFields['shipping_city'] === '' || $shippingFields['shipping_postal_code'] === '') {
+                $errors['shipping'] = 'Renseigne au moins l\'adresse, la ville et le code postal pour une livraison physique.';
+            }
+
+            $shippingFields = array_map(fn($v) => $v !== '' ? $v : null, $shippingFields);
+        }
+
+        // Éléments de base : choix purement descriptifs groupés par
+        // catégorie (format, style, matériaux...), sans impact sur le
+        // prix — un choix obligatoire par catégorie proposée.
+        $submittedBaseChoices = $_POST['service_base'] ?? [];
+        $selectedBaseIds = [];
+
+        foreach ($basesGrouped as $category => $categoryBases) {
+            $choiceId = isset($submittedBaseChoices[$category]) ? (int) $submittedBaseChoices[$category] : null;
+            $validIds = array_column($categoryBases, 'id');
+
+            if ($choiceId === null || !in_array($choiceId, $validIds, true)) {
+                $errors['service_base'] = 'Choisis une option pour chaque catégorie proposée.';
+                break;
+            }
+
+            $selectedBaseIds[] = $choiceId;
+        }
+
         if (!empty($errors)) {
             $this->renderer->render('order/create', [
                 'service' => $service,
                 'shop' => $shop,
                 'options' => $options,
+                'basesGrouped' => $basesGrouped,
                 'errors' => $errors,
                 'pageTitle' => 'Commander — Toile',
             ]);
@@ -128,6 +204,7 @@ class OrderController
                     'service' => $service,
                     'shop' => $shop,
                     'options' => $options,
+                    'basesGrouped' => $basesGrouped,
                     'errors' => $errors,
                     'pageTitle' => 'Commander — Toile',
                 ]);
@@ -136,9 +213,13 @@ class OrderController
             $referenceFile = $result['filename'];
         }
 
+        // Aplatit les catégories pour retrouver catégorie + libellé par id
+        // (voir OrderServiceBase::createForOrder()).
+        $flatBases = array_merge(...array_values($basesGrouped ?: [[]]));
+
         // Si demande de devis, pas de paiement — on crée directement la commande.
         if ($isQuote) {
-            $orderId = $this->orderModel->create([
+            $orderId = $this->orderModel->create(array_merge([
                 'client_id' => $_SESSION['user_id'],
                 'shop_id' => $shop['id'],
                 'service_id' => $service['id'],
@@ -147,7 +228,9 @@ class OrderController
                 'total_price' => $totalPrice,
                 'status' => 'quote_requested',
                 'delivery_file' => $referenceFile,
-            ]);
+            ], $shippingFields));
+
+            $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $flatBases);
 
             $this->notificationModel->notify(
                 $shop['user_id'],
@@ -170,11 +253,23 @@ class OrderController
             $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
         }
 
+        // Si la boutique a connecté son compte bancaire (Stripe Connect),
+        // sa part est reversée automatiquement via un paiement à
+        // destination — sinon le paiement reste inchangé (tout reste sur
+        // le compte plateforme, comme avant la mise en place de Connect).
+        $connectedAccountId = null;
+        $applicationFeeAmount = null;
+        if (!empty($shop['stripe_account_id']) && !empty($shop['stripe_payouts_enabled'])) {
+            $connectedAccountId = $shop['stripe_account_id'];
+            $commissionRate = $this->subscriptionModel->getCommissionRate($shop['id']);
+            $applicationFeeAmount = (int) round($totalPrice * $commissionRate / 100);
+        }
+
         // Crée le PaymentIntent Stripe (autorisation différée).
         $paymentData = $stripe->createPaymentIntent($totalPrice, 'eur', [
             'service_id' => $service['id'],
             'client_id' => $_SESSION['user_id'],
-        ], $stripeCustomerId);
+        ], $stripeCustomerId, 'manual', $connectedAccountId, $applicationFeeAmount);
 
         // Nécessaire pour que le Payment Element affiche la case
         // "Mémoriser cette carte" et les cartes déjà enregistrées.
@@ -182,7 +277,7 @@ class OrderController
 
         // Stocke les données de commande en session pour les récupérer
         // après la confirmation Stripe (étape suivante).
-        $_SESSION['pending_order'] = [
+        $_SESSION['pending_order'] = array_merge([
             'client_id' => $_SESSION['user_id'],
             'shop_id' => $shop['id'],
             'service_id' => $service['id'],
@@ -191,7 +286,10 @@ class OrderController
             'total_price' => $totalPrice,
             'delivery_file' => $referenceFile,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
-        ];
+        ], $shippingFields);
+        // Stocké à part : ce n'est pas une colonne de orders, seulement
+        // utilisé après coup pour peupler order_service_base (voir confirm()).
+        $_SESSION['pending_order_base_ids'] = $selectedBaseIds;
         $this->renderer->render('order/payment', [
             'service' => $service,
             'shop' => $shop,
@@ -201,6 +299,80 @@ class OrderController
             'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
             'pageTitle' => 'Paiement — Toile',
         ]);
+    }
+
+    /**
+     * Demande de devis générale, sans prestation précise — soumise depuis
+     * la modale "Demander un devis" de shop/show.php. Contrairement à
+     * store(), pas de service/options/bases : le client décrit librement
+     * son projet, le prix sera négocié avec l'artiste via la messagerie
+     * de la commande (comme pour les devis liés à une prestation, où le
+     * passage "accepted" ne déclenche déjà aucun paiement Stripe faute de
+     * PaymentIntent).
+     * (POST /boutiques/[slug]/devis)
+     */
+    public function storeGeneric(string $slug): void
+    {
+        $shop = $this->shopModel->findBySlug($slug);
+
+        if ($shop === null) {
+            http_response_code(404);
+            echo 'Boutique introuvable.';
+            exit;
+        }
+
+        if (!$shop['is_open'] || !$shop['accepts_quotes']) {
+            http_response_code(403);
+            echo 'Cette boutique n\'accepte pas les demandes de devis pour le moment.';
+            exit;
+        }
+
+        $description = trim($_POST['description'] ?? '');
+
+        if (mb_strlen($description) < 10) {
+            header('Location: /boutiques/' . urlencode($slug) . '?quote_error=1');
+            exit;
+        }
+
+        // Pas de champ titre dans la modale : on en dérive un à partir du
+        // début de la description pour peupler la colonne title (NOT NULL).
+        $title = mb_strlen($description) > 80
+            ? mb_substr($description, 0, 80) . '…'
+            : $description;
+
+        $referenceFile = null;
+        if (isset($_FILES['reference']) && $_FILES['reference']['error'] === UPLOAD_ERR_OK) {
+            $result = FileUploader::upload(
+                $_FILES['reference'],
+                __DIR__ . '/../../public/uploads/references'
+            );
+            if ($result['error'] !== null) {
+                header('Location: /boutiques/' . urlencode($slug) . '?quote_error=1');
+                exit;
+            }
+            $referenceFile = $result['filename'];
+        }
+
+        $orderId = $this->orderModel->create([
+            'client_id' => $_SESSION['user_id'],
+            'shop_id' => $shop['id'],
+            'service_id' => null,
+            'title' => $title,
+            'description' => $description,
+            'total_price' => 0,
+            'status' => 'quote_requested',
+            'delivery_file' => $referenceFile,
+        ]);
+
+        $this->notificationModel->notify(
+            $shop['user_id'],
+            'new_order',
+            'Nouvelle demande de devis personnalisée : ' . $title,
+            '/commandes/' . $orderId
+        );
+
+        header('Location: /boutiques/' . urlencode($slug) . '?quote_sent=1');
+        exit;
     }
 
     /**
@@ -227,14 +399,23 @@ class OrderController
 
         $orderId = $this->orderModel->create($pendingOrder);
 
+        $selectedBaseIds = $_SESSION['pending_order_base_ids'] ?? [];
+        if (!empty($selectedBaseIds)) {
+            $bases = $this->baseModel->findByServiceId($pendingOrder['service_id']);
+            $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $bases);
+        }
+
+        // notify() attend l'ID de l'utilisateur artiste, pas l'ID de la
+        // boutique — il faut résoudre le propriétaire de la boutique.
+        $shop = $this->shopModel->findById($pendingOrder['shop_id']);
         $this->notificationModel->notify(
-            $pendingOrder['shop_id'],
+            $shop['user_id'],
             'new_order',
             'Nouvelle commande : ' . $pendingOrder['title'],
             '/commandes/' . $orderId
         );
 
-        unset($_SESSION['pending_order']);
+        unset($_SESSION['pending_order'], $_SESSION['pending_order_base_ids']);
 
         header('Location: /commandes/' . $orderId);
         exit;
@@ -261,9 +442,23 @@ class OrderController
 
         $orders = $this->orderModel->findByShopId($shop['id']);
 
-        $this->renderer->render('order/received-orders', [
+        $pendingStatuses = ['quote_requested', 'pending'];
+        $pendingOrders = array_values(array_filter($orders, fn($o) => in_array($o['status'], $pendingStatuses, true)));
+
+        $stats = [
+            'total' => count($orders),
+            'in_progress' => count(array_filter($orders, fn($o) => $o['status'] === 'in_progress')),
+            'pending' => count($pendingOrders),
+        ];
+
+        $this->renderer->render('artist/orders', [
             'orders' => $orders,
-        ]);
+            'stats' => $stats,
+            'pendingCount' => count($pendingOrders),
+            'pageTitle' => 'Mes commandes — Toile',
+            'pageHeading' => 'Mes commandes',
+            'pageSubtitle' => "Consulte et gère les commandes reçues sur ta boutique.",
+        ], 'layouts/artist');
     }
 
     public function transition(int $id): void
@@ -319,6 +514,33 @@ class OrderController
             $updateData['delivery_file'] = $result['filename'];
         }
 
+        // Proposition de prix par l'artiste sur un devis — total_price sert
+        // à la fois de prix proposé et de prix final, comme pour une
+        // commande classique.
+        if ($newStatus === 'price_proposed') {
+            $proposedPrice = (float) str_replace(',', '.', $_POST['proposed_price'] ?? '');
+
+            if ($proposedPrice <= 0) {
+                http_response_code(400);
+                echo 'Merci de proposer un prix valide.';
+                exit;
+            }
+
+            $updateData['total_price'] = (int) round($proposedPrice * 100);
+
+            // Message optionnel accompagnant la proposition de prix — un
+            // seul bouton d'envoi plutôt que deux (prix + message
+            // séparés), voir la discussion sur la confusion des boutons.
+            $priceMessage = trim($_POST['message'] ?? '');
+            if ($priceMessage !== '') {
+                $this->messageModel->create([
+                    'order_id' => $order['id'],
+                    'sender_id' => $userId,
+                    'content' => $priceMessage,
+                ]);
+            }
+        }
+
         // Appels Stripe selon la transition
         if (!empty($order['stripe_payment_intent_id'])) {
             $stripe = new \App\Core\StripeService();
@@ -349,6 +571,7 @@ class OrderController
                             'orderId' => $order['id'],
                             'orderTitle' => $order['title'],
                             'amount' => $order['total_price'],
+                            'tone' => 'success',
                         ]);
                         \App\Core\Mailer::send(
                             $client['email'],
@@ -388,6 +611,7 @@ class OrderController
                                 'orderId' => $order['id'],
                                 'orderTitle' => $order['title'],
                                 'amount' => $order['total_price'],
+                                'tone' => 'refund',
                             ]);
                             \App\Core\Mailer::send(
                                 $client['email'],
@@ -451,9 +675,131 @@ class OrderController
                 $recipient['email'],
                 'Commande #' . $order['id'] . ' — ' . \App\Core\OrderStatus::label($newStatus),
                 $html,
-                'order_status'
+                'order_status',
+                ['email-illustration' => __DIR__ . '/../../public/assets/images/decor/boite.png']
             );
         }
+
+        header('Location: /commandes/' . $order['id']);
+        exit;
+    }
+
+    /**
+     * Étape 1 de l'acceptation d'un prix proposé par l'artiste : le client
+     * paie (autorisation Stripe) avant que la commande ne rejoigne le
+     * statut 'pending', exactement comme une commande classique — pas de
+     * transition directe vers 'accepted' sans paiement.
+     * (GET /commandes/[id]/payer-devis)
+     */
+    public function payQuote(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        if ($order['client_id'] !== $_SESSION['user_id']) {
+            http_response_code(403);
+            echo 'Accès refusé.';
+            exit;
+        }
+
+        if ($order['status'] !== 'price_proposed') {
+            http_response_code(403);
+            echo 'Cette commande n\'a pas de prix proposé en attente de paiement.';
+            exit;
+        }
+
+        $user = $this->userModel->findById($order['client_id']);
+        $stripe = new \App\Core\StripeService();
+
+        $stripeCustomerId = $user['stripe_customer_id'];
+        if (empty($stripeCustomerId)) {
+            $stripeCustomerId = $stripe->createCustomer($user['email'], $user['username']);
+            $this->userModel->update($user['id'], ['stripe_customer_id' => $stripeCustomerId]);
+        }
+
+        // Voir store() : reversement automatique de la part de l'artiste
+        // si sa boutique a connecté son compte bancaire (Stripe Connect).
+        $shop = $this->shopModel->findById($order['shop_id']);
+        $connectedAccountId = null;
+        $applicationFeeAmount = null;
+        if (!empty($shop['stripe_account_id']) && !empty($shop['stripe_payouts_enabled'])) {
+            $connectedAccountId = $shop['stripe_account_id'];
+            $commissionRate = $this->subscriptionModel->getCommissionRate($shop['id']);
+            $applicationFeeAmount = (int) round($order['total_price'] * $commissionRate / 100);
+        }
+
+        $paymentData = $stripe->createPaymentIntent($order['total_price'], 'eur', [
+            'order_id' => $order['id'],
+            'client_id' => $order['client_id'],
+        ], $stripeCustomerId, 'manual', $connectedAccountId, $applicationFeeAmount);
+
+        $customerSessionClientSecret = $stripe->createCustomerSession($stripeCustomerId);
+
+        // Contrairement à store(), la commande existe déjà : on persiste
+        // le PaymentIntent directement dessus (pas besoin de session), ce
+        // qui rend confirmQuotePayment() résistant à un rafraîchissement.
+        $this->orderModel->update($order['id'], [
+            'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
+        ]);
+
+        $this->renderer->render('order/payment', [
+            'service' => ['title' => $order['service_title'] ?? $order['title']],
+            'shop' => ['name' => $order['shop_name']],
+            'totalPrice' => $order['total_price'],
+            'clientSecret' => $paymentData['client_secret'],
+            'customerSessionClientSecret' => $customerSessionClientSecret,
+            'stripePublicKey' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'returnUrl' => '/commandes/' . $order['id'] . '/confirmer-devis',
+            'pageTitle' => 'Paiement — Toile',
+        ]);
+    }
+
+    /**
+     * Étape 2 : Stripe redirige ici après l'autorisation du paiement.
+     * (GET /commandes/[id]/confirmer-devis)
+     */
+    public function confirmQuotePayment(int $id): void
+    {
+        $order = $this->orderModel->findByIdWithDetails($id);
+
+        if ($order === null) {
+            http_response_code(404);
+            echo 'Commande introuvable.';
+            exit;
+        }
+
+        if ($order['client_id'] !== $_SESSION['user_id']) {
+            http_response_code(403);
+            echo 'Accès refusé.';
+            exit;
+        }
+
+        if ($order['status'] !== 'price_proposed' || empty($order['stripe_payment_intent_id'])) {
+            header('Location: /commandes/' . $order['id']);
+            exit;
+        }
+
+        $stripe = new \App\Core\StripeService();
+        $status = $stripe->getPaymentIntentStatus($order['stripe_payment_intent_id']);
+
+        if ($status !== 'requires_capture') {
+            header('Location: /commandes/' . $order['id'] . '?payment=failed');
+            exit;
+        }
+
+        $this->orderModel->update($order['id'], ['status' => 'pending']);
+
+        $this->notificationModel->notify(
+            $order['shop_owner_id'],
+            'new_order',
+            'Devis accepté et payé par le client : ' . $order['title'],
+            '/commandes/' . $order['id']
+        );
 
         header('Location: /commandes/' . $order['id']);
         exit;
@@ -470,14 +816,19 @@ class OrderController
         }
 
         $userId = $_SESSION['user_id'];
+        $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
 
-        if ($order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
+        if (!$isAdmin && $order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
             http_response_code(403);
             echo 'Accès refusé.';
             exit;
         }
 
-        $actor = $order['shop_owner_id'] === $userId ? 'artist' : 'client';
+        if ($isAdmin && $order['client_id'] !== $userId && $order['shop_owner_id'] !== $userId) {
+            $actor = 'admin';
+        } else {
+            $actor = $order['shop_owner_id'] === $userId ? 'artist' : 'client';
+        }
 
         $transitions = $this->orderModel->getAllowedTransitions();
         $allowedStatuses = $transitions[$order['status']][$actor] ?? [];
@@ -486,9 +837,9 @@ class OrderController
         $messages = $this->messageModel->findByOrderId($order['id']);
 
         $timelineSteps = [
-            'pending'     => 'Demande envoyée',
+            'pending'     => 'Commande reçue',
             'accepted'    => 'Acceptée',
-            'in_progress' => 'En cours',
+            'in_progress' => 'En création',
             'delivered'   => 'Livrée',
             'completed'   => 'Terminée',
         ];
@@ -496,6 +847,7 @@ class OrderController
         $stepKeys = array_keys($timelineSteps);
         $currentIndex = array_search($order['status'], $stepKeys);
         $existingReview = $this->reviewModel->findByOrderId($order['id']);
+        $selectedBases = $this->orderBaseModel->findByOrderId($order['id']);
 
         $this->renderer->render('order/show', [
             'order' => $order,
@@ -506,6 +858,7 @@ class OrderController
             'stepKeys' => $stepKeys,
             'currentIndex' => $currentIndex,
             'existingReview' => $existingReview,
+            'selectedBases' => $selectedBases,
             'pageTitle' => 'Commande #' . $order['id'] . ' — Toile',
         ]);
     }

@@ -23,11 +23,29 @@ CREATE TABLE users (
 
     avatar VARCHAR(255) NULL,
 
+    -- Bio + adresse par défaut, affichées/éditables sur la page profil
+    -- publique (voir UserController::publicProfile()/updateProfile()).
+    bio TEXT NULL,
+    address_line1 VARCHAR(255) NULL,
+    address_line2 VARCHAR(255) NULL,
+    city VARCHAR(100) NULL,
+    postal_code VARCHAR(20) NULL,
+    country VARCHAR(100) NULL,
+
     role ENUM('user', 'artist', 'admin') NOT NULL DEFAULT 'user',
 
     is_banned BOOLEAN NOT NULL DEFAULT FALSE,
 
     artist_request_status ENUM('pending', 'approved', 'rejected') NULL,
+
+    -- Détails de la candidature artiste (formulaire /become-artist),
+    -- affichés à l'admin pour la revue de la demande.
+    artist_display_name VARCHAR(150) NULL,
+    requested_shop_name VARCHAR(150) NULL,
+    artist_contact_email VARCHAR(180) NULL,
+    artist_presentation TEXT NULL,
+    artist_motivation TEXT NULL,
+    artist_terms_accepted_at DATETIME NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -45,13 +63,25 @@ CREATE TABLE shop (
     slug VARCHAR(160) NOT NULL UNIQUE,
 
     bio TEXT NULL,
+    social_instagram VARCHAR(255) NULL,
+    social_facebook VARCHAR(255) NULL,
+    social_pinterest VARCHAR(255) NULL,
+    social_tiktok VARCHAR(255) NULL,
     banner VARCHAR(255) NULL,
 
     styles JSON NULL,
+    types JSON NULL,
 
     is_open BOOLEAN NOT NULL DEFAULT FALSE,
+    accepts_quotes BOOLEAN NOT NULL DEFAULT TRUE,
+    plan_selected BOOLEAN NOT NULL DEFAULT FALSE,
 
     monetization_type ENUM('subscription', 'commission') NOT NULL DEFAULT 'commission',
+
+    -- Compte Stripe Connect (Express) pour le reversement automatique
+    -- de la part de l'artiste sur chaque commande.
+    stripe_account_id VARCHAR(255) NULL,
+    stripe_payouts_enabled BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -71,6 +101,7 @@ CREATE TABLE service (
 
     title VARCHAR(150) NOT NULL,
     description TEXT NULL,
+    image VARCHAR(255) NULL,
 
     base_price INT NOT NULL,
 
@@ -104,6 +135,31 @@ CREATE TABLE service_option (
 
 
 -- -----------------------------------------------------
+-- Table : service_base
+-- Éléments de base d'une prestation : choix purement descriptifs côté
+-- client (ex. catégorie "Style" → "Réaliste"/"Illustration"/"Caricature"),
+-- regroupés par catégorie librement nommée par l'artiste. Un seul choix
+-- par catégorie côté client (comportement radio par groupe). Pas de
+-- prix — sert à préciser le cahier des charges (format, style,
+-- matériaux...), en plus des options payantes de service_option.
+-- -----------------------------------------------------
+CREATE TABLE service_base (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    service_id INT NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT '',
+
+    label VARCHAR(150) NOT NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_service_base_service
+        FOREIGN KEY (service_id) REFERENCES service(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
 -- Table : orders
 -- -----------------------------------------------------
 CREATE TABLE orders (
@@ -122,6 +178,7 @@ CREATE TABLE orders (
 
     status ENUM(
         'quote_requested',
+        'price_proposed',
         'pending',
         'accepted',
         'rejected',
@@ -133,6 +190,16 @@ CREATE TABLE orders (
 
     stripe_payment_intent_id VARCHAR(255) NULL,
     delivery_file VARCHAR(255) NULL,
+
+    -- Adresse de livraison, facultative (création numérique = pas besoin).
+    shipping_name VARCHAR(150) NULL,
+    shipping_address_line1 VARCHAR(255) NULL,
+    shipping_address_line2 VARCHAR(255) NULL,
+    shipping_city VARCHAR(100) NULL,
+    shipping_postal_code VARCHAR(20) NULL,
+    shipping_country VARCHAR(100) NULL,
+
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -146,6 +213,31 @@ CREATE TABLE orders (
 
     CONSTRAINT fk_order_service
         FOREIGN KEY (service_id) REFERENCES service(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : order_service_base
+-- Cases à cocher (service_base) sélectionnées par le client sur une
+-- commande. Le libellé est dupliqué (snapshot) pour que l'historique de
+-- la commande reste lisible même si l'artiste modifie ou supprime la
+-- case ensuite (service_base_id passe alors à NULL).
+-- -----------------------------------------------------
+CREATE TABLE order_service_base (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    order_id INT NOT NULL,
+    service_base_id INT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT '',
+    label VARCHAR(150) NOT NULL,
+
+    CONSTRAINT fk_order_service_base_order
+        FOREIGN KEY (order_id) REFERENCES orders(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_order_service_base_base
+        FOREIGN KEY (service_base_id) REFERENCES service_base(id)
         ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -203,6 +295,8 @@ CREATE TABLE portfolio_image (
     shop_id INT NOT NULL,
 
     filename VARCHAR(255) NOT NULL,
+    position INT NOT NULL DEFAULT 0,
+    label VARCHAR(100) NULL,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -292,6 +386,27 @@ CREATE TABLE password_reset (
 
 
 -- -----------------------------------------------------
+-- Table : remember_token
+-- "Se souvenir de moi" : jeton persistant (cookie longue durée). Seul le
+-- hash du jeton est stocké, le cookie envoyé au client contient la
+-- valeur en clair.
+-- -----------------------------------------------------
+CREATE TABLE remember_token (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT NOT NULL,
+    token_hash VARCHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_remember_token_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
 -- Table : subscription_plan
 -- Les paliers d'abonnement (Commission gratuit, Essentiel, Pro).
 -- commission_rate  : taux prélevé sur chaque commande.
@@ -366,6 +481,9 @@ CREATE TABLE raffle_entry (
 
     stripe_payment_intent_id VARCHAR(255) NULL,
 
+    -- Montant réellement payé (centimes), figé au moment de l'achat.
+    amount_paid INT NULL,
+
     status ENUM('entered', 'selected', 'not_selected', 'cancelled') NOT NULL DEFAULT 'entered',
 
     -- Pour le tirage homepage : date de fin de mise en avant (7 jours).
@@ -383,9 +501,85 @@ CREATE TABLE raffle_entry (
 
 
 -- -----------------------------------------------------
+-- Table : report
+-- Signalement d'une boutique (dans son ensemble) ou d'un avis.
+-- Association polymorphe (reportable_type + reportable_id), pas de
+-- FK directe sur la cible — intégrité vérifiée côté application.
+-- -----------------------------------------------------
+CREATE TABLE report (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    reporter_id INT NOT NULL,
+
+    reportable_type ENUM('shop', 'review') NOT NULL,
+    reportable_id INT NOT NULL,
+
+    reason ENUM(
+        'plagiat',
+        'contenu_inapproprie',
+        'arnaque',
+        'commentaire_inapproprie',
+        'spam',
+        'autre'
+    ) NOT NULL DEFAULT 'autre',
+    message TEXT NULL,
+
+    status ENUM('pending', 'resolved', 'dismissed') NOT NULL DEFAULT 'pending',
+    resolved_by INT NULL,
+    resolved_at DATETIME NULL,
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_report_reporter
+        FOREIGN KEY (reporter_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_report_resolved_by
+        FOREIGN KEY (resolved_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : category_request
+-- Demandes de nouveau style/type soumises par les artistes, validées
+-- par l'admin avant de rejoindre la liste sélectionnable.
+-- -----------------------------------------------------
+CREATE TABLE category_request (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    shop_id INT NULL,
+
+    category_type ENUM('style', 'type') NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    image VARCHAR(255) NULL,
+
+    status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_category_request_shop
+        FOREIGN KEY (shop_id) REFERENCES shop(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : setting
+-- Paramètres du site, en clé/valeur pour rester extensible.
+-- -----------------------------------------------------
+CREATE TABLE setting (
+    `key` VARCHAR(100) PRIMARY KEY,
+    `value` TEXT NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
 -- Données initiales : paliers d'abonnement
 -- -----------------------------------------------------
 INSERT INTO subscription_plan (name, price, commission_rate, max_services, max_portfolio_images, max_options_per_service, stripe_price_id)
 VALUES
+    ('Commission', 0, 10.00, 3, 5, 2, NULL),
     ('Essentiel', 1490, 5.00, 10, 15, 5, 'price_1TqAUxCHvrrlwjMD7A31tt6O'),
     ('Pro', 2990, 0.00, 9999, 9999, 9999, 'price_1TqAVUCHvrrlwjMDQd8ZCEbx');

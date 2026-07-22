@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use App\Core\Renderer;
+use App\Models\Review;
+use App\Models\Shop;
+use App\Models\ShopSubscription;
 use App\Models\User;
 use App\Core\StripeService;
 
@@ -10,21 +13,71 @@ class UserController
 {
     private Renderer $renderer;
     private User $userModel;
+    private Shop $shopModel;
+    private ShopSubscription $subscriptionModel;
 
     public function __construct(Renderer $renderer)
     {
         $this->renderer = $renderer;
         $this->userModel = new User();
+        $this->shopModel = new Shop();
+        $this->subscriptionModel = new ShopSubscription();
+    }
+
+    /**
+     * Boutique/abonnement de l'artiste connecté (pour les cartes stats de
+     * la page profil), et layout à utiliser : les artistes voient leur
+     * espace dédié (sidebar), les autres rôles gardent le layout public.
+     *
+     * @return array{layout: string|null, isArtist: bool, shop: array|null, subscription: array|null}
+     */
+    private function artistContext(): array
+    {
+        if (($_SESSION['user_role'] ?? '') !== 'artist') {
+            return ['layout' => null, 'isArtist' => false, 'shop' => null, 'subscription' => null];
+        }
+
+        $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
+        $subscription = $shop !== null ? $this->subscriptionModel->findActiveByShopId($shop['id']) : null;
+
+        return ['layout' => 'layouts/artist', 'isArtist' => true, 'shop' => $shop, 'subscription' => $subscription];
     }
 
     public function showProfile(): void
     {
         $user = $this->userModel->findById($_SESSION['user_id']);
+        $context = $this->artistContext();
 
         $this->renderer->render('user/profile', [
             'user' => $user,
             'errors' => [],
             'success' => null,
+            'isArtist' => $context['isArtist'],
+            'subscription' => $context['subscription'],
+            'pageTitle' => 'Mon profil — Toile',
+            'pageHeading' => 'Mon profil',
+            'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
+        ], $context['layout']);
+    }
+
+    // Page profil publique (voir /profil/:id, accessible sans connexion)
+    public function publicProfile(int $id): void
+    {
+        $profileUser = $this->userModel->findById($id);
+
+        if ($profileUser === null) {
+            http_response_code(404);
+            echo 'Utilisateur introuvable.';
+            exit;
+        }
+
+        $reviewModel = new Review();
+
+        $this->renderer->render('user/public-profile', [
+            'profileUser' => $profileUser,
+            'isOwnProfile' => ($_SESSION['user_id'] ?? null) === $profileUser['id'],
+            'reviews' => $reviewModel->findByClientId($profileUser['id']),
+            'pageTitle' => htmlspecialchars($profileUser['username']) . ' — Toile',
         ]);
     }
 
@@ -32,6 +85,13 @@ class UserController
     {
         $user = $this->userModel->findById($_SESSION['user_id']);
         $username = trim($_POST['username'] ?? '');
+        $email = $user['provider'] === 'credentials' ? trim($_POST['email'] ?? '') : $user['email'];
+        $bio = trim($_POST['bio'] ?? '');
+        $addressLine1 = trim($_POST['address_line1'] ?? '');
+        $addressLine2 = trim($_POST['address_line2'] ?? '');
+        $city = trim($_POST['city'] ?? '');
+        $postalCode = trim($_POST['postal_code'] ?? '');
+        $country = trim($_POST['country'] ?? '');
 
         $errors = [];
 
@@ -39,10 +99,21 @@ class UserController
             $errors['username'] = 'Le nom d\'utilisateur doit contenir au moins 3 caractères.';
         }
 
+        if ($user['provider'] === 'credentials') {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Adresse email invalide.';
+            } else {
+                $existing = $this->userModel->findByEmail($email);
+                if ($existing !== null && $existing['id'] !== $user['id']) {
+                    $errors['email'] = 'Cette adresse email est déjà utilisée par un autre compte.';
+                }
+            }
+        }
+
         $avatarFilename = $user['avatar'];
 
         if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-            $$uploadResult = \App\Core\FileUploader::upload(
+            $uploadResult = \App\Core\FileUploader::upload(
                 $_FILES['avatar'],
                 __DIR__ . '/../../public/uploads/avatars'
             );
@@ -54,18 +125,32 @@ class UserController
             }
         }
 
+        $context = $this->artistContext();
+
         if (!empty($errors)) {
             $this->renderer->render('user/profile', [
                 'user' => $user,
                 'errors' => $errors,
                 'success' => null,
-            ]);
+                'isArtist' => $context['isArtist'],
+                'subscription' => $context['subscription'],
+                'pageTitle' => 'Mon profil — Toile',
+                'pageHeading' => 'Mon profil',
+                'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
+            ], $context['layout']);
             return;
         }
 
         $this->userModel->update($user['id'], [
             'username' => $username,
+            'email' => $email,
             'avatar' => $avatarFilename,
+            'bio' => $bio !== '' ? $bio : null,
+            'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
+            'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
+            'city' => $city !== '' ? $city : null,
+            'postal_code' => $postalCode !== '' ? $postalCode : null,
+            'country' => $country !== '' ? $country : null,
         ]);
 
         $user = $this->userModel->findById($user['id']);
@@ -74,7 +159,12 @@ class UserController
             'user' => $user,
             'errors' => [],
             'success' => 'Profil mis à jour avec succès.',
-        ]);
+            'isArtist' => $context['isArtist'],
+            'subscription' => $context['subscription'],
+            'pageTitle' => 'Mon profil — Toile',
+            'pageHeading' => 'Mon profil',
+            'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
+        ], $context['layout']);
     }
 
     public function updatePassword(): void
@@ -87,18 +177,29 @@ class UserController
 
         $errors = [];
 
+        if ($user['password_hash'] === null || !password_verify($currentPassword, $user['password_hash'])) {
+            $errors['current_password'] = 'Mot de passe actuel incorrect.';
+        }
+
         if (mb_strlen($newPassword) < 8) {
             $errors['new_password'] = 'Le nouveau mot de passe doit faire au moins 8 caractères.';
         } elseif ($newPassword !== $newPasswordConfirm) {
             $errors['new_password'] = 'Les mots de passe ne correspondent pas.';
         }
 
+        $context = $this->artistContext();
+
         if (!empty($errors)) {
             $this->renderer->render('user/profile', [
                 'user' => $user,
                 'errors' => $errors,
                 'success' => null,
-            ]);
+                'isArtist' => $context['isArtist'],
+                'subscription' => $context['subscription'],
+                'pageTitle' => 'Mon profil — Toile',
+                'pageHeading' => 'Mon profil',
+                'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
+            ], $context['layout']);
             return;
         }
 
@@ -110,50 +211,19 @@ class UserController
             'user' => $user,
             'errors' => [],
             'success' => 'Mot de passe modifié avec succès.',
-        ]);
+            'isArtist' => $context['isArtist'],
+            'subscription' => $context['subscription'],
+            'pageTitle' => 'Mon profil — Toile',
+            'pageHeading' => 'Mon profil',
+            'pageSubtitle' => "Gère tes informations personnelles et ta sécurité.",
+        ], $context['layout']);
     }
 
-    private function handleAvatarUpload(array $file): array
-    {
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        $maxSize = 2 * 1024 * 1024; // 2Mo
-
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mimeType = $finfo = $finfo->file($file['tmp_name']);
-
-        if (!in_array($mimeType, $allowedTypes, true)) {
-            return ['filename' => null, 'error' => 'Format de fichier non autorisé (jpeg, png, webp uniquement).'];
-        }
-
-        if ($file['size'] > $maxSize) {
-            return ['filename' => null, 'error' => 'Le fichier dépasse la taille maximale (2Mo)'];
-        }
-
-        $extension = match ($mimeType) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-        };
-
-        $filename = bin2hex(random_bytes(16)) . '.' . $extension;
-
-        $destination = __DIR__ . '/../../public/uploads/avatars/' . $filename;
-
-        if (!is_dir(dirname($destination))) {
-            mkdir(dirname($destination), 0755, true);
-        }
-
-        if (!move_uploaded_file($file['tmp_name'], $destination)) {
-            return ['filename' => null, 'error' => 'Erreur lors de l\'enregistrement du fichier.'];
-        }
-
-        return ['filename' => $filename, 'error' => null];
-    }
-
-    // Affiche les cartes enregistrées 
+    // Affiche les cartes enregistrées
     public function paymentMethods(): void
     {
         $user = $this->userModel->findById($_SESSION['user_id']);
+        $context = $this->artistContext();
         $savedCards = [];
 
         if (!empty($user['stripe_customer_id'])) {
@@ -163,11 +233,14 @@ class UserController
 
         $this->renderer->render('user/payment-methods', [
             'savedCards' => $savedCards,
+            'isArtist' => $context['isArtist'],
             'pageTitle' => 'Mes moyens de paiement — Toile',
-        ]);
+            'pageHeading' => 'Mes moyens de paiement',
+            'pageSubtitle' => 'Gère les cartes enregistrées pour tes commandes.',
+        ], $context['layout']);
     }
 
-    // Supprime une carte enregistrée 
+    // Supprime une carte enregistrée
     public function deletePaymentMethod(): void
     {
         $paymentMethodId = $_POST['payment_method_id'] ?? '';
