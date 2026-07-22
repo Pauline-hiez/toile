@@ -571,6 +571,7 @@ class OrderController
                             'orderId' => $order['id'],
                             'orderTitle' => $order['title'],
                             'amount' => $order['total_price'],
+                            'tone' => 'success',
                         ]);
                         \App\Core\Mailer::send(
                             $client['email'],
@@ -610,6 +611,7 @@ class OrderController
                                 'orderId' => $order['id'],
                                 'orderTitle' => $order['title'],
                                 'amount' => $order['total_price'],
+                                'tone' => 'refund',
                             ]);
                             \App\Core\Mailer::send(
                                 $client['email'],
@@ -673,7 +675,8 @@ class OrderController
                 $recipient['email'],
                 'Commande #' . $order['id'] . ' — ' . \App\Core\OrderStatus::label($newStatus),
                 $html,
-                'order_status'
+                'order_status',
+                ['email-illustration' => __DIR__ . '/../../public/assets/images/decor/boite.png']
             );
         }
 

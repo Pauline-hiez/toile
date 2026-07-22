@@ -401,7 +401,9 @@ class AdminController
         $html = \App\Core\Mailer::renderTemplate('artist-approved', [
             'username' => $user['username'],
         ]);
-        \App\Core\Mailer::send($user['email'], 'Ta demande artiste a été acceptée !', $html, 'artist_approved');
+        \App\Core\Mailer::send($user['email'], 'Ta demande artiste a été acceptée !', $html, 'artist_approved', [
+            'email-illustration' => __DIR__ . '/../../public/assets/images/decor/palette.png',
+        ]);
 
         $notificationModel = new \App\Models\Notification();
         $notificationModel->notify(
