@@ -28,7 +28,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
 ?>
 
 <div class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-    <h1 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Découvrir les artistes</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] min-[641px]:text-[2.4rem] text-center mb-8">Découvrir les artistes</h1>
 
     <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
         <form action="/boutiques" method="GET" class="p-5 border-b border-border flex items-end gap-3 flex-wrap [&_select]:border [&_select]:border-border [&_select]:rounded-full [&_select]:px-4 [&_select]:py-[0.4rem] [&_select]:text-[0.85rem] [&_select]:outline-none [&_select]:bg-bg [&_select]:font-main [&_select]:focus:border-primary">

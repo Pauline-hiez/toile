@@ -135,7 +135,7 @@ $navIcons = [
             <div class="min-[900px]:ml-[220px]">
                 <header class="flex items-center justify-between gap-6 pb-6 mb-8 flex-wrap max-[720px]:gap-3">
                     <div class="min-w-0">
-                        <h1 class="font-title text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Mon espace') ?></h1>
+                        <h1 class="font-title text-shine text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Mon espace') ?></h1>
                         <?php if (!empty($pageSubtitle)): ?>
                             <p class="text-[0.8rem] text-muted max-[720px]:hidden"><?= nl2br(htmlspecialchars($pageSubtitle)) ?></p>
                         <?php endif; ?>

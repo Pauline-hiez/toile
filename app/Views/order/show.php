@@ -40,7 +40,7 @@ $stepIcons = [
             <img src="/assets/images/decor/tache7.png" alt="" class="hidden min-[1024px]:block absolute -top-10 -right-36 w-[200px] h-auto pointer-events-none select-none opacity-30 z-10">
             <img src="/assets/images/decor/palette.png" alt="" class="hidden min-[1024px]:block absolute -top-6 -right-24 w-[220px] h-auto pointer-events-none select-none opacity-90 z-10">
             <div class="flex items-center gap-3 flex-wrap">
-                <h1 class="font-cursive text-[1.5rem] min-[641px]:text-[1.8rem] font-semibold text-ink leading-tight">Commande #<?= (int) $order['id'] ?></h1>
+                <h1 class="font-title text-title text-shine text-[1.5rem] min-[641px]:text-[1.8rem] font-semibold leading-tight">Commande #<?= (int) $order['id'] ?></h1>
                 <span class="<?= $statusInfo['class'] ?>"><?= htmlspecialchars($statusInfo['label']) ?></span>
             </div>
         </div>

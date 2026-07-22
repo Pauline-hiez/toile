@@ -5,7 +5,7 @@
         <div class="relative z-0 mb-1">
             <img src="/assets/images/decor/envoyer-demande.png" alt="" class="hidden min-[1024px]:block absolute -top-8 -right-52 w-[240px] h-auto pointer-events-none select-none opacity-90 z-10">
             <div class="flex items-center gap-3 flex-wrap">
-                <h1 class="font-cursive text-[1.5rem] min-[641px]:text-[1.8rem] font-semibold text-ink leading-tight">Commander</h1>
+                <h1 class="font-title text-title text-shine text-[1.5rem] min-[641px]:text-[1.8rem] font-semibold leading-tight">Commander</h1>
                 <?php if (!empty($shop['accepts_quotes'])): ?>
                     <span class="<?= \App\Core\Badge::classes('info') ?>">Devis possible</span>
                 <?php endif; ?>

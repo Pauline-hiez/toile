@@ -60,7 +60,7 @@ $hasBanner = !empty($shop['banner']);
             <?php endif; ?>
 
             <div class="pb-1">
-                <h1 class="font-cursive text-[1.3rem] min-[641px]:text-[1.6rem] font-semibold text-ink leading-tight"><?= htmlspecialchars($shop['name']) ?></h1>
+                <h1 class="font-title text-title text-shine text-[1.3rem] min-[641px]:text-[1.6rem] font-semibold leading-tight"><?= htmlspecialchars($shop['name']) ?></h1>
                 <?php if (!empty($types)): ?>
                     <p class="text-[0.85rem] text-muted"><?= htmlspecialchars(implode(', ', array_map('ucfirst', $types))) ?></p>
                 <?php endif; ?>

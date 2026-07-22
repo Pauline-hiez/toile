@@ -213,7 +213,7 @@ $navIcons = [
                     </button>
 
                     <div class="min-w-0">
-                        <h1 class="font-title text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Administration') ?></h1>
+                        <h1 class="font-title text-shine text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Administration') ?></h1>
                         <?php if (!empty($pageSubtitle)): ?>
                             <p class="text-[0.8rem] text-muted max-[720px]:hidden"><?= nl2br(htmlspecialchars($pageSubtitle)) ?></p>
                         <?php endif; ?>

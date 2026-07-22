@@ -9,7 +9,7 @@ $pageTitle = 'Connexion — Toile';
 ?>
 
 <div class="max-w-[1400px] mx-auto px-5 pt-0 pb-4 min-[641px]:px-10 min-[641px]:pt-0 min-[641px]:pb-6">
-    <h1 class="font-title text-[1.7rem] min-[481px]:text-[2.2rem] text-title font-semibold text-center leading-none mb-0">Se connecter</h1>
+    <h1 class="font-title text-shine text-[1.7rem] min-[481px]:text-[2.2rem] text-title font-semibold text-center leading-none mb-0">Se connecter</h1>
 
     <?php if (isset($_GET['banned'])): ?>
         <p class="max-w-[820px] mx-auto text-danger text-[0.85rem] text-center mb-4">

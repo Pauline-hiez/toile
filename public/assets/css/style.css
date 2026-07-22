@@ -214,6 +214,24 @@ body::before {
     }
 }
 
+/* ---- Texte brillant (même animation que la bordure des bannières,
+   appliquée à la couleur du texte plutôt qu'à une bordure) ---- */
+
+.text-shine {
+    animation: textShine 3s ease-in-out infinite;
+}
+
+@keyframes textShine {
+    0%, 100% {
+        color: var(--color-title);
+        text-shadow: none;
+    }
+    50% {
+        color: var(--color-primary);
+        text-shadow: 0 0 18px rgba(122, 158, 126, 0.5);
+    }
+}
+
 /* ---- Avatar (cercle) ---- */
 
 .avatar-circle {
