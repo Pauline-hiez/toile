@@ -183,4 +183,4 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     <?php require __DIR__ . '/../components/pagination.php'; ?>
 </div>
 
-<script src="/assets/js/admin-countdown.js"></script>
+<script src="/assets/js/admin-countdown.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-countdown.js') ?>"></script>

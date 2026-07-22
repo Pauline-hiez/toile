@@ -7,13 +7,14 @@
 
     function formatCountdown(diffMs) {
         if (diffMs <= 0) {
-            return '00J : 00H : 00MIN';
+            return '00J : 00H : 00MIN : 00S';
         }
-        var totalMinutes = Math.floor(diffMs / 60000);
-        var days = Math.floor(totalMinutes / (60 * 24));
-        var hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-        var minutes = totalMinutes % 60;
-        return pad(days) + 'J : ' + pad(hours) + 'H : ' + pad(minutes) + 'MIN';
+        var totalSeconds = Math.floor(diffMs / 1000);
+        var days = Math.floor(totalSeconds / (60 * 60 * 24));
+        var hours = Math.floor((totalSeconds % (60 * 60 * 24)) / 3600);
+        var minutes = Math.floor((totalSeconds % 3600) / 60);
+        var seconds = totalSeconds % 60;
+        return pad(days) + 'J : ' + pad(hours) + 'H : ' + pad(minutes) + 'MIN : ' + pad(seconds) + 'S';
     }
 
     function tick(el, targetTime) {
@@ -28,7 +29,7 @@
             tick(el, targetTime);
             setInterval(function () {
                 tick(el, targetTime);
-            }, 30000);
+            }, 1000);
         });
     });
 })();

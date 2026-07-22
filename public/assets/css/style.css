@@ -47,6 +47,22 @@ html {
     overflow-x: hidden;
 }
 
+/* Coche/rond des cases à cocher et boutons radio en vert (couleur du
+   site) plutôt que le bleu par défaut du navigateur — s'applique partout
+   sauf override explicite (ex: accent-primary déjà posé à la main). */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--color-primary);
+}
+
+/* Tous les comptes à rebours (tirage au sort, maintenance...) : police
+   des titres, en vert — pas l'effet ni la couleur de .text-shine,
+   uniquement la police (voir public/assets/js/admin-countdown.js). */
+[data-countdown] {
+    font-family: var(--font-title);
+    color: var(--color-primary);
+}
+
 body {
     font-family: var(--font-main);
     background-color: var(--color-bg);

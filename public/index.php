@@ -69,16 +69,27 @@ use App\Core\Renderer;
 
 $settingModel = new \App\Models\Setting();
 if ($settingModel->get('maintenance_mode', '0') === '1') {
+    // Le déclenchement peut être programmé pour plus tard (voir
+    // AdminController::updateMaintenanceSettings()) — tant que l'heure
+    // prévue n'est pas atteinte, le site reste accessible normalement.
+    $maintenanceStartsAt = $settingModel->get('maintenance_starts_at');
+    $hasMaintenanceStarted = !empty($maintenanceStartsAt) && strtotime($maintenanceStartsAt) <= time();
+
     $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
     $isExemptPath = in_array($requestPath, ['/login', '/logout'], true)
         || str_starts_with($requestPath, '/admin')
         || str_starts_with($requestPath, '/webhooks/');
 
-    if (!$isAdmin && !$isExemptPath) {
+    if ($hasMaintenanceStarted && !$isAdmin && !$isExemptPath) {
+        $durationMinutes = (int) $settingModel->get('maintenance_duration_minutes', '0');
+        $endsAt = $durationMinutes > 0
+            ? date('Y-m-d H:i:s', strtotime($maintenanceStartsAt) + $durationMinutes * 60)
+            : null;
+
         http_response_code(503);
         (new Renderer(__DIR__ . '/../app/Views'))->render('errors/maintenance', [
-            'message' => $settingModel->get('maintenance_message') ?: 'Le site est actuellement en maintenance, merci de revenir un peu plus tard.',
+            'endsAt' => $endsAt,
             'pageTitle' => 'Maintenance — ' . $settingModel->get('site_name', 'Toile'),
         ], false);
         exit;

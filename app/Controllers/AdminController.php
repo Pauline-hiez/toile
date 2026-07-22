@@ -1533,12 +1533,30 @@ class AdminController
     {
         $maintenanceMode = isset($_POST['maintenance_mode']) ? '1' : '0';
 
+        $durationHours = max(0, (int) ($_POST['maintenance_duration_hours'] ?? 0));
+        $durationMinutes = max(0, (int) ($_POST['maintenance_duration_minutes'] ?? 0));
+        $totalDurationMinutes = $durationHours * 60 + $durationMinutes;
+
+        // Choix explicite de l'admin (boutons radio) plutôt que déduit du
+        // simple remplissage du champ date — voir admin/settings.php.
+        $triggerMode = ($_POST['maintenance_trigger'] ?? 'now') === 'scheduled' ? 'scheduled' : 'now';
+
+        // datetime-local envoie "YYYY-MM-DDTHH:MM" — converti au format
+        // stocké en base. "now" (ou date manquante malgré "scheduled") =
+        // déclenchement immédiat.
+        $startsAtInput = trim($_POST['maintenance_starts_at'] ?? '');
+        $startsAt = $triggerMode === 'scheduled' && $startsAtInput !== ''
+            ? str_replace('T', ' ', $startsAtInput) . ':00'
+            : date('Y-m-d H:i:s');
+
         $this->settingModel->setMany([
             'maintenance_mode' => $maintenanceMode,
-            // Le message est vidé dès que le mode est désactivé, pour ne
-            // pas laisser un ancien message resurgir par erreur lors de
-            // la prochaine activation.
-            'maintenance_message' => $maintenanceMode === '1' ? trim($_POST['maintenance_message'] ?? '') : '',
+            // Vidés dès que le mode est désactivé, pour ne pas laisser une
+            // ancienne programmation resurgir par erreur lors de la
+            // prochaine activation.
+            'maintenance_trigger_mode' => $maintenanceMode === '1' ? $triggerMode : '',
+            'maintenance_starts_at' => $maintenanceMode === '1' ? $startsAt : '',
+            'maintenance_duration_minutes' => $maintenanceMode === '1' ? (string) $totalDurationMinutes : '',
         ]);
 
         header('Location: /admin/settings?section=maintenance&success=1');

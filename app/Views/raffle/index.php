@@ -216,4 +216,4 @@ $steps = [
     <?php endif; ?>
 </section>
 
-<script src="/assets/js/admin-countdown.js"></script>
+<script src="/assets/js/admin-countdown.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-countdown.js') ?>"></script>

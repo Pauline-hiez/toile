@@ -2,9 +2,12 @@
 /**
  * Page de maintenance, rendue sans layout (voir public/index.php).
  * L'illustration occupe toute la page en fond ; le texte (logo, titre,
- * message de l'admin) est superposé sur sa partie gauche, dégagée.
+ * compte à rebours) est superposé sur sa partie gauche, dégagée. Le
+ * compte à rebours réutilise le même script que celui des tirages au
+ * sort (public/assets/js/admin-countdown.js, attribut data-countdown).
  *
- * @var string $message
+ * @var string|null $endsAt Date/heure de fin prévue ("Y-m-d H:i:s"), ou
+ *                           null/vide si aucune date n'a été renseignée.
  */
 ?>
 <!DOCTYPE html>
@@ -59,10 +62,17 @@
             margin-bottom: 1.25rem;
         }
 
-        .maintenance-page__overlay p {
+        .maintenance-page__overlay p:not(.maintenance-page__countdown) {
             color: var(--color-text);
             font-size: 1.05rem;
             line-height: 1.6;
+        }
+
+        .maintenance-page__countdown {
+            font-size: 2rem !important;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-top: 0.25rem !important;
         }
 
         @media (max-width: 900px) {
@@ -84,9 +94,16 @@
 
         <div class="maintenance-page__overlay">
             <h1 class="text-shine">Site en maintenance</h1>
-            <p><?= nl2br(htmlspecialchars($message)) ?></p>
+            <?php if (!empty($endsAt)): ?>
+                <p>On se retrouve dans :</p>
+                <p class="maintenance-page__countdown" data-countdown="<?= htmlspecialchars($endsAt) ?>">--J : --H : --MIN : --S</p>
+            <?php else: ?>
+                <p>Nous serons bientôt de retour, merci de votre patience.</p>
+            <?php endif; ?>
         </div>
     </div>
+
+    <script src="/assets/js/admin-countdown.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-countdown.js') ?>"></script>
 </body>
 
 </html>
