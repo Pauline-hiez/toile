@@ -11,11 +11,16 @@
  * @var array<int, string> $availableStyles Styles fixes + validés par l'admin (voir Shop::getAllStyles()).
  * @var array<int, string> $availableTypes Types fixes + validés par l'admin (voir Shop::getAllTypes()).
  * @var array $categoryRequests Demandes de style/type de cette boutique, toutes statuts confondus.
- * @var string $tab 'infos'|'stats'
+ * @var string $tab 'infos'|'stats'|'raffle'
  * @var int $days Période des graphiques de l'onglet Statistiques (14|30|90).
  * @var array{labels: array, values: array}|null $revenueChart Revenu net (après commission) par jour — null si $shop est null.
  * @var array{labels: array, values: array}|null $ordersChart Commandes par jour — null si $shop est null.
  * @var array{total_orders: int, net_revenue: int}|null $lifetimeStats Chiffres à vie — null si $shop est null.
+ * @var array|null $raffleHistory Tickets de tirage au sort de la boutique (page courante) — null si $shop est null.
+ * @var int|null $raffleHistoryTotal
+ * @var int $rafflePage
+ * @var int $rafflePerPage
+ * @var array<int, int|string> $rafflePageNumbers
  */
 $pageTitle = 'Ma boutique — Toile';
 
@@ -37,6 +42,7 @@ $bannerShapeRatio = '579 / 160';
     <nav class="flex items-center gap-2 mt-16 mb-6">
         <a href="/my-shop?tab=infos" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'infos' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Ma boutique</a>
         <a href="/my-shop?tab=stats" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'stats' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Statistiques</a>
+        <a href="/my-shop?tab=raffle" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'raffle' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Tirage au sort</a>
     </nav>
 <?php endif; ?>
 
@@ -109,6 +115,77 @@ $bannerShapeRatio = '579 / 160';
     </div>
 
     <script src="/assets/js/admin-chart.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-chart.js') ?>"></script>
+<?php endif; ?>
+
+<?php if ($tab === 'raffle' && $shop !== null): ?>
+    <?php
+    $raffleStatusLabels = [
+        'entered' => ['label' => 'En attente du tirage', 'class' => \App\Core\Badge::classes('info')],
+        'selected' => ['label' => 'Sélectionné·e !', 'class' => \App\Core\Badge::classes('success')],
+        'not_selected' => ['label' => 'Non sélectionné·e', 'class' => \App\Core\Badge::classes('neutral')],
+        'cancelled' => ['label' => 'Annulé', 'class' => \App\Core\Badge::classes('danger')],
+    ];
+    $raffleTypeLabels = ['boutiques' => 'Vitrine boutiques', 'homepage' => "Page d'accueil"];
+
+    $queryWithout = function (array $overrides = []) {
+        $params = ['tab' => 'raffle'];
+        if (isset($overrides['page'])) {
+            $params['raffle_page'] = $overrides['page'];
+        }
+        return '/my-shop?' . http_build_query($params);
+    };
+    $total = $raffleHistoryTotal;
+    $page = $rafflePage;
+    $perPage = $rafflePerPage;
+    $totalPages = $raffleTotalPages;
+    $pageNumbers = $rafflePageNumbers;
+    $rangeStart = $total === 0 ? 0 : (($page - 1) * $perPage) + 1;
+    $rangeEnd = min($total, $page * $perPage);
+    $entityLabel = 'ticket(s)';
+    ?>
+
+    <p class="text-[0.85rem] text-muted mb-4">
+        Historique de tes participations aux tirages au sort.
+        <a href="/raffle" class="text-primary font-medium hover:underline">Participer à un tirage →</a>
+    </p>
+
+    <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
+        <?php if (empty($raffleHistory)): ?>
+            <p class="text-muted text-[0.85rem] text-center p-6">Tu n'as encore participé à aucun tirage.</p>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-[0.875rem] max-[560px]:min-w-[480px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2]">
+                    <thead>
+                        <tr>
+                            <th>Tirage</th>
+                            <th>Période</th>
+                            <th>Acheté le</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($raffleHistory as $ticket): ?>
+                            <?php $info = $raffleStatusLabels[$ticket['status']] ?? ['label' => $ticket['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
+                            <tr>
+                                <td><?= htmlspecialchars($raffleTypeLabels[$ticket['type']] ?? $ticket['type']) ?></td>
+                                <td><?= htmlspecialchars($ticket['period']) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $ticket['created_at']) ?></td>
+                                <td><?= $ticket['amount_paid'] !== null ? number_format($ticket['amount_paid'] / 100, 2, ',', ' ') . ' €' : '—' ?></td>
+                                <td><span class="<?= $info['class'] ?>"><?= htmlspecialchars($info['label']) ?></span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($total > 0): ?>
+            <div class="p-4">
+                <?php require __DIR__ . '/../components/pagination.php'; ?>
+            </div>
+        <?php endif; ?>
+    </div>
 <?php endif; ?>
 
 <?php if ($tab === 'infos'): ?>

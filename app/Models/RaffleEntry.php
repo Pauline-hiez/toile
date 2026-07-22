@@ -44,6 +44,37 @@ class RaffleEntry extends BaseModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Historique paginé des tickets d'une boutique, tous types confondus
+     * (onglet "Historique" de /raffle côté artiste) — contrairement à
+     * findRecentByShopId(), non plafonné à un aperçu.
+     *
+     * @return array{entries: array, total: int}
+     */
+    public function findByShopIdPaginated(int $shopId, int $page, int $perPage): array
+    {
+        $countStmt = $this->pdo->prepare('SELECT COUNT(*) FROM raffle_entry WHERE shop_id = :shop_id');
+        $countStmt->execute(['shop_id' => $shopId]);
+        $total = (int) $countStmt->fetchColumn();
+
+        $perPage = max(1, $perPage);
+        $page = max(1, $page);
+        $offset = ($page - 1) * $perPage;
+
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM raffle_entry
+             WHERE shop_id = :shop_id
+             ORDER BY created_at DESC
+             LIMIT :limit OFFSET :offset'
+        );
+        $stmt->bindValue('shop_id', $shopId, \PDO::PARAM_INT);
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['entries' => $stmt->fetchAll(), 'total' => $total];
+    }
+
     // Derniers gagnants toutes boutiques et tous types confondus
     public function findRecentWinners(int $limit = 6): array
     {

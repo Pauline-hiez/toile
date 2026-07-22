@@ -533,7 +533,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getShopStats(),
             'pageTitle' => 'Boutiques - Administration',
@@ -633,7 +633,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getOrderStats(),
             'pageTitle' => 'Commandes - Administration',
@@ -742,7 +742,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getSubscriptionStats(),
             'pageTitle' => 'Abonnements - Administration',
@@ -816,7 +816,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getRaffleStats(),
             'boutiquesWinners' => $this->raffleModel->findSelectedBoutiquesThisMonth(),
@@ -894,7 +894,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getReportStats(),
             'pageTitle' => 'Signalements - Administration',
@@ -1040,7 +1040,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'shopSlugsByUserId' => $shopSlugsByUserId,
             'stats' => $this->getUserStats(),
@@ -1056,21 +1056,8 @@ class AdminController
      *
      * @return array<int, int|string>
      */
-    private function buildPageNumbers(int $currentPage, int $totalPages): array
-    {
-        $totalPages = max(1, $totalPages);
-        $pages = [];
-
-        for ($p = 1; $p <= $totalPages; $p++) {
-            if ($p === 1 || $p === $totalPages || abs($p - $currentPage) <= 1) {
-                $pages[] = $p;
-            } elseif (end($pages) !== '...') {
-                $pages[] = '...';
-            }
-        }
-
-        return $pages;
-    }
+    // buildPageNumbers() a été extraite vers App\Core\Paginator (réutilisée
+    // par RaffleController pour l'historique des tickets côté artiste).
 
     /**
      * Indicateurs clés pour les cartes de la page Utilisateurs.

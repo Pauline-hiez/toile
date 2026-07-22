@@ -3,8 +3,10 @@
 namespace App\Controllers;
 
 use App\Core\ChartHelper;
+use App\Core\Paginator;
 use App\Core\Renderer;
 use App\Models\Order;
+use App\Models\RaffleEntry;
 use App\Models\Shop;
 use App\Models\ShopSubscription;
 use App\Models\Review;
@@ -26,6 +28,7 @@ class ShopController
     private User $userModel;
     private CategoryRequest $categoryRequestModel;
     private Order $orderModel;
+    private RaffleEntry $raffleModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -39,6 +42,7 @@ class ShopController
         $this->userModel = new User();
         $this->categoryRequestModel = new CategoryRequest();
         $this->orderModel = new Order();
+        $this->raffleModel = new RaffleEntry();
     }
 
     public function manage(): void
@@ -54,7 +58,7 @@ class ShopController
             exit;
         }
 
-        $tab = in_array($_GET['tab'] ?? '', ['infos', 'stats'], true) ? $_GET['tab'] : 'infos';
+        $tab = in_array($_GET['tab'] ?? '', ['infos', 'stats', 'raffle'], true) ? $_GET['tab'] : 'infos';
         $days = (int) ($_GET['days'] ?? 30);
         $days = in_array($days, [14, 30, 90], true) ? $days : 30;
 
@@ -67,7 +71,34 @@ class ShopController
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], $this->shopStats($shop), $this->shopFormExtras($shop), $this->shopStatsCharts($shop, $days)), 'layouts/artist');
+        ], $this->shopStats($shop), $this->shopFormExtras($shop), $this->shopStatsCharts($shop, $days), $this->shopRaffleHistory($shop)), 'layouts/artist');
+    }
+
+    /**
+     * Historique paginé des tickets de tirage au sort de la boutique
+     * (onglet "Tirage au sort" de /my-shop) — null si la boutique
+     * n'existe pas encore.
+     */
+    private function shopRaffleHistory(?array $shop): array
+    {
+        if ($shop === null) {
+            return ['raffleHistory' => null, 'raffleHistoryTotal' => null, 'rafflePage' => 1, 'raffleTotalPages' => 1, 'rafflePageNumbers' => []];
+        }
+
+        $page = max(1, (int) ($_GET['raffle_page'] ?? 1));
+        $perPage = 10;
+
+        $result = $this->raffleModel->findByShopIdPaginated($shop['id'], $page, $perPage);
+        $totalPages = max(1, (int) ceil($result['total'] / $perPage));
+
+        return [
+            'raffleHistory' => $result['entries'],
+            'raffleHistoryTotal' => $result['total'],
+            'rafflePage' => $page,
+            'raffleTotalPages' => $totalPages,
+            'rafflePerPage' => $perPage,
+            'rafflePageNumbers' => Paginator::buildPageNumbers($page, $totalPages),
+        ];
     }
 
     /**
