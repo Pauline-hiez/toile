@@ -62,6 +62,9 @@ $router->map('POST', '/profile/password', [
     ],
 ]);
 
+// Profil public (accessible sans connexion)
+$router->map('GET', '/profil/[i:id]', ['App\Controllers\UserController', 'publicProfile']);
+
 // Devenir artiste
 $router->map('GET', '/become-artist', [
     'controller' => ['App\Controllers\ArtistController', 'showRequest'],

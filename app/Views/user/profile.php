@@ -10,112 +10,173 @@
  * @var array|null $subscription Abonnement actif de la boutique (si $isArtist).
  */
 $pageTitle = 'Mon profil — Toile';
+
+// Sous le layout artiste, le conteneur (largeur + padding) et le titre de
+// page sont déjà fournis par le layout — on ne garde ici que le centrage.
+$wrapClass = $isArtist
+    ? 'max-w-[700px] mx-auto relative'
+    : 'max-w-[700px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10 relative';
 ?>
 
-<?php if ($success !== null): ?>
-    <div class="bg-success-bg border border-success/25 text-success rounded-md px-5 py-[0.9rem] mb-6 text-[0.9rem]">
-        <?= htmlspecialchars($success) ?>
-    </div>
-<?php endif; ?>
+<div class="<?= $wrapClass ?>">
+    <?php if (!$isArtist): ?>
+        <img src="/assets/images/decor/tache7.png" alt="" style="width: 240px; top: 2%; right: -78px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-30 -z-10">
+        <img src="/assets/images/decor/plante4.png" alt="" style="width: 145px; top: 5%; right: -42px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-90 -z-10">
+        <img src="/assets/images/decor/tache7.png" alt="" style="width: 220px; bottom: 4%; left: -74px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-30 -z-10 -scale-x-100">
+        <img src="/assets/images/decor/plante9.png" alt="" style="width: 135px; bottom: 7%; left: -38px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-90 -z-10 -scale-x-100">
 
-<?php if ($isArtist): ?>
-    <div class="grid grid-cols-1 min-[481px]:grid-cols-2 gap-4 mb-8">
-        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
-            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= \App\Core\FrenchDate::format('dd/MM/y', $user['created_at']) ?></div>
-            <div class="font-cursive text-[0.9rem] text-success">Inscrit depuis le</div>
+        <h1 class="font-title text-title text-shine text-[2rem] min-[641px]:text-[2.4rem] text-center mb-2">Mon profil</h1>
+        <p class="text-center text-muted text-[0.9rem] mb-10">Gère tes informations personnelles et ta sécurité.</p>
+    <?php endif; ?>
+
+    <?php if ($success !== null): ?>
+        <div class="bg-success-bg border border-success/25 text-success rounded-md px-5 py-[0.9rem] mb-6 text-[0.9rem]">
+            <?= htmlspecialchars($success) ?>
         </div>
+    <?php endif; ?>
 
-        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
-            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $subscription !== null ? htmlspecialchars($subscription['plan_name']) : 'Aucun' ?></div>
-            <div class="font-cursive text-[0.9rem] text-success mb-2">Abonnement</div>
-            <a href="/my-subscription" class="text-[0.8rem] text-primary font-medium no-underline hover:underline">Gérer mon abonnement →</a>
-        </div>
-    </div>
-<?php endif; ?>
-
-<div class="bg-white border border-border rounded-md p-6 shadow-sm mb-6 flex items-center justify-between gap-4 flex-wrap">
-    <div>
-        <h2 class="text-base font-semibold text-ink mb-1">Moyens de paiement</h2>
-        <p class="text-[0.85rem] text-muted">Gère les cartes enregistrées pour tes commandes.</p>
-    </div>
-    <a href="/profile/payment-methods" class="btn btn--outline whitespace-nowrap">💳 Gérer mes moyens de paiement</a>
-</div>
-
-<div class="grid grid-cols-1 min-[901px]:grid-cols-2 gap-6 mb-6 items-start">
-<div class="bg-white border border-border rounded-md p-6 shadow-sm">
-    <h2 class="text-base font-semibold mb-5 text-ink">Informations</h2>
-
-    <form method="POST" action="/profile" enctype="multipart/form-data" class="flex flex-col gap-5">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
-
-        <div>
-            <label for="username" class="block font-semibold text-[0.9rem] mb-2">Nom d'utilisateur</label>
-            <input type="text" id="username" name="username" value="<?= htmlspecialchars($user['username']) ?>" required
-                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
-            <?php if (isset($errors['username'])): ?>
-                <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['username']) ?></p>
-            <?php endif; ?>
-        </div>
-
-        <div>
-            <label class="block font-semibold text-[0.9rem] mb-2">Avatar</label>
-            <div class="flex items-center gap-4">
-                <img id="avatarPreviewImg"
-                    src="<?= !empty($user['avatar']) ? '/uploads/avatars/' . htmlspecialchars($user['avatar']) : '/uploads/avatars/default.png' ?>"
-                    alt="Avatar"
-                    class="w-36 aspect-square object-cover rounded-full border border-border">
-
-                <label class="btn btn--primary cursor-pointer">
-                    Choisir un fichier
-                    <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/webp" class="hidden">
-                </label>
+    <?php if ($isArtist): ?>
+        <div class="grid grid-cols-1 min-[481px]:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm">
+                <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= \App\Core\FrenchDate::format('dd/MM/y', $user['created_at']) ?></div>
+                <div class="font-cursive text-[0.9rem] text-success">Inscrit depuis le</div>
             </div>
-            <?php if (isset($errors['avatar'])): ?>
-                <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['avatar']) ?></p>
-            <?php endif; ?>
+
+            <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm">
+                <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $subscription !== null ? htmlspecialchars($subscription['plan_name']) : 'Aucun' ?></div>
+                <div class="font-cursive text-[0.9rem] text-success mb-2">Abonnement</div>
+                <a href="/my-subscription" class="text-[0.8rem] text-primary font-medium no-underline hover:underline">Gérer mon abonnement →</a>
+            </div>
         </div>
+    <?php endif; ?>
 
-        <div class="text-center">
-            <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            <h2 class="text-base font-semibold text-ink mb-1">Moyens de paiement</h2>
+            <p class="text-[0.85rem] text-muted">Gère les cartes enregistrées pour tes commandes.</p>
         </div>
-    </form>
-</div>
+        <a href="/profile/payment-methods" class="btn btn--outline whitespace-nowrap">💳 Gérer mes moyens de paiement</a>
+    </div>
 
-<div class="bg-white border border-border rounded-md p-6 shadow-sm">
-    <h2 class="text-base font-semibold mb-5 text-ink">Mot de passe</h2>
-
-    <form method="POST" action="/profile/password" class="flex flex-col gap-5">
+    <form method="POST" action="/profile" enctype="multipart/form-data" class="flex flex-col gap-6 mb-6">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
 
-        <div>
-            <label for="current_password" class="block font-semibold text-[0.9rem] mb-2">Mot de passe actuel</label>
-            <input type="password" id="current_password" name="current_password" required
-                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
-            <?php if (isset($errors['current_password'])): ?>
-                <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['current_password']) ?></p>
-            <?php endif; ?>
+        <div class="bg-white border border-border rounded-md p-6 shadow-sm">
+            <h2 class="text-base font-semibold mb-5 text-ink">Informations</h2>
+
+            <div class="flex flex-col gap-5">
+                <div>
+                    <label for="username" class="block font-semibold text-[0.9rem] mb-2">Nom d'utilisateur</label>
+                    <input type="text" id="username" name="username" value="<?= htmlspecialchars($user['username']) ?>" required
+                        class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                    <?php if (isset($errors['username'])): ?>
+                        <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['username']) ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($user['provider'] === 'credentials'): ?>
+                    <div>
+                        <label for="email" class="block font-semibold text-[0.9rem] mb-2">Adresse email</label>
+                        <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                        <?php if (isset($errors['email'])): ?>
+                            <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['email']) ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+
+                <div>
+                    <label class="block font-semibold text-[0.9rem] mb-2">Avatar</label>
+                    <div class="flex items-center gap-4">
+                        <img id="avatarPreviewImg"
+                            src="<?= !empty($user['avatar']) ? '/uploads/avatars/' . htmlspecialchars($user['avatar']) : '/uploads/avatars/default.png' ?>"
+                            alt="Avatar"
+                            class="w-20 aspect-square object-cover rounded-full border border-border">
+
+                        <label class="btn btn--outline cursor-pointer">
+                            Choisir un fichier
+                            <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/webp" class="hidden">
+                        </label>
+                    </div>
+                    <?php if (isset($errors['avatar'])): ?>
+                        <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['avatar']) ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
 
-        <div>
-            <label for="new_password" class="block font-semibold text-[0.9rem] mb-2">Nouveau mot de passe</label>
-            <input type="password" id="new_password" name="new_password" required
-                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
-        </div>
+        <div class="bg-white border border-border rounded-md p-6 shadow-sm">
+            <h2 class="text-base font-semibold mb-1 text-ink">Bio &amp; adresse</h2>
+            <p class="text-[0.8rem] text-muted mb-5">La bio est visible sur ton profil public ; l'adresse sert à préremplir tes commandes.</p>
 
-        <div>
-            <label for="new_password_confirm" class="block font-semibold text-[0.9rem] mb-2">Confirmer le mot de passe</label>
-            <input type="password" id="new_password_confirm" name="new_password_confirm" required
-                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
-            <?php if (isset($errors['new_password'])): ?>
-                <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['new_password']) ?></p>
-            <?php endif; ?>
+            <div class="flex flex-col gap-5">
+                <div>
+                    <label for="bio" class="block font-semibold text-[0.9rem] mb-2">Bio</label>
+                    <textarea id="bio" name="bio" rows="3"
+                        placeholder="Une courte présentation, visible sur ton profil public..."
+                        class="w-full border border-border rounded-2xl px-4 py-3 font-main text-[0.9rem] outline-none resize-none focus:border-primary"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-[0.9rem] mb-2">Adresse</label>
+                    <div class="flex flex-col gap-2">
+                        <input type="text" name="address_line1" value="<?= htmlspecialchars($user['address_line1'] ?? '') ?>" placeholder="Adresse"
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                        <input type="text" name="address_line2" value="<?= htmlspecialchars($user['address_line2'] ?? '') ?>" placeholder="Complément d'adresse (optionnel)"
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" name="postal_code" value="<?= htmlspecialchars($user['postal_code'] ?? '') ?>" placeholder="Code postal"
+                                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                            <input type="text" name="city" value="<?= htmlspecialchars($user['city'] ?? '') ?>" placeholder="Ville"
+                                class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                        </div>
+                        <input type="text" name="country" value="<?= htmlspecialchars($user['country'] ?? '') ?>" placeholder="Pays"
+                            class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="text-center">
             <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
         </div>
     </form>
-</div>
+
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm">
+        <h2 class="text-base font-semibold mb-5 text-ink">Mot de passe</h2>
+
+        <form method="POST" action="/profile/password" class="flex flex-col gap-5">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <div>
+                <label for="current_password" class="block font-semibold text-[0.9rem] mb-2">Mot de passe actuel</label>
+                <input type="password" id="current_password" name="current_password" required
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                <?php if (isset($errors['current_password'])): ?>
+                    <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['current_password']) ?></p>
+                <?php endif; ?>
+            </div>
+
+            <div>
+                <label for="new_password" class="block font-semibold text-[0.9rem] mb-2">Nouveau mot de passe</label>
+                <input type="password" id="new_password" name="new_password" required
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label for="new_password_confirm" class="block font-semibold text-[0.9rem] mb-2">Confirmer le mot de passe</label>
+                <input type="password" id="new_password_confirm" name="new_password_confirm" required
+                    class="w-full border border-border rounded-full px-4 py-[0.4rem] font-main outline-none focus:border-primary">
+                <?php if (isset($errors['new_password'])): ?>
+                    <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['new_password']) ?></p>
+                <?php endif; ?>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn--primary">Enregistrer les modifications</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>

@@ -23,6 +23,15 @@ CREATE TABLE users (
 
     avatar VARCHAR(255) NULL,
 
+    -- Bio + adresse par défaut, affichées/éditables sur la page profil
+    -- publique (voir UserController::publicProfile()/updateProfile()).
+    bio TEXT NULL,
+    address_line1 VARCHAR(255) NULL,
+    address_line2 VARCHAR(255) NULL,
+    city VARCHAR(100) NULL,
+    postal_code VARCHAR(20) NULL,
+    country VARCHAR(100) NULL,
+
     role ENUM('user', 'artist', 'admin') NOT NULL DEFAULT 'user',
 
     is_banned BOOLEAN NOT NULL DEFAULT FALSE,
