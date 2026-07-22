@@ -103,8 +103,8 @@ $navIcons = [
 
 <body>
     <aside id="artistSidebar" class="flex flex-col min-[900px]:fixed min-[900px]:top-0 min-[900px]:left-0 min-[900px]:w-[220px] min-[900px]:h-screen min-[900px]:bg-bg min-[900px]:border-r min-[900px]:border-border min-[900px]:z-[100] max-[899px]:max-w-[1400px] max-[899px]:mx-auto max-[899px]:w-full max-[899px]:px-5 max-[899px]:pt-6 min-[641px]:max-[899px]:px-10 min-[641px]:max-[899px]:pt-8">
-        <a href="/my-dashboard" class="shrink-0 pt-[1.1rem] px-5 pb-[0.85rem] text-center border-b border-border">
-            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[120px] h-auto mx-auto">
+        <a href="/my-dashboard" class="shrink-0 text-center border-b border-border">
+            <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[190px] h-auto mx-auto block m-0 p-0">
         </a>
 
         <nav id="artistSidebarNav" class="flex flex-row min-[900px]:flex-col flex-wrap min-[900px]:flex-nowrap gap-1 pt-2 min-[900px]:py-4 min-[900px]:overflow-y-auto min-[900px]:min-h-0 min-[900px]:shrink-0">
@@ -117,9 +117,9 @@ $navIcons = [
                     <span class="w-9 h-9 shrink-0 flex items-center justify-center">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
                     </span>
-                    <?= htmlspecialchars($item['label']) ?>
+                    <span class="flex-1 min-w-0 truncate"><?= htmlspecialchars($item['label']) ?></span>
                     <?php if (!empty($item['badge'])): ?>
-                        <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
+                        <span class="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
                     <?php endif; ?>
                 </a>
             <?php endforeach; ?>
@@ -135,7 +135,7 @@ $navIcons = [
             <div class="min-[900px]:ml-[220px]">
                 <header class="flex items-center justify-between gap-6 pb-6 mb-8 flex-wrap max-[720px]:gap-3">
                     <div class="min-w-0">
-                        <h1 class="font-title text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Mon espace') ?></h1>
+                        <h1 class="font-title text-shine text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Mon espace') ?></h1>
                         <?php if (!empty($pageSubtitle)): ?>
                             <p class="text-[0.8rem] text-muted max-[720px]:hidden"><?= nl2br(htmlspecialchars($pageSubtitle)) ?></p>
                         <?php endif; ?>
@@ -176,7 +176,7 @@ $navIcons = [
                 </header>
 
                 <?php $heroBanner = !empty($artistShop['banner']) ? '/uploads/banners/' . htmlspecialchars($artistShop['banner']) : '/assets/images/decor/hero.png'; ?>
-                <img src="<?= $heroBanner ?>" alt="" class="relative w-full aspect-[579/226] object-cover shop-banner-shape -mb-10">
+                <img src="<?= $heroBanner ?>" alt="" class="relative w-full aspect-[579/160] object-cover shop-banner-frame -mb-10">
 
                 <div class="relative">
                     <?= $content ?>

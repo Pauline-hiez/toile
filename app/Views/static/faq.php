@@ -51,7 +51,7 @@ $sections = [
 ?>
 
 <div class="max-w-[900px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-    <h1 class="font-title text-title text-[2rem] min-[641px]:text-[2.4rem] text-center mb-2">Aide et FAQ</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] min-[641px]:text-[2.4rem] text-center mb-2">Aide et FAQ</h1>
     <p class="text-center text-muted text-[0.9rem] mb-10">Les réponses aux questions les plus fréquentes sur Toile.</p>
 
     <?php

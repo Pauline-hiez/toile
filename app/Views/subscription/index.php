@@ -25,7 +25,7 @@ $renderFeature = function (string $icon, string $label) {
 ?>
 
 <section class="max-w-[1100px] mx-auto px-5 py-5 min-[641px]:px-10">
-    <h1 class="font-title text-title text-[2rem] min-[641px]:text-[2.4rem] text-center mb-4">Choisir mon abonnement</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] min-[641px]:text-[2.4rem] text-center mb-4">Choisir mon abonnement</h1>
 
     <?php if ($shop === null): ?>
         <div class="page-alert page-alert--info max-w-[560px] mx-auto text-center mb-5">

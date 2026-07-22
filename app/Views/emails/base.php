@@ -5,72 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($subject ?? 'Toile') ?></title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f9fafb;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .header {
-            background: #6f42c1;
-            color: white;
-            padding: 1.5rem 2rem;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .body {
-            padding: 2rem;
-            color: #374151;
-            line-height: 1.6;
-        }
-
-        .footer {
-            background: #f3f4f6;
-            padding: 1rem 2rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: #6f42c1;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 1rem 0;
-        }
-    </style>
 </head>
 
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Toile 🎨</h1>
-        </div>
-        <div class="body">
-            <?= $content ?>
-        </div>
-        <div class="footer">
-            © <?= date('Y') ?> Toile — La marketplace de commissions artistiques.<br>
-            Tu reçois cet email car tu es inscrit(e) sur Toile.
-        </div>
-    </div>
+<body style="margin:0; padding:0; background:#f2efe4; font-family:Georgia, 'Times New Roman', serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2efe4;">
+        <tr>
+            <td align="center" style="padding:32px 16px;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:18px; border:1px solid #e6ddc8;">
+                    <tr>
+                        <td align="center" style="padding:32px 40px 8px;">
+                            <img src="cid:email-logo" width="110" alt="Toile" style="display:block; width:110px; height:auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 40px 32px; color:#4a4636; font-size:15px; line-height:1.6;">
+                            <?= $content ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:20px 40px; border-top:1px solid #efe9dc; text-align:center; font-size:12px; color:#9a9483;">
+                            © <?= date('Y') ?> Toile — La marketplace de commissions artistiques.<br>
+                            Tu reçois cet email car tu es inscrit(e) sur Toile.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>

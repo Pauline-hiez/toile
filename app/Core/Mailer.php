@@ -10,16 +10,20 @@ class Mailer
     /**
      * Envoie un email.
      *
-     * @param string $to          Adresse du destinataire.
-     * @param string $subject     Sujet de l'email.
-     * @param string $htmlBody    Corps HTML de l'email.
-     * @param string $type        Type d'email pour le log (ex: 'inscription').
+     * @param string $to               Adresse du destinataire.
+     * @param string $subject          Sujet de l'email.
+     * @param string $htmlBody         Corps HTML de l'email.
+     * @param string $type             Type d'email pour le log (ex: 'inscription').
+     * @param array<string, string> $embeddedImages Images à intégrer (cid => chemin absolu),
+     *                                               référencées dans le HTML via src="cid:{clé}".
+     *                                               Le logo (cid:email-logo) est toujours ajouté.
      */
     public static function send(
         string $to,
         string $subject,
         string $htmlBody,
-        string $type = 'general'
+        string $type = 'general',
+        array $embeddedImages = []
     ): bool {
         $mail = new PHPMailer(true);
 
@@ -43,6 +47,16 @@ class Mailer
             $mail->Subject = $subject;
             $mail->Body = $htmlBody;
             $mail->AltBody = strip_tags($htmlBody);
+
+            // Images intégrées (cid:) plutôt que des URLs absolues — le
+            // client mail du destinataire ne peut pas charger d'images
+            // hébergées sur un domaine de dev local.
+            $embeddedImages['email-logo'] ??= __DIR__ . '/../../public/assets/images/site/logo-toile.png';
+            foreach ($embeddedImages as $cid => $path) {
+                if (is_file($path)) {
+                    $mail->addEmbeddedImage($path, $cid);
+                }
+            }
 
             $mail->send();
 

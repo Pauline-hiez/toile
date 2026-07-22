@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Renderer;
+use App\Models\Review;
 use App\Models\Shop;
 use App\Models\ShopSubscription;
 use App\Models\User;
@@ -59,15 +60,54 @@ class UserController
         ], $context['layout']);
     }
 
+    // Page profil publique (voir /profil/:id, accessible sans connexion)
+    public function publicProfile(int $id): void
+    {
+        $profileUser = $this->userModel->findById($id);
+
+        if ($profileUser === null) {
+            http_response_code(404);
+            echo 'Utilisateur introuvable.';
+            exit;
+        }
+
+        $reviewModel = new Review();
+
+        $this->renderer->render('user/public-profile', [
+            'profileUser' => $profileUser,
+            'isOwnProfile' => ($_SESSION['user_id'] ?? null) === $profileUser['id'],
+            'reviews' => $reviewModel->findByClientId($profileUser['id']),
+            'pageTitle' => htmlspecialchars($profileUser['username']) . ' — Toile',
+        ]);
+    }
+
     public function updateProfile(): void
     {
         $user = $this->userModel->findById($_SESSION['user_id']);
         $username = trim($_POST['username'] ?? '');
+        $email = $user['provider'] === 'credentials' ? trim($_POST['email'] ?? '') : $user['email'];
+        $bio = trim($_POST['bio'] ?? '');
+        $addressLine1 = trim($_POST['address_line1'] ?? '');
+        $addressLine2 = trim($_POST['address_line2'] ?? '');
+        $city = trim($_POST['city'] ?? '');
+        $postalCode = trim($_POST['postal_code'] ?? '');
+        $country = trim($_POST['country'] ?? '');
 
         $errors = [];
 
         if (mb_strlen($username) < 3) {
             $errors['username'] = 'Le nom d\'utilisateur doit contenir au moins 3 caractères.';
+        }
+
+        if ($user['provider'] === 'credentials') {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Adresse email invalide.';
+            } else {
+                $existing = $this->userModel->findByEmail($email);
+                if ($existing !== null && $existing['id'] !== $user['id']) {
+                    $errors['email'] = 'Cette adresse email est déjà utilisée par un autre compte.';
+                }
+            }
         }
 
         $avatarFilename = $user['avatar'];
@@ -103,7 +143,14 @@ class UserController
 
         $this->userModel->update($user['id'], [
             'username' => $username,
+            'email' => $email,
             'avatar' => $avatarFilename,
+            'bio' => $bio !== '' ? $bio : null,
+            'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
+            'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
+            'city' => $city !== '' ? $city : null,
+            'postal_code' => $postalCode !== '' ? $postalCode : null,
+            'country' => $country !== '' ? $country : null,
         ]);
 
         $user = $this->userModel->findById($user['id']);
@@ -176,6 +223,7 @@ class UserController
     public function paymentMethods(): void
     {
         $user = $this->userModel->findById($_SESSION['user_id']);
+        $context = $this->artistContext();
         $savedCards = [];
 
         if (!empty($user['stripe_customer_id'])) {
@@ -185,8 +233,11 @@ class UserController
 
         $this->renderer->render('user/payment-methods', [
             'savedCards' => $savedCards,
+            'isArtist' => $context['isArtist'],
             'pageTitle' => 'Mes moyens de paiement — Toile',
-        ]);
+            'pageHeading' => 'Mes moyens de paiement',
+            'pageSubtitle' => 'Gère les cartes enregistrées pour tes commandes.',
+        ], $context['layout']);
     }
 
     // Supprime une carte enregistrée

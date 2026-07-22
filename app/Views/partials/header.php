@@ -78,12 +78,14 @@
                                 <?php endif; ?>
                             <?php elseif (($_SESSION['user_role'] ?? '') === 'artist'): ?>
                                 <a href="/my-dashboard">Mon espace</a>
-                                <a href="/profile">Profil</a>
                                 <?php if ($userShop): ?>
+                                    <a href="/boutiques/<?= htmlspecialchars($userShop['slug']) ?>">Profil</a>
                                     <a href="/my-shop">Ma boutique</a>
+                                <?php else: ?>
+                                    <a href="/profile">Profil</a>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <a href="/profile">Profil</a>
+                                <a href="/profil/<?= (int) $_SESSION['user_id'] ?>">Profil</a>
                             <?php endif; ?>
 
                             <hr>

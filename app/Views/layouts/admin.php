@@ -53,12 +53,13 @@ $navItems = [
     ['label' => 'Statistiques', 'href' => '/admin/statistics', 'icon' => 'stats', 'match' => 'prefix'],
     ['label' => 'Utilisateurs', 'href' => '/admin/users', 'icon' => 'users', 'match' => 'prefix'],
     ['label' => 'Demandes artistes', 'href' => '/admin/artist-requests', 'icon' => 'user-plus', 'match' => 'prefix', 'badge' => $pendingArtistRequestsCount],
-    ['label' => 'Demandes de catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix', 'badge' => $pendingCategoryRequestsCount],
+    ['label' => 'Catégories', 'href' => '/admin/category-requests', 'icon' => 'tag', 'match' => 'prefix', 'badge' => $pendingCategoryRequestsCount],
     ['label' => 'Boutiques', 'href' => '/admin/shops', 'icon' => 'shop', 'match' => 'prefix'],
     ['label' => 'Commandes', 'href' => '/admin/orders', 'icon' => 'package', 'match' => 'prefix'],
     ['label' => 'Abonnements', 'href' => '/admin/subscriptions', 'icon' => 'card', 'match' => 'prefix'],
     ['label' => 'Tirage au sort', 'href' => '/admin/raffle', 'icon' => 'ticket', 'match' => 'prefix'],
     ['label' => 'Signalements', 'href' => '/admin/reports', 'icon' => 'flag', 'match' => 'prefix'],
+    ['label' => 'Avis', 'href' => '/admin/reviews', 'icon' => 'star', 'match' => 'prefix'],
     ['label' => 'Paramètres', 'href' => '/admin/settings', 'icon' => 'settings', 'match' => 'prefix'],
 ];
 
@@ -77,6 +78,7 @@ $navIcons = [
     'flag' => '<path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>',
     'settings' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.63.78 1.05 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>',
     'tag' => '<path d="M20.6 12.6 12.6 20.6a2 2 0 0 1-2.83 0l-7.37-7.37a2 2 0 0 1 0-2.83l8-8A2 2 0 0 1 11.83 2H18a2 2 0 0 1 2 2v6.17a2 2 0 0 1-.59 1.43Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle>',
+    'star' => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon>',
 ];
 ?>
 <!DOCTYPE html>
@@ -174,8 +176,8 @@ $navIcons = [
         <div id="adminSidebarOverlay" class="hidden"></div>
 
         <aside id="adminSidebar" class="w-[220px] bg-bg border-r border-border flex flex-col fixed top-0 left-0 h-screen overflow-y-auto z-[100]">
-            <a href="/admin" class="pt-[1.1rem] px-5 pb-[0.85rem] text-center border-b border-border">
-                <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[120px] h-auto mx-auto">
+            <a href="/admin" class="text-center border-b border-border">
+                <img src="<?= ($logo = $settingModel->get('site_logo')) ? '/uploads/branding/' . htmlspecialchars($logo) : '/assets/images/site/logo-toile.png' ?>" alt="<?= htmlspecialchars($settingModel->get('site_name', 'Toile')) ?>" class="w-[190px] h-auto mx-auto block m-0 p-0">
             </a>
 
             <nav id="adminSidebarNav" class="py-4 flex-1">
@@ -188,9 +190,9 @@ $navIcons = [
                         <span class="w-9 h-9 shrink-0 flex items-center justify-center">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-icon w-[22px] h-[22px]"><?= $navIcons[$item['icon']] ?? '' ?></svg>
                         </span>
-                        <?= htmlspecialchars($item['label']) ?>
+                        <span class="flex-1 min-w-0 truncate"><?= htmlspecialchars($item['label']) ?></span>
                         <?php if (!empty($item['badge'])): ?>
-                            <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
+                            <span class="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-[5px] rounded-full bg-danger text-white text-[0.7rem] font-semibold"><?= (int) $item['badge'] ?></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
@@ -213,7 +215,7 @@ $navIcons = [
                     </button>
 
                     <div class="min-w-0">
-                        <h1 class="font-title text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Administration') ?></h1>
+                        <h1 class="font-title text-shine text-[2.4rem] max-[720px]:text-[1.9rem] text-title font-semibold leading-none"><?= htmlspecialchars($pageHeading ?? 'Administration') ?></h1>
                         <?php if (!empty($pageSubtitle)): ?>
                             <p class="text-[0.8rem] text-muted max-[720px]:hidden"><?= nl2br(htmlspecialchars($pageSubtitle)) ?></p>
                         <?php endif; ?>

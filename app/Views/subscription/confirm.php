@@ -17,7 +17,7 @@ $commissionRate = rtrim(rtrim(number_format((float) $plan['commission_rate'], 2)
         </svg>
     </div>
 
-    <h1 class="font-title text-title text-[2rem] mb-3">Abonnement activé !</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] mb-3">Abonnement activé !</h1>
 
     <p class="text-muted text-[0.9rem] leading-[1.6] mb-6">
         Ton abonnement <strong class="text-ink"><?= htmlspecialchars($plan['name']) ?></strong> est maintenant actif.

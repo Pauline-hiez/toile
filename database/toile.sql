@@ -23,6 +23,15 @@ CREATE TABLE users (
 
     avatar VARCHAR(255) NULL,
 
+    -- Bio + adresse par défaut, affichées/éditables sur la page profil
+    -- publique (voir UserController::publicProfile()/updateProfile()).
+    bio TEXT NULL,
+    address_line1 VARCHAR(255) NULL,
+    address_line2 VARCHAR(255) NULL,
+    city VARCHAR(100) NULL,
+    postal_code VARCHAR(20) NULL,
+    country VARCHAR(100) NULL,
+
     role ENUM('user', 'artist', 'admin') NOT NULL DEFAULT 'user',
 
     is_banned BOOLEAN NOT NULL DEFAULT FALSE,
@@ -539,7 +548,7 @@ CREATE TABLE report (
 CREATE TABLE category_request (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    shop_id INT NOT NULL,
+    shop_id INT NULL,
 
     category_type ENUM('style', 'type') NOT NULL,
     name VARCHAR(100) NOT NULL,

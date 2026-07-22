@@ -19,7 +19,7 @@ $planLogo = $planLogos[$plan['name']] ?? 'ab-commission.png';
 ?>
 
 <section class="max-w-[560px] mx-auto px-5 py-10">
-    <h1 class="font-title text-title text-[2.2rem] text-center mb-6">Paiement de l'abonnement</h1>
+    <h1 class="font-title text-title text-shine text-[2.2rem] text-center mb-6">Paiement de l'abonnement</h1>
 
     <div class="bg-white border border-border rounded-2xl shadow-sm p-5 mb-5 flex items-center gap-4">
         <img src="/assets/images/decor/<?= $planLogo ?>" alt="" class="w-16 h-16 object-contain shrink-0">

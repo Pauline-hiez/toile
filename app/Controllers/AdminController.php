@@ -401,7 +401,9 @@ class AdminController
         $html = \App\Core\Mailer::renderTemplate('artist-approved', [
             'username' => $user['username'],
         ]);
-        \App\Core\Mailer::send($user['email'], 'Ta demande artiste a été acceptée !', $html, 'artist_approved');
+        \App\Core\Mailer::send($user['email'], 'Ta demande artiste a été acceptée !', $html, 'artist_approved', [
+            'email-illustration' => __DIR__ . '/../../public/assets/images/decor/palette.png',
+        ]);
 
         $notificationModel = new \App\Models\Notification();
         $notificationModel->notify(
@@ -454,6 +456,56 @@ class AdminController
             'pageHeading' => 'Demandes de catégories',
             'pageSubtitle' => 'Valide les nouveaux styles et types proposés par les artistes.',
         ], 'layouts/admin');
+    }
+
+    // Soumission directe d'un style/type par l'admin (POST /admin/category-requests) —
+    // pas de shop_id, auto-approuvé (l'admin est déjà l'autorité de validation).
+    public function submitCategoryRequest(): void
+    {
+        $categoryType = $_POST['category_type'] ?? '';
+        $name = trim($_POST['name'] ?? '');
+
+        $errors = [];
+
+        if (!in_array($categoryType, ['style', 'type'], true)) {
+            $errors['category_request'] = 'Type de catégorie invalide.';
+        }
+
+        if (mb_strlen($name) < 2) {
+            $errors['category_request'] = 'Le nom doit faire au moins 2 caractères.';
+        }
+
+        $imageFilename = null;
+
+        if ($categoryType === 'style') {
+            if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                $errors['category_request'] = 'Un visuel est requis pour un nouveau style.';
+            } else {
+                $uploadResult = FileUploader::upload(
+                    $_FILES['image'],
+                    __DIR__ . '/../../public/uploads/category-requests'
+                );
+
+                if ($uploadResult['error'] !== null) {
+                    $errors['category_request'] = $uploadResult['error'];
+                } else {
+                    $imageFilename = $uploadResult['filename'];
+                }
+            }
+        }
+
+        if (empty($errors)) {
+            $this->categoryRequestModel->create([
+                'shop_id' => null,
+                'category_type' => $categoryType,
+                'name' => $name,
+                'image' => $imageFilename,
+                'status' => 'approved',
+            ]);
+        }
+
+        header('Location: /admin/settings?section=homepage_styles' . (!empty($errors) ? '&category_error=1' : '&success=1'));
+        exit;
     }
 
     public function approveCategoryRequest(int $id): void
@@ -986,7 +1038,8 @@ class AdminController
         $this->renderer->render('admin/reviews', [
             'reviews' => $reviews,
             'pageTitle' => 'Avis - Administration',
-        ]);
+            'pageHeading' => 'Avis',
+        ], 'layouts/admin');
     }
 
     public function deleteReview(int $id): void
@@ -1206,16 +1259,30 @@ class AdminController
      */
     private function homepageStylesExtras(): array
     {
-        $candidates = [];
+        $candidatesByName = [];
         foreach (Shop::STYLES as $style) {
-            $candidates[] = ['name' => $style, 'image' => isset(Shop::STYLE_TILE_IMAGES[$style]) ? '/assets/images/decor/' . Shop::STYLE_TILE_IMAGES[$style] : null];
+            $candidatesByName[$style] = ['name' => $style, 'image' => isset(Shop::STYLE_TILE_IMAGES[$style]) ? '/assets/images/decor/' . Shop::STYLE_TILE_IMAGES[$style] : null];
         }
         foreach ($this->categoryRequestModel->findApprovedStyleRows() as $request) {
-            $candidates[] = ['name' => $request['name'], 'image' => '/uploads/category-requests/' . $request['image'], 'requestId' => $request['id']];
+            $candidatesByName[$request['name']] = ['name' => $request['name'], 'image' => '/uploads/category-requests/' . $request['image'], 'requestId' => $request['id']];
         }
 
-        $selected = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: array_column($candidates, 'name');
+        $selected = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: array_keys($candidatesByName);
         $selected = array_slice($selected, 0, 5);
+
+        // La grille doit refléter l'ordre choisi par le dernier glisser-
+        // déposer (sélectionnés d'abord, dans cet ordre), sinon la
+        // sauvegarde a beau fonctionner, l'aperçu ne le montre jamais.
+        $orderedNames = array_merge($selected, array_keys($candidatesByName));
+        $candidates = [];
+        $seen = [];
+        foreach ($orderedNames as $name) {
+            if (isset($seen[$name]) || !isset($candidatesByName[$name])) {
+                continue;
+            }
+            $seen[$name] = true;
+            $candidates[] = $candidatesByName[$name];
+        }
 
         return [
             'homepageStyleCandidates' => $candidates,
@@ -1464,9 +1531,14 @@ class AdminController
 
     public function updateMaintenanceSettings(): void
     {
+        $maintenanceMode = isset($_POST['maintenance_mode']) ? '1' : '0';
+
         $this->settingModel->setMany([
-            'maintenance_mode' => isset($_POST['maintenance_mode']) ? '1' : '0',
-            'maintenance_message' => trim($_POST['maintenance_message'] ?? ''),
+            'maintenance_mode' => $maintenanceMode,
+            // Le message est vidé dès que le mode est désactivé, pour ne
+            // pas laisser un ancien message resurgir par erreur lors de
+            // la prochaine activation.
+            'maintenance_message' => $maintenanceMode === '1' ? trim($_POST['maintenance_message'] ?? '') : '',
         ]);
 
         header('Location: /admin/settings?section=maintenance&success=1');

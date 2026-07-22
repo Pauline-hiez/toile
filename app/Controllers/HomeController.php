@@ -58,7 +58,7 @@ class HomeController
             }
         }
 
-        $this->renderer->render('home', [
+        $this->renderer->render('home/index', [
             'pageTitle' => 'Accueil — Toile',
             'featuredShops' => $featuredShops,
             'styleTiles' => $styleTiles,
@@ -71,12 +71,23 @@ class HomeController
     {
         $candidateImages = $this->buildStyleCandidates();
 
+        // Même ordre que la sélection curée dans Paramètres → Styles à la
+        // une, puis le reste des styles à la suite — cohérent avec l'ordre
+        // vu en page d'accueil plutôt qu'un ordre arbitraire.
+        $orderedNames = json_decode($this->settingModel->get('homepage_styles', '') ?: '[]', true) ?: Shop::STYLES;
+        $orderedNames = array_merge($orderedNames, array_keys($candidateImages));
+
         $styleTiles = [];
-        foreach ($candidateImages as $name => $image) {
-            $styleTiles[] = ['name' => $name, 'image' => $image];
+        $seen = [];
+        foreach ($orderedNames as $name) {
+            if (isset($seen[$name]) || !array_key_exists($name, $candidateImages)) {
+                continue;
+            }
+            $seen[$name] = true;
+            $styleTiles[] = ['name' => $name, 'image' => $candidateImages[$name]];
         }
 
-        $this->renderer->render('styles', [
+        $this->renderer->render('home/styles', [
             'pageTitle' => 'Tous les styles — Toile',
             'styleTiles' => $styleTiles,
         ]);
@@ -85,7 +96,7 @@ class HomeController
     // Page "Comment ça marche ?"
     public function howItWorks(): void
     {
-        $this->renderer->render('how-it-works', [
+        $this->renderer->render('static/how-it-works', [
             'pageTitle' => 'Comment ça marche ? — Toile',
         ]);
     }
@@ -93,7 +104,7 @@ class HomeController
     // Page "Aide et FAQ"
     public function faq(): void
     {
-        $this->renderer->render('faq', [
+        $this->renderer->render('static/faq', [
             'pageTitle' => 'Aide et FAQ — Toile',
         ]);
     }
@@ -101,7 +112,7 @@ class HomeController
     // Page "Conditions d'utilisation"
     public function terms(): void
     {
-        $this->renderer->render('terms', [
+        $this->renderer->render('static/terms', [
             'pageTitle' => "Conditions d'utilisation — Toile",
         ]);
     }
@@ -109,7 +120,7 @@ class HomeController
     // Page "Politique de confidentialité"
     public function privacy(): void
     {
-        $this->renderer->render('privacy', [
+        $this->renderer->render('static/privacy', [
             'pageTitle' => 'Politique de confidentialité — Toile',
         ]);
     }
@@ -117,7 +128,7 @@ class HomeController
     // Page "Règlement intérieur"
     public function rules(): void
     {
-        $this->renderer->render('rules', [
+        $this->renderer->render('static/rules', [
             'pageTitle' => 'Règlement intérieur — Toile',
         ]);
     }
@@ -125,7 +136,7 @@ class HomeController
     // Page "Qui sommes-nous ?"
     public function about(): void
     {
-        $this->renderer->render('about', [
+        $this->renderer->render('static/about', [
             'pageTitle' => 'Qui sommes-nous ? — Toile',
         ]);
     }
@@ -133,7 +144,7 @@ class HomeController
     // Page "Conditions générales de vente"
     public function salesTerms(): void
     {
-        $this->renderer->render('sales-terms', [
+        $this->renderer->render('static/sales-terms', [
             'pageTitle' => 'Conditions générales de vente — Toile',
         ]);
     }

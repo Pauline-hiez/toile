@@ -14,10 +14,9 @@
  */
 $pageTitle = 'Ma boutique — Toile';
 
-// Ratio de la forme découpée (public/assets/images/decor/crop-banniere.png,
-// 579×226 après recadrage à sa bounding box) — pilote à la fois le crop
-// interactif (Cropper.js) et l'affichage (classe .shop-banner-shape).
-$bannerShapeRatio = '579 / 226';
+// Ratio du cadre bannière — pilote à la fois le crop interactif
+// (Cropper.js) et l'affichage (classe .shop-banner-frame).
+$bannerShapeRatio = '579 / 160';
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
@@ -103,13 +102,13 @@ $bannerShapeRatio = '579 / 226';
             <img id="bannerPreviewImg"
                 src="<?= !empty($shop['banner']) ? '/uploads/banners/' . htmlspecialchars($shop['banner']) : '' ?>"
                 alt="Bannière"
-                class="w-full aspect-[<?= $bannerShapeRatio ?>] object-cover shop-banner-shape mb-3 <?= empty($shop['banner']) ? 'hidden' : '' ?>">
+                class="w-full aspect-[<?= $bannerShapeRatio ?>] object-cover shop-banner-frame mb-3 <?= empty($shop['banner']) ? 'hidden' : '' ?>">
 
             <label class="btn btn--primary cursor-pointer inline-block">
                 <span id="bannerUploadLabel"><?= !empty($shop['banner']) ? 'Modifier ma bannière' : 'Ajouter une bannière' ?></span>
                 <input type="file" id="bannerInput" name="banner" accept="image/jpeg,image/png,image/webp" class="hidden">
             </label>
-            <p class="text-[0.8rem] text-muted mt-1">Positionne ton image pour qu'elle s'adapte bien à la découpe.</p>
+            <p class="text-[0.8rem] text-muted mt-1">Positionne ton image pour qu'elle s'adapte bien au cadre.</p>
             <?php if (isset($errors['banner'])): ?>
                 <p class="text-danger text-[0.8rem] mt-1"><?= htmlspecialchars($errors['banner']) ?></p>
             <?php endif; ?>
@@ -224,11 +223,10 @@ $bannerShapeRatio = '579 / 226';
 <div id="bannerCropModal" class="hidden fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
     <div class="bg-white rounded-md p-5 max-w-[640px] w-full shadow-sm">
         <h3 class="text-base font-semibold text-ink mb-1">Recadre ta bannière</h3>
-        <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour qu'elle s'adapte bien à la découpe (aperçu en filigrane).</p>
+        <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour qu'elle s'adapte bien au cadre.</p>
 
         <div id="bannerCropWrapper" class="relative w-full aspect-[<?= $bannerShapeRatio ?>] bg-bg overflow-hidden mb-4">
             <img id="bannerCropImage" src="" alt="" class="block max-w-full">
-            <img src="/assets/images/decor/crop-banniere.png" alt="" class="absolute inset-0 w-full h-full pointer-events-none opacity-90 z-10">
         </div>
 
         <div class="flex justify-end gap-3">
@@ -261,7 +259,7 @@ $bannerShapeRatio = '579 / 226';
             cropImage.onload = function () {
                 if (cropper) cropper.destroy();
                 cropper = new Cropper(cropImage, {
-                    aspectRatio: 579 / 226,
+                    aspectRatio: 579 / 160,
                     viewMode: 1,
                     dragMode: 'move',
                     autoCropArea: 1,
@@ -289,7 +287,7 @@ $bannerShapeRatio = '579 / 226';
         confirmBtn.addEventListener('click', function () {
             if (!cropper) return;
 
-            cropper.getCroppedCanvas({ width: 1158, height: 452 }).toBlob(function (blob) {
+            cropper.getCroppedCanvas({ width: 1158, height: 320 }).toBlob(function (blob) {
                 var croppedFile = new File([blob], 'banner.png', { type: 'image/png' });
                 var dt = new DataTransfer();
                 dt.items.add(croppedFile);

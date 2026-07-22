@@ -62,6 +62,9 @@ $router->map('POST', '/profile/password', [
     ],
 ]);
 
+// Profil public (accessible sans connexion)
+$router->map('GET', '/profil/[i:id]', ['App\Controllers\UserController', 'publicProfile']);
+
 // Devenir artiste
 $router->map('GET', '/become-artist', [
     'controller' => ['App\Controllers\ArtistController', 'showRequest'],
@@ -407,6 +410,14 @@ $router->map('POST', '/admin/artist-requests/[i:id]/reject', [
 
 $router->map('GET', '/admin/category-requests', [
     'controller' => ['App\Controllers\AdminController', 'categoryRequests'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/category-requests', [
+    'controller' => ['App\Controllers\AdminController', 'submitCategoryRequest'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

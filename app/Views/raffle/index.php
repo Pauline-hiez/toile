@@ -66,7 +66,7 @@ $steps = [
     <img src="/assets/images/decor/tirage-page.png" alt="" class="hidden min-[1200px]:block absolute -right-16 top-56 w-[260px] h-auto opacity-90 z-10 -scale-x-100">
 
     <div class="text-center mb-10">
-        <h1 class="font-title text-title text-[2.6rem] min-[641px]:text-[3.2rem] leading-none mb-2">Tirage au sort</h1>
+        <h1 class="font-title text-title text-shine text-[2.6rem] min-[641px]:text-[3.2rem] leading-none mb-2">Tirage au sort</h1>
         <p class="font-cursive text-primary text-[0.95rem] font-semibold">2 tirages au sort sont organisés chaque mois.</p>
     </div>
 

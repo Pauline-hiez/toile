@@ -50,7 +50,7 @@ $sections = [
     <img src="/assets/images/decor/tache7.png" alt="" style="width: 250px; top: 68%; right: -76px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-30 -z-10">
     <img src="/assets/images/decor/plante7.png" alt="" style="width: 145px; top: 71%; right: -40px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-90 -z-10">
 
-    <h1 class="font-title text-title text-[2rem] min-[641px]:text-[2.4rem] text-center mb-2">Règlement intérieur</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] min-[641px]:text-[2.4rem] text-center mb-2">Règlement intérieur</h1>
     <p class="text-center text-muted text-[0.85rem] mb-10">Dernière mise à jour&nbsp;: <?= \App\Core\FrenchDate::format('d MMMM y', date('Y-m-d')) ?></p>
 
     <div class="bg-white border border-border rounded-md shadow-sm p-6 min-[641px]:p-10 flex flex-col gap-8">

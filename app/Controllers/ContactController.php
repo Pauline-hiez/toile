@@ -17,7 +17,7 @@ class ContactController
     // Page de contact complète (dégradation sans JS de la modale globale)
     public function index(): void
     {
-        $this->renderer->render('contact', [
+        $this->renderer->render('static/contact', [
             'pageTitle' => 'Contact — Toile',
         ]);
     }

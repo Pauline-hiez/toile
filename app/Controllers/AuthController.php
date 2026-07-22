@@ -66,7 +66,9 @@ class AuthController
         $html = \App\Core\Mailer::renderTemplate('welcome', [
             'username' => $username,
         ]);
-        \App\Core\Mailer::send($email, 'Bienvenue sur Toile !', $html, 'welcome');
+        \App\Core\Mailer::send($email, 'Bienvenue sur Toile !', $html, 'welcome', [
+            'email-illustration' => __DIR__ . '/../../public/assets/images/decor/emails.png',
+        ]);
 
         header('Location: /login');
         exit;
@@ -218,7 +220,8 @@ class AuthController
                 $user['email'],
                 'Réintialisation de ton mot de passe',
                 $html,
-                'reset-password'
+                'reset-password',
+                ['email-illustration' => __DIR__ . '/../../public/assets/images/decor/trousse.png']
             );
         }
 
@@ -352,7 +355,9 @@ class AuthController
             $html = \App\Core\Mailer::renderTemplate('welcome', [
                 'username' => $userInfo['name'],
             ]);
-            \App\Core\Mailer::send($userInfo['email'], 'Bienvenue sur Toile !', $html, 'welcome');
+            \App\Core\Mailer::send($userInfo['email'], 'Bienvenue sur Toile !', $html, 'welcome', [
+                'email-illustration' => __DIR__ . '/../../public/assets/images/decor/emails.png',
+            ]);
 
             session_regenerate_id(true);
             $_SESSION['user_id'] = $userId;

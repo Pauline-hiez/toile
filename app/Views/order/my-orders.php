@@ -10,7 +10,7 @@ $statusLabels = \App\Models\Order::statusLabels();
 ?>
 
 <div class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10">
-    <h1 class="text-center font-cursive text-[1.9rem] font-semibold text-ink mb-8">Mes commandes</h1>
+    <h1 class="font-title text-title text-shine text-center text-[1.9rem] font-semibold mb-8">Mes commandes</h1>
 
     <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
         <?php if (empty($orders)): ?>

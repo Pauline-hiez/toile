@@ -16,7 +16,7 @@ $pageTitle = 'Inscription confirmée — Toile';
         </svg>
     </div>
 
-    <h1 class="font-title text-title text-[2rem] mb-3">Inscription confirmée !</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] mb-3">Inscription confirmée !</h1>
 
     <p class="text-muted text-[0.9rem] leading-[1.6] mb-6">
         Ton ticket a bien été payé pour le tirage

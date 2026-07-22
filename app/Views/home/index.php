@@ -13,7 +13,7 @@ $pageTitle = 'Accueil — Toile';
 
 <section class="max-w-[1400px] mx-auto pt-6 pb-6 min-[641px]:pt-10 grid grid-cols-1 min-[1100px]:grid-cols-2 items-center gap-4">
     <div class="order-first min-[1100px]:order-none px-5 min-[641px]:px-10">
-        <h1 class="font-title text-title text-[2.8rem] min-[641px]:text-[3.8rem] leading-[1.15] mb-3">Donnez vie à<br>vos idées.</h1>
+        <h1 class="font-title text-title text-shine text-[2.8rem] min-[641px]:text-[3.8rem] leading-[1.15] mb-3">Donnez vie à<br>vos idées.</h1>
         <p class="font-title italic text-[1.6rem] text-primary mb-4">L'art n'attend que vous.</p>
         <p class="text-muted text-base leading-[1.6] max-w-[480px] mb-7">
             Toile est un marketplace de comissions artistiques

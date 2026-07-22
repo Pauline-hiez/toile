@@ -35,7 +35,7 @@ $values = [
     <img src="/assets/images/decor/tache8.png" alt="" style="width: 260px; bottom: -6%; right: -78px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-30 -z-10">
     <img src="/assets/images/decor/plante3.png" alt="" style="width: 150px; bottom: -2%; right: -42px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-90 -z-10">
 
-    <h1 class="font-title text-title text-[2rem] min-[641px]:text-[2.4rem] text-center mb-6">Qui sommes-nous&nbsp;?</h1>
+    <h1 class="font-title text-title text-shine text-[2rem] min-[641px]:text-[2.4rem] text-center mb-6">Qui sommes-nous&nbsp;?</h1>
 
     <p class="text-center text-ink text-[0.95rem] leading-relaxed max-w-[640px] mx-auto mb-14">
         Toile est né d'une conviction simple : les créations artistiques méritent d'être valorisées et rémunérées à leur juste prix, dans un cadre sécurisé et humain.
