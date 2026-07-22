@@ -1528,9 +1528,14 @@ class AdminController
 
     public function updateMaintenanceSettings(): void
     {
+        $maintenanceMode = isset($_POST['maintenance_mode']) ? '1' : '0';
+
         $this->settingModel->setMany([
-            'maintenance_mode' => isset($_POST['maintenance_mode']) ? '1' : '0',
-            'maintenance_message' => trim($_POST['maintenance_message'] ?? ''),
+            'maintenance_mode' => $maintenanceMode,
+            // Le message est vidé dès que le mode est désactivé, pour ne
+            // pas laisser un ancien message resurgir par erreur lors de
+            // la prochaine activation.
+            'maintenance_message' => $maintenanceMode === '1' ? trim($_POST['maintenance_message'] ?? '') : '',
         ]);
 
         header('Location: /admin/settings?section=maintenance&success=1');
