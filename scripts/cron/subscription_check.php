@@ -25,10 +25,16 @@ $planModel = new SubscriptionPlan();
 $freePlan = $planModel->findByName('Commission');
 
 $stmt = $pdo->prepare(
+    // stripe_subscription_id IS NOT NULL : les paliers gratuits et les
+    // paliers assignés manuellement par l'admin (voir
+    // ShopSubscription::assignFreePlan()/assignPlanManually()) n'ont
+    // rien à vérifier côté Stripe — sans ce filtre, Stripe\Subscription::retrieve(null)
+    // échoue à chaque exécution pour ces lignes-là.
     "SELECT ss.*, s.user_id, s.name AS shop_name
      FROM shop_subscription ss
      INNER JOIN shop s ON s.id = ss.shop_id
-     WHERE ss.status IN ('active', 'past_due')"
+     WHERE ss.status IN ('active', 'past_due')
+     AND ss.stripe_subscription_id IS NOT NULL"
 );
 $stmt->execute();
 $subscriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);

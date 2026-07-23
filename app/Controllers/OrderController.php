@@ -478,6 +478,10 @@ class OrderController
             $actor = 'artist';
         } elseif ($order['client_id'] === $userId) {
             $actor = 'client';
+        } elseif (($_SESSION['user_role'] ?? '') === 'admin') {
+            // Intervention en cas de litige (voir Order::getAllowedTransitions()
+            // — seule la transition vers 'cancelled' est ouverte à l'admin).
+            $actor = 'admin';
         } else {
             http_response_code(403);
             echo 'Accès refusé.';
@@ -598,7 +602,12 @@ class OrderController
                         '/commandes/' . $order['id']
                     );
                 } elseif ($newStatus === 'cancelled') {
-                    if (in_array($order['status'], ['accepted', 'in_progress'], true)) {
+                    // 'delivered' inclus : le paiement a déjà été capturé
+                    // à l'acceptation, il faut rembourser (cancelPaymentIntent
+                    // échouerait sur un paiement déjà capturé) — chemin
+                    // nouvellement atteignable depuis que l'admin peut
+                    // forcer une annulation depuis 'delivered'.
+                    if (in_array($order['status'], ['accepted', 'in_progress', 'delivered'], true)) {
                         // Annulation après acceptation → remboursement.
                         $stripe->refundPaymentIntent($order['stripe_payment_intent_id']);
 
@@ -648,36 +657,39 @@ class OrderController
 
         $this->orderModel->update($order['id'], $updateData);
 
-        // Notifie l'autre partie du changement de statut.
-        $recipientId = $actor === 'artist'
-            ? $order['client_id']
-            : $order['shop_owner_id'];
+        // Notifie l'autre partie du changement de statut — les deux
+        // parties si c'est l'admin qui force la transition (ni l'artiste
+        // ni le client n'ont demandé ce changement, aucune des deux n'est
+        // "l'autre").
+        $recipientIds = $actor === 'admin'
+            ? array_unique([$order['client_id'], $order['shop_owner_id']])
+            : [$actor === 'artist' ? $order['client_id'] : $order['shop_owner_id']];
 
-        $this->notificationModel->notify(
-            $recipientId,
-            'order_status',
-            'Commande #' . $order['id'] . ' : ' . \App\Core\OrderStatus::label($newStatus),
-            '/commandes/' . $order['id']
-        );
-
-        $recipient = $actor === 'artist'
-            ? $this->userModel->findById($order['client_id'])
-            : $this->userModel->findById($order['shop_owner_id']);
-
-        if ($recipient) {
-            $html = \App\Core\Mailer::renderTemplate('order-status', [
-                'username' => $recipient['username'],
-                'orderId' => $order['id'],
-                'orderTitle' => $order['title'],
-                'statusLabel' => \App\Core\OrderStatus::label($newStatus),
-            ]);
-            \App\Core\Mailer::send(
-                $recipient['email'],
-                'Commande #' . $order['id'] . ' — ' . \App\Core\OrderStatus::label($newStatus),
-                $html,
+        foreach ($recipientIds as $recipientId) {
+            $this->notificationModel->notify(
+                $recipientId,
                 'order_status',
-                ['email-illustration' => __DIR__ . '/../../public/assets/images/decor/boite.png']
+                'Commande #' . $order['id'] . ' : ' . \App\Core\OrderStatus::label($newStatus),
+                '/commandes/' . $order['id']
             );
+
+            $recipient = $this->userModel->findById($recipientId);
+
+            if ($recipient) {
+                $html = \App\Core\Mailer::renderTemplate('order-status', [
+                    'username' => $recipient['username'],
+                    'orderId' => $order['id'],
+                    'orderTitle' => $order['title'],
+                    'statusLabel' => \App\Core\OrderStatus::label($newStatus),
+                ]);
+                \App\Core\Mailer::send(
+                    $recipient['email'],
+                    'Commande #' . $order['id'] . ' — ' . \App\Core\OrderStatus::label($newStatus),
+                    $html,
+                    'order_status',
+                    ['email-illustration' => __DIR__ . '/../../public/assets/images/decor/boite.png']
+                );
+            }
         }
 
         header('Location: /commandes/' . $order['id']);

@@ -99,26 +99,36 @@ class Order extends BaseModel
         return [
             'pending' => [
                 'artist' => ['accepted', 'rejected'],
+                // L'admin peut forcer une annulation en cas de litige,
+                // depuis n'importe quel statut actif (voir
+                // OrderController::transition() pour la détection de
+                // l'acteur 'admin' et la notification des deux parties).
+                'admin' => ['cancelled'],
             ],
             'quote_requested' => [
                 'artist' => ['price_proposed', 'rejected'],
+                'admin' => ['cancelled'],
             ],
             // L'acceptation du prix proposé ne passe pas par cette map :
             // elle nécessite un paiement Stripe (voir
             // OrderController::payQuote()), pas une simple transition.
             'price_proposed' => [
                 'client' => ['rejected'],
+                'admin' => ['cancelled'],
             ],
             'accepted' => [
                 'artist' => ['in_progress', 'cancelled'],
                 'client' => ['cancelled'],
+                'admin' => ['cancelled'],
             ],
             'in_progress' => [
                 'artist' => ['delivered', 'cancelled'],
+                'admin' => ['cancelled'],
             ],
             'delivered' => [
                 'client' => ['completed'],
-                'artist' => ['in_progress']
+                'artist' => ['in_progress'],
+                'admin' => ['cancelled'],
             ],
         ];
     }

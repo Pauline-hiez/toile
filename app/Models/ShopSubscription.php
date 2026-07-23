@@ -14,10 +14,11 @@ class ShopSubscription extends BaseModel
     public function findByIdWithShop(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT ss.*, s.name AS shop_name, s.slug AS shop_slug, u.username
+            'SELECT ss.*, s.name AS shop_name, s.slug AS shop_slug, s.user_id AS shop_owner_id, u.username, sp.name AS plan_name
              FROM shop_subscription ss
              INNER JOIN shop s ON s.id = ss.shop_id
              INNER JOIN users u ON u.id = s.user_id
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
              WHERE ss.id = :id'
         );
         $stmt->execute(['id' => $id]);
@@ -111,6 +112,19 @@ class ShopSubscription extends BaseModel
             $data['shop_id'] = $shopId;
             $this->create($data);
         }
+    }
+
+    /**
+     * Bascule forcée par l'admin vers un palier quelconque (support :
+     * correction, geste commercial), sans passer par Stripe — même
+     * mécanique que assignFreePlan() (pas de facturation, expiration
+     * lointaine), généralisée à un plan arbitraire plutôt qu'au seul
+     * palier gratuit. Voir AdminController::updateSubscriptionPlan(),
+     * qui annule d'abord l'abonnement Stripe existant s'il y en a un.
+     */
+    public function assignPlanManually(int $shopId, int $planId): void
+    {
+        $this->assignFreePlan($shopId, $planId);
     }
 
     // Retourne le taux de commission applicable pour une boutique, selon son plan actuel

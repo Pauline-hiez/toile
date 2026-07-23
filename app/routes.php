@@ -558,6 +558,22 @@ $router->map('GET', '/admin/subscriptions/[i:id]/invoices', [
     ],
 ]);
 
+$router->map('POST', '/admin/subscriptions/[i:id]/plan', [
+    'controller' => ['App\Controllers\AdminController', 'updateSubscriptionPlan'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/subscriptions/[i:id]/cancel', [
+    'controller' => ['App\Controllers\AdminController', 'cancelSubscription'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/subscriptions/autocomplete', [
     'controller' => ['App\Controllers\AdminController', 'subscriptionsAutocomplete'],
     'middlewares' => [

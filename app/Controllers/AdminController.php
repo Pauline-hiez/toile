@@ -748,6 +748,7 @@ class AdminController
             'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getSubscriptionStats(),
+            'plans' => $this->subscriptionPlanModel->findAll(),
             'pageTitle' => 'Abonnements - Administration',
             'pageHeading' => 'Abonnements',
             'pageSubtitle' => "Consultez et gérez l'ensemble des abonnements de la plateforme.",
@@ -1607,5 +1608,92 @@ class AdminController
             'pageHeading' => 'Factures d\'abonnement',
             'pageSubtitle' => $subscription['shop_name'],
         ], 'layouts/admin');
+    }
+
+    /**
+     * Bascule forcée d'une boutique vers un autre palier, sans passer par
+     * Stripe (POST /admin/subscriptions/[id]/plan) — geste de support
+     * (correction, compensation), voir ShopSubscription::assignPlanManually().
+     * L'éventuel abonnement Stripe existant est annulé au préalable pour
+     * ne pas laisser un double prélèvement actif en parallèle.
+     */
+    public function updateSubscriptionPlan(int $id): void
+    {
+        $subscription = $this->subscriptionModel->findByIdWithShop($id);
+        $newPlan = $this->subscriptionPlanModel->findById((int) ($_POST['plan_id'] ?? 0));
+
+        if ($subscription === null || $newPlan === null) {
+            http_response_code(404);
+            echo 'Abonnement ou palier introuvable.';
+            exit;
+        }
+
+        $this->cancelStripeSubscriptionSafely($subscription['stripe_subscription_id']);
+        $this->subscriptionModel->assignPlanManually($subscription['shop_id'], $newPlan['id']);
+
+        (new \App\Models\Notification())->notify(
+            $subscription['shop_owner_id'],
+            'subscription_price_changed',
+            'Ton abonnement a été mis à jour vers la formule ' . $newPlan['name'] . ' par un administrateur.',
+            '/my-subscription'
+        );
+
+        header('Location: /admin/subscriptions?success=1');
+        exit;
+    }
+
+    /**
+     * Annulation forcée par l'admin (POST /admin/subscriptions/[id]/cancel) —
+     * même mécanique que SubscriptionController::cancel() côté artiste :
+     * annule l'abonnement Stripe puis repasse la boutique sur le palier
+     * gratuit "Commission" (chaque boutique garde toujours un palier actif).
+     */
+    public function cancelSubscription(int $id): void
+    {
+        $subscription = $this->subscriptionModel->findByIdWithShop($id);
+
+        if ($subscription === null) {
+            http_response_code(404);
+            echo 'Abonnement introuvable.';
+            exit;
+        }
+
+        if ($subscription['plan_name'] !== 'Commission') {
+            $this->cancelStripeSubscriptionSafely($subscription['stripe_subscription_id']);
+
+            $freePlan = $this->subscriptionPlanModel->findByName('Commission');
+            if ($freePlan !== null) {
+                $this->subscriptionModel->assignPlanManually($subscription['shop_id'], $freePlan['id']);
+            }
+
+            (new \App\Models\Notification())->notify(
+                $subscription['shop_owner_id'],
+                'subscription_cancelled',
+                'Ton abonnement a été annulé par un administrateur. Tu es repassé·e en formule Commission (10%).',
+                '/my-subscription'
+            );
+        }
+
+        header('Location: /admin/subscriptions?success=1');
+        exit;
+    }
+
+    /**
+     * Annule un abonnement Stripe sans jamais bloquer l'action admin si
+     * Stripe échoue (déjà annulé côté Stripe, id invalide...) — même
+     * logique que SubscriptionController::cancelExistingStripeSubscription().
+     */
+    private function cancelStripeSubscriptionSafely(?string $stripeSubscriptionId): void
+    {
+        if ($stripeSubscriptionId === null) {
+            return;
+        }
+
+        try {
+            (new \App\Core\StripeService())->cancelSubscription($stripeSubscriptionId);
+        } catch (\Exception $e) {
+            // Rien à faire : l'important est de ne pas bloquer l'action
+            // admin si l'abonnement est déjà éteint côté Stripe.
+        }
     }
 }
