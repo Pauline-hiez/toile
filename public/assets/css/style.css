@@ -47,6 +47,17 @@ html {
     overflow-x: hidden;
 }
 
+/* Dissuasif contre la récupération des images (portfolios/illustrations
+   des artistes) : empêche le glisser-déposer et la sélection des images.
+   Le blocage du clic droit se fait en JS (voir image-protect.js). Ce n'est
+   pas une protection absolue (capture d'écran, outils dev...), juste un
+   frein au « clic droit -> Enregistrer » du visiteur ordinaire. */
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
 /* Coche/rond des cases à cocher et boutons radio en vert (couleur du
    site) plutôt que le bleu par défaut du navigateur — s'applique partout
    sauf override explicite (ex: accent-primary déjà posé à la main). */
@@ -1051,9 +1062,9 @@ body::before {
 
 .site-footer {
     position: relative;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     color: var(--color-footer-text);
-    padding-top: 1.25rem;
+    padding-top: 0.25rem;
     border-top: 1px solid rgba(23, 51, 27, 0.15);
 }
 
@@ -1062,7 +1073,7 @@ body::before {
     z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2.5rem 1rem;
+    padding: 0 2.5rem 0.5rem;
     display: grid;
     grid-template-columns: 1.3fr repeat(2, 0.8fr);
     align-items: start;
@@ -1070,8 +1081,8 @@ body::before {
 }
 
 .site-footer__logo img {
-    width: 170px;
-    height: 170px;
+    width: 128px;
+    height: 128px;
     display: block;
     border-radius: 50%;
     object-fit: cover;
@@ -1084,7 +1095,7 @@ body::before {
     font-size: 0.85rem;
     color: var(--color-footer-text);
     opacity: 0.75;
-    margin-top: 0.4rem;
+    margin-top: 0.2rem;
 }
 
 .site-footer__col h4 {

@@ -17,7 +17,7 @@ $steps = [
 ];
 ?>
 
-<section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:pt-2 min-[641px]:pb-10">
+<section class="max-w-[1400px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:pt-14 min-[641px]:pb-10">
     <div class="grid grid-cols-1 min-[1100px]:grid-cols-[1.4fr_1fr] items-start gap-10 mb-10">
         <div class="min-w-0">
             <h1 class="font-title text-shine text-[2.1rem] min-[641px]:text-[3.4rem] font-semibold text-title leading-none mb-4">Devenir Artiste</h1>

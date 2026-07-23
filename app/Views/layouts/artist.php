@@ -165,7 +165,7 @@ $navIcons = [
                                     <a href="/">Accueil</a>
                                     <a href="/profile">Profil</a>
                                     <?php if ($artistShop): ?>
-                                        <a href="/my-shop">Ma boutique</a>
+                                        <a href="/boutiques/<?= htmlspecialchars($artistShop['slug']) ?>">Ma boutique</a>
                                     <?php endif; ?>
                                     <hr>
                                     <a href="/logout">Se déconnecter</a>
@@ -191,6 +191,7 @@ $navIcons = [
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
     <script src="/assets/js/notif-dropdown.js"></script>
+    <script src="/assets/js/image-protect.js"></script>
 </body>
 
 </html>

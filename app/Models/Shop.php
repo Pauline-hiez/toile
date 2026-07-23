@@ -173,9 +173,14 @@ class Shop extends BaseModel
 
         $params['current_month'] = date('Y-m');
 
-        // Recherche textuelle multi-mots-clés sur le nom de la boutique.
+        // Recherche textuelle multi-mots-clés sur le nom de la boutique ET
+        // ses styles/types. Les styles/types sont des colonnes JSON stockées
+        // en texte (ex: ["anime","chibi"]), donc un LIKE '%anime%' les
+        // retrouve — indispensable pour que l'autocomplétion, qui suggère
+        // aussi des styles/types, renvoie bien des résultats quand on en
+        // sélectionne un (sinon "anime" ne matchait que shop.name).
         if (!empty($filters['q'])) {
-            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['shop.name'], 'q');
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['shop.name', 'shop.styles', 'shop.types'], 'q');
             if ($keyword['sql'] !== '') {
                 $sql .= ' AND ' . $keyword['sql'];
                 $params = array_merge($params, $keyword['params']);

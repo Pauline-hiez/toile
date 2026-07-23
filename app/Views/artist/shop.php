@@ -289,7 +289,10 @@ $bannerShapeRatio = '579 / 160';
 <?php endif; ?>
 
 <?php if ($shop === null): ?>
-    <p class="text-[0.85rem] text-muted mb-5">Configure ta boutique pour qu'elle apparaisse sur Toile.</p>
+    <?php // mt-16 : compense le -mb-10 de la bannière (layout artiste) — sans
+          // onglets ni avatar pour le faire dans la vue création, le contenu
+          // remonterait sinon sur la bannière. ?>
+    <p class="text-[0.85rem] text-muted mt-16 mb-6">Configure ta boutique pour qu'elle apparaisse sur Toile.</p>
 <?php endif; ?>
 
 <form method="POST" action="/my-shop" enctype="multipart/form-data">
