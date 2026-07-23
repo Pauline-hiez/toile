@@ -550,7 +550,7 @@ class OrderController
                     // Artiste accepte → on capture (débit effectif).
                     // Calcule et enregistre la commission.
                     $commissionRate = $this->subscriptionModel->getCommissionRate($order['shop_id']);
-                    $commissionAmount = (int) round($order['total_price'] * $commissionRate / 100);
+                    $commissionAmount = \App\Core\Commission::calculateAmount($order['total_price'], $commissionRate);
 
                     // Met à jour la commande avec les infos de commission
                     // avant la capture — pour avoir une trace même si
