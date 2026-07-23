@@ -18,6 +18,9 @@ $wrapClass = $isArtist
     : 'max-w-[700px] mx-auto px-5 py-8 min-[641px]:px-10 min-[641px]:py-10 relative';
 ?>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
 <div class="<?= $wrapClass ?>">
     <?php if (!$isArtist): ?>
         <img src="/assets/images/decor/tache7.png" alt="" style="width: 240px; top: 2%; right: -78px" class="hidden min-[1024px]:block absolute h-auto pointer-events-none select-none opacity-30 -z-10">
@@ -179,19 +182,36 @@ $wrapClass = $isArtist
     </div>
 </div>
 
+<dialog id="avatarCropModal" class="auth-modal">
+    <div class="bg-white rounded-md p-5 shadow-sm">
+        <h3 class="text-base font-semibold text-ink mb-1">Recadre ton avatar</h3>
+        <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour bien centrer le sujet — c'est ce cadrage qui sera utilisé.</p>
+
+        <div class="relative w-full h-[420px] bg-bg overflow-hidden mb-4">
+            <img id="avatarCropImage" src="" alt="" class="block max-w-full">
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button type="button" id="avatarCropCancel" class="btn btn--outline">Annuler</button>
+            <button type="button" id="avatarCropConfirm" class="btn btn--primary">Valider le cadrage</button>
+        </div>
+    </div>
+</dialog>
+
+<script src="/assets/js/image-crop.js"></script>
 <script>
-    (function () {
-        var fileInput = document.getElementById('avatarInput');
-        var previewImg = document.getElementById('avatarPreviewImg');
-        var objectUrl = null;
-
-        fileInput.addEventListener('change', function () {
-            var file = fileInput.files[0];
-            if (!file) return;
-
-            if (objectUrl) URL.revokeObjectURL(objectUrl);
-            objectUrl = URL.createObjectURL(file);
-            previewImg.src = objectUrl;
-        });
-    })();
+    // Avatar carré (aspectRatio 1). Le recadrage met à jour l'aperçu
+    // (#avatarPreviewImg) et remplace le fichier envoyé par la version
+    // recadrée — même système que les bannières / visuels de style.
+    setupImageCrop({
+        fileInputId: 'avatarInput',
+        modalId: 'avatarCropModal',
+        imageId: 'avatarCropImage',
+        confirmId: 'avatarCropConfirm',
+        cancelId: 'avatarCropCancel',
+        previewId: 'avatarPreviewImg',
+        aspectRatio: 1,
+        outputWidth: 400,
+        outputHeight: 400,
+    });
 </script>

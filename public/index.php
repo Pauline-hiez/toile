@@ -32,7 +32,10 @@ header("Content-Security-Policy: "
     . "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://js.stripe.com; "
     . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
     . "font-src 'self' https://fonts.gstatic.com; "
-    . "img-src 'self' data: https:; "
+    // blob: nécessaire pour les aperçus d'image et le recadrage Cropper.js,
+    // qui affichent des images via URL.createObjectURL() (URL blob:) — avatar,
+    // bannières, visuels de style (voir image-crop.js / profile.php).
+    . "img-src 'self' data: https: blob:; "
     . "connect-src 'self' https://api.stripe.com; "
     . "frame-src https://js.stripe.com; "
     . "frame-ancestors 'self'; "

@@ -65,6 +65,7 @@ $siteFavicon = $settingModel->get('site_favicon');
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
     <script src="/assets/js/search-autocomplete.js"></script>
+    <script src="/assets/js/image-protect.js"></script>
 </body>
 
 </html>

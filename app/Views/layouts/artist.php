@@ -191,6 +191,7 @@ $navIcons = [
     <script src="/assets/js/input-sparks.js"></script>
     <script src="/assets/js/contact-modal.js"></script>
     <script src="/assets/js/notif-dropdown.js"></script>
+    <script src="/assets/js/image-protect.js"></script>
 </body>
 
 </html>

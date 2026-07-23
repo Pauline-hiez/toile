@@ -47,6 +47,17 @@ html {
     overflow-x: hidden;
 }
 
+/* Dissuasif contre la récupération des images (portfolios/illustrations
+   des artistes) : empêche le glisser-déposer et la sélection des images.
+   Le blocage du clic droit se fait en JS (voir image-protect.js). Ce n'est
+   pas une protection absolue (capture d'écran, outils dev...), juste un
+   frein au « clic droit -> Enregistrer » du visiteur ordinaire. */
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
 /* Coche/rond des cases à cocher et boutons radio en vert (couleur du
    site) plutôt que le bleu par défaut du navigateur — s'applique partout
    sauf override explicite (ex: accent-primary déjà posé à la main). */
