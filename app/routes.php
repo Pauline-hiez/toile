@@ -228,10 +228,14 @@ $router->map('POST', '/boutiques/[*:slug]/devis', [
     ],
 ]);
 
+// Autocomplétion de la recherche publique (déclarée avant la route à slug
+// générique ci-dessous, sinon [*:slug] intercepterait "/boutiques/autocomplete").
+$router->map('GET', '/boutiques/autocomplete', ['App\Controllers\ShopController', 'autocomplete']);
+
 // Boutique
 $router->map('GET', '/boutiques/[*:slug]', ['App\Controllers\ShopController', 'show']);
 
-// Recherche 
+// Recherche
 $router->map('GET', '/boutiques', ['App\Controllers\ShopController', 'search']);
 
 // Tunnel de commande
@@ -300,6 +304,24 @@ $router->map('GET', '/commandes/[i:id]/confirmer-devis', [
 // Suivi de commande
 $router->map('GET', '/commandes/[i:id]', [
     'controller' => ['App\Controllers\OrderController', 'show'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Facture PDF de la commande (artiste propriétaire + admin uniquement,
+// vérifié dans InvoiceController — pas de restriction de rôle ici car un
+// admin peut aussi être artiste sur un autre compte).
+$router->map('GET', '/commandes/[i:id]/facture', [
+    'controller' => ['App\Controllers\InvoiceController', 'orderInvoice'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Facture PDF d'un paiement d'abonnement (artiste propriétaire + admin).
+$router->map('GET', '/factures/abonnement/[i:id]', [
+    'controller' => ['App\Controllers\InvoiceController', 'subscriptionInvoice'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
     ],
@@ -464,6 +486,14 @@ $router->map('GET', '/admin/shops', [
     ],
 ]);
 
+$router->map('GET', '/admin/shops/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'shopsAutocomplete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('POST', '/admin/shops/[i:id]/delete', [
     'controller' => ['App\Controllers\AdminController', 'deleteShop'],
     'middlewares' => [
@@ -482,6 +512,14 @@ $router->map('POST', '/admin/shops/[i:id]/toggle', [
 
 $router->map('GET', '/admin/orders', [
     'controller' => ['App\Controllers\AdminController', 'orders'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/orders/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'ordersAutocomplete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -512,6 +550,38 @@ $router->map('GET', '/admin/subscriptions', [
     ],
 ]);
 
+$router->map('GET', '/admin/subscriptions/[i:id]/invoices', [
+    'controller' => ['App\Controllers\AdminController', 'subscriptionInvoices'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/subscriptions/[i:id]/plan', [
+    'controller' => ['App\Controllers\AdminController', 'updateSubscriptionPlan'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/subscriptions/[i:id]/cancel', [
+    'controller' => ['App\Controllers\AdminController', 'cancelSubscription'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/subscriptions/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'subscriptionsAutocomplete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/raffle', [
     'controller' => ['App\Controllers\AdminController', 'raffle'],
     'middlewares' => [
@@ -520,8 +590,24 @@ $router->map('GET', '/admin/raffle', [
     ],
 ]);
 
+$router->map('GET', '/admin/raffle/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'raffleAutocomplete'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/reports', [
     'controller' => ['App\Controllers\AdminController', 'reports'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/reports/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'reportsAutocomplete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -616,6 +702,14 @@ $router->map('POST', '/admin/settings/maintenance', [
     ],
 ]);
 
+$router->map('POST', '/admin/settings/invoicing', [
+    'controller' => ['App\Controllers\AdminController', 'updateInvoiceSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('POST', '/admin/settings/homepage-styles', [
     'controller' => ['App\Controllers\AdminController', 'updateHomepageStylesSettings'],
     'middlewares' => [
@@ -626,6 +720,14 @@ $router->map('POST', '/admin/settings/homepage-styles', [
 
 $router->map('GET', '/admin/users', [
     'controller' => ['App\Controllers\AdminController', 'users'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('GET', '/admin/users/autocomplete', [
+    'controller' => ['App\Controllers\AdminController', 'usersAutocomplete'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
@@ -714,6 +816,11 @@ $router->map('POST', '/my-subscription/confirm-free', [
         fn() => \App\Middleware\RoleMiddleware::handle(['artist']),
     ],
 ]);
+
+// Webhook Stripe (appelé par Stripe, pas par un navigateur — pas de
+// session/CSRF ; exempté explicitement dans CsrfMiddleware et le mode
+// maintenance, voir public/index.php).
+$router->map('POST', '/webhooks/stripe', ['App\Controllers\StripeWebhookController', 'handle']);
 
 // Paiements artiste (Stripe Connect)
 $router->map('GET', '/my-payouts', [

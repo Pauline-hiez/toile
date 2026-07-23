@@ -14,6 +14,7 @@ use App\Models\RaffleEntry;
 use App\Models\Report;
 use App\Models\Setting;
 use App\Models\CategoryRequest;
+use App\Models\SubscriptionInvoice;
 
 class AdminController
 {
@@ -28,6 +29,7 @@ class AdminController
     private Report $reportModel;
     private Setting $settingModel;
     private CategoryRequest $categoryRequestModel;
+    private SubscriptionInvoice $invoiceModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -42,6 +44,7 @@ class AdminController
         $this->reportModel = new Report();
         $this->settingModel = new Setting();
         $this->categoryRequestModel = new CategoryRequest();
+        $this->invoiceModel = new SubscriptionInvoice();
     }
 
     /**
@@ -86,7 +89,7 @@ class AdminController
             'commissionsChart' => $commissionsChart,
             'subscriptionsChart' => $subscriptionsChart,
             'raffleChart' => $raffleChart,
-            'totalRevenueChart' => $this->sumSeries([$commissionsChart, $subscriptionsChart, $raffleChart]),
+            'totalRevenueChart' => \App\Core\ChartHelper::sumSeries([$commissionsChart, $subscriptionsChart, $raffleChart]),
             'pageTitle' => 'Statistiques - Administration',
             'pageHeading' => 'Statistiques',
             'pageSubtitle' => "Suis l'évolution de l'activité de la plateforme dans le temps.",
@@ -240,7 +243,7 @@ class AdminController
      */
     private function getActivityChartData(int $days = 14): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COUNT(*) AS total
              FROM orders
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
@@ -252,7 +255,7 @@ class AdminController
     // Nombre d'inscriptions par jour (page Statistiques).
     private function getSignupsChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COUNT(*) AS total
              FROM users
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
@@ -264,7 +267,7 @@ class AdminController
     // Revenus (montant total des commandes capturées) par jour (page Statistiques).
     private function getRevenueChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COALESCE(SUM(total_price), 0) / 100 AS total
              FROM orders
              WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')
@@ -278,7 +281,7 @@ class AdminController
     // Commissions perçues par la plateforme par jour (page Statistiques).
     private function getCommissionsChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COALESCE(SUM(commission_amount), 0) / 100 AS total
              FROM orders
              WHERE status IN ('accepted', 'in_progress', 'delivered', 'completed')
@@ -296,7 +299,7 @@ class AdminController
      */
     private function getRaffleRevenueChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(created_at) AS day, COALESCE(SUM(amount_paid), 0) / 100 AS total
              FROM raffle_entry
              WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
@@ -314,7 +317,7 @@ class AdminController
      */
     private function getSubscriptionRevenueChartData(int $days): array
     {
-        return $this->getDailySeries(
+        return \App\Core\ChartHelper::dailySeries(
             "SELECT DATE(ss.created_at) AS day, COALESCE(SUM(sp.price), 0) / 100 AS total
              FROM shop_subscription ss
              INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
@@ -325,54 +328,8 @@ class AdminController
         );
     }
 
-    /**
-     * Additionne plusieurs séries temporelles (même format labels/values,
-     * mêmes jours) point par point — utilisé pour "Revenus totaux
-     * plateforme" (commissions + abonnements + tirage au sort).
-     */
-    private function sumSeries(array $series): array
-    {
-        $labels = $series[0]['labels'] ?? [];
-        $values = array_fill(0, count($labels), 0.0);
-
-        foreach ($series as $s) {
-            foreach ($s['values'] as $i => $v) {
-                $values[$i] += $v;
-            }
-        }
-
-        return ['labels' => $labels, 'values' => array_map(fn($v) => round($v, 2), $values)];
-    }
-
-    /**
-     * Série temporelle jour par jour à partir d'une requête SQL fournie
-     * (doit retourner les colonnes day/total, avec un paramètre nommé
-     * :days) — comble les jours sans donnée à 0, pour que le graphique
-     * (voir admin-chart.js) ait toujours une courbe continue. $asFloat
-     * pour les montants (revenus/commissions), int par défaut (compteurs).
-     */
-    private function getDailySeries(string $sql, int $days, bool $asFloat = false): array
-    {
-        $pdo = \App\Core\Database::getInstance()->getConnection();
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue('days', $days - 1, \PDO::PARAM_INT);
-        $stmt->execute();
-
-        $countsByDay = array_column($stmt->fetchAll(), 'total', 'day');
-
-        $labels = [];
-        $values = [];
-
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = date('Y-m-d', strtotime("-{$i} days"));
-            $labels[] = date('d/m', strtotime($date));
-            $rawValue = $countsByDay[$date] ?? 0;
-            $values[] = $asFloat ? round((float) $rawValue, 2) : (int) $rawValue;
-        }
-
-        return ['labels' => $labels, 'values' => $values];
-    }
+    // sumSeries()/getDailySeries() ont été extraites vers App\Core\ChartHelper
+    // (réutilisées par ShopController pour les statistiques boutique côté artiste).
 
     // Liste des demandes artistes en attente
     public function artistRequests(): void
@@ -579,7 +536,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getShopStats(),
             'pageTitle' => 'Boutiques - Administration',
@@ -679,7 +636,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getOrderStats(),
             'pageTitle' => 'Commandes - Administration',
@@ -788,9 +745,10 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getSubscriptionStats(),
+            'plans' => $this->subscriptionPlanModel->findAll(),
             'pageTitle' => 'Abonnements - Administration',
             'pageHeading' => 'Abonnements',
             'pageSubtitle' => "Consultez et gérez l'ensemble des abonnements de la plateforme.",
@@ -862,7 +820,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getRaffleStats(),
             'boutiquesWinners' => $this->raffleModel->findSelectedBoutiquesThisMonth(),
@@ -940,7 +898,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'stats' => $this->getReportStats(),
             'pageTitle' => 'Signalements - Administration',
@@ -1086,7 +1044,7 @@ class AdminController
             'total' => $result['total'],
             'page' => $page,
             'perPage' => $perPage,
-            'pageNumbers' => $this->buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
+            'pageNumbers' => \App\Core\Paginator::buildPageNumbers($page, (int) ceil(max(1, $result['total']) / $perPage)),
             'filters' => $filters,
             'shopSlugsByUserId' => $shopSlugsByUserId,
             'stats' => $this->getUserStats(),
@@ -1102,20 +1060,66 @@ class AdminController
      *
      * @return array<int, int|string>
      */
-    private function buildPageNumbers(int $currentPage, int $totalPages): array
+    // buildPageNumbers() a été extraite vers App\Core\Paginator (réutilisée
+    // par RaffleController pour l'historique des tickets côté artiste).
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page
+     * Utilisateurs (et la barre de recherche globale de la sidebar admin,
+     * qui pointe toujours vers /admin/users).
+     */
+    public function usersAutocomplete(): void
     {
-        $totalPages = max(1, $totalPages);
-        $pages = [];
+        $this->respondSuggestions($this->userModel->findSuggestions(trim($_GET['q'] ?? '')));
+    }
 
-        for ($p = 1; $p <= $totalPages; $p++) {
-            if ($p === 1 || $p === $totalPages || abs($p - $currentPage) <= 1) {
-                $pages[] = $p;
-            } elseif (end($pages) !== '...') {
-                $pages[] = '...';
-            }
-        }
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Artistes.
+     */
+    public function shopsAutocomplete(): void
+    {
+        $this->respondSuggestions($this->shopModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
 
-        return $pages;
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Commandes.
+     */
+    public function ordersAutocomplete(): void
+    {
+        $this->respondSuggestions($this->orderModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Abonnements.
+     */
+    public function subscriptionsAutocomplete(): void
+    {
+        $this->respondSuggestions($this->subscriptionModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Signalements.
+     */
+    public function reportsAutocomplete(): void
+    {
+        $this->respondSuggestions($this->reportModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche de la page Tirage au sort.
+     */
+    public function raffleAutocomplete(): void
+    {
+        $this->respondSuggestions($this->raffleModel->findAdminSuggestions(trim($_GET['q'] ?? '')));
+    }
+
+    /**
+     * @param array<int, array{label: string, image: string|null}> $suggestions
+     */
+    private function respondSuggestions(array $suggestions): void
+    {
+        header('Content-Type: application/json');
+        echo json_encode(['suggestions' => $suggestions]);
     }
 
     /**
@@ -1533,15 +1537,163 @@ class AdminController
     {
         $maintenanceMode = isset($_POST['maintenance_mode']) ? '1' : '0';
 
+        $durationHours = max(0, (int) ($_POST['maintenance_duration_hours'] ?? 0));
+        $durationMinutes = max(0, (int) ($_POST['maintenance_duration_minutes'] ?? 0));
+        $totalDurationMinutes = $durationHours * 60 + $durationMinutes;
+
+        // Choix explicite de l'admin (boutons radio) plutôt que déduit du
+        // simple remplissage du champ date — voir admin/settings.php.
+        $triggerMode = ($_POST['maintenance_trigger'] ?? 'now') === 'scheduled' ? 'scheduled' : 'now';
+
+        // datetime-local envoie "YYYY-MM-DDTHH:MM" — converti au format
+        // stocké en base. "now" (ou date manquante malgré "scheduled") =
+        // déclenchement immédiat.
+        $startsAtInput = trim($_POST['maintenance_starts_at'] ?? '');
+        $startsAt = $triggerMode === 'scheduled' && $startsAtInput !== ''
+            ? str_replace('T', ' ', $startsAtInput) . ':00'
+            : date('Y-m-d H:i:s');
+
         $this->settingModel->setMany([
             'maintenance_mode' => $maintenanceMode,
-            // Le message est vidé dès que le mode est désactivé, pour ne
-            // pas laisser un ancien message resurgir par erreur lors de
-            // la prochaine activation.
-            'maintenance_message' => $maintenanceMode === '1' ? trim($_POST['maintenance_message'] ?? '') : '',
+            // Vidés dès que le mode est désactivé, pour ne pas laisser une
+            // ancienne programmation resurgir par erreur lors de la
+            // prochaine activation.
+            'maintenance_trigger_mode' => $maintenanceMode === '1' ? $triggerMode : '',
+            'maintenance_starts_at' => $maintenanceMode === '1' ? $startsAt : '',
+            'maintenance_duration_minutes' => $maintenanceMode === '1' ? (string) $totalDurationMinutes : '',
         ]);
 
         header('Location: /admin/settings?section=maintenance&success=1');
         exit;
+    }
+
+    /**
+     * Identité légale de l'entreprise, affichée sur les factures PDF
+     * (commandes et abonnements) — voir InvoiceController. Tous les champs
+     * sont facultatifs : une ligne vide n'est simplement pas affichée sur
+     * le PDF plutôt que de bloquer la sauvegarde.
+     */
+    public function updateInvoiceSettings(): void
+    {
+        $this->settingModel->setMany([
+            'company_name' => trim($_POST['company_name'] ?? ''),
+            'company_address' => trim($_POST['company_address'] ?? ''),
+            'company_siret' => trim($_POST['company_siret'] ?? ''),
+            'company_vat' => trim($_POST['company_vat'] ?? ''),
+        ]);
+
+        header('Location: /admin/settings?section=invoicing&success=1');
+        exit;
+    }
+
+    /**
+     * Historique des factures d'abonnement d'une boutique (GET
+     * /admin/subscriptions/[id]/invoices) — [id] est l'id de la ligne
+     * shop_subscription (voir admin/subscriptions.php), pas le shop_id.
+     */
+    public function subscriptionInvoices(int $id): void
+    {
+        $subscription = $this->subscriptionModel->findByIdWithShop($id);
+
+        if ($subscription === null) {
+            http_response_code(404);
+            echo 'Abonnement introuvable.';
+            exit;
+        }
+
+        $this->renderer->render('admin/subscription-invoices', [
+            'subscription' => $subscription,
+            'invoices' => $this->invoiceModel->findByShopId($subscription['shop_id']),
+            'pageTitle' => 'Factures — ' . $subscription['shop_name'] . ' — Administration',
+            'pageHeading' => 'Factures d\'abonnement',
+            'pageSubtitle' => $subscription['shop_name'],
+        ], 'layouts/admin');
+    }
+
+    /**
+     * Bascule forcée d'une boutique vers un autre palier, sans passer par
+     * Stripe (POST /admin/subscriptions/[id]/plan) — geste de support
+     * (correction, compensation), voir ShopSubscription::assignPlanManually().
+     * L'éventuel abonnement Stripe existant est annulé au préalable pour
+     * ne pas laisser un double prélèvement actif en parallèle.
+     */
+    public function updateSubscriptionPlan(int $id): void
+    {
+        $subscription = $this->subscriptionModel->findByIdWithShop($id);
+        $newPlan = $this->subscriptionPlanModel->findById((int) ($_POST['plan_id'] ?? 0));
+
+        if ($subscription === null || $newPlan === null) {
+            http_response_code(404);
+            echo 'Abonnement ou palier introuvable.';
+            exit;
+        }
+
+        $this->cancelStripeSubscriptionSafely($subscription['stripe_subscription_id']);
+        $this->subscriptionModel->assignPlanManually($subscription['shop_id'], $newPlan['id']);
+
+        (new \App\Models\Notification())->notify(
+            $subscription['shop_owner_id'],
+            'subscription_price_changed',
+            'Ton abonnement a été mis à jour vers la formule ' . $newPlan['name'] . ' par un administrateur.',
+            '/my-subscription'
+        );
+
+        header('Location: /admin/subscriptions?success=1');
+        exit;
+    }
+
+    /**
+     * Annulation forcée par l'admin (POST /admin/subscriptions/[id]/cancel) —
+     * même mécanique que SubscriptionController::cancel() côté artiste :
+     * annule l'abonnement Stripe puis repasse la boutique sur le palier
+     * gratuit "Commission" (chaque boutique garde toujours un palier actif).
+     */
+    public function cancelSubscription(int $id): void
+    {
+        $subscription = $this->subscriptionModel->findByIdWithShop($id);
+
+        if ($subscription === null) {
+            http_response_code(404);
+            echo 'Abonnement introuvable.';
+            exit;
+        }
+
+        if ($subscription['plan_name'] !== 'Commission') {
+            $this->cancelStripeSubscriptionSafely($subscription['stripe_subscription_id']);
+
+            $freePlan = $this->subscriptionPlanModel->findByName('Commission');
+            if ($freePlan !== null) {
+                $this->subscriptionModel->assignPlanManually($subscription['shop_id'], $freePlan['id']);
+            }
+
+            (new \App\Models\Notification())->notify(
+                $subscription['shop_owner_id'],
+                'subscription_cancelled',
+                'Ton abonnement a été annulé par un administrateur. Tu es repassé·e en formule Commission (10%).',
+                '/my-subscription'
+            );
+        }
+
+        header('Location: /admin/subscriptions?success=1');
+        exit;
+    }
+
+    /**
+     * Annule un abonnement Stripe sans jamais bloquer l'action admin si
+     * Stripe échoue (déjà annulé côté Stripe, id invalide...) — même
+     * logique que SubscriptionController::cancelExistingStripeSubscription().
+     */
+    private function cancelStripeSubscriptionSafely(?string $stripeSubscriptionId): void
+    {
+        if ($stripeSubscriptionId === null) {
+            return;
+        }
+
+        try {
+            (new \App\Core\StripeService())->cancelSubscription($stripeSubscriptionId);
+        } catch (\Exception $e) {
+            // Rien à faire : l'important est de ne pas bloquer l'action
+            // admin si l'abonnement est déjà éteint côté Stripe.
+        }
     }
 }

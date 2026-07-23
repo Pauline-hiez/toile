@@ -50,7 +50,6 @@ class RaffleController
             'homepageEntriesCount' => $this->raffleModel->countByTypeAndPeriod('homepage', $currentMonday),
             'nextBoutiquesDraw' => date('Y-m-d 00:00:00', strtotime('first day of next month')),
             'nextHomepageDraw' => date('Y-m-d 00:00:00', strtotime('next monday')),
-            'recentTickets' => $shop ? $this->raffleModel->findRecentByShopId($shop['id'], 6) : [],
             'recentWinners' => $this->raffleModel->findRecentWinners(6),
             'pageTitle' => 'Tirages au sort — Toile',
         ]);

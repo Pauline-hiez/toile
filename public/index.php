@@ -16,6 +16,31 @@ $dotenv->load();
 
 session_start();
 
+// Headers de sécurité HTTP, posés sur toutes les réponses. La CSP reste
+// permissive sur script-src/style-src ('unsafe-inline') car de nombreuses
+// vues du site s'appuient sur des <script>/style="" en ligne (config des
+// modales, graphiques, crop d'image...) — les retirer serait un chantier
+// à part entière. Elle limite quand même réellement la surface d'attaque :
+// seuls les domaines listés ci-dessous peuvent charger un script/une
+// police/une frame, tout le reste (y compris une exfiltration vers un
+// domaine arbitraire via connect-src) est bloqué par défaut.
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header("Content-Security-Policy: "
+    . "default-src 'self'; "
+    . "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://js.stripe.com; "
+    . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+    . "font-src 'self' https://fonts.gstatic.com; "
+    . "img-src 'self' data: https:; "
+    . "connect-src 'self' https://api.stripe.com; "
+    . "frame-src https://js.stripe.com; "
+    . "frame-ancestors 'self'; "
+    . "base-uri 'self'; "
+    . "form-action 'self'; "
+    . "object-src 'none';"
+);
+
 if (!isset($_SESSION['user_id']) && !empty($_COOKIE['remember_token'])) {
     $rememberTokenModel = new \App\Models\RememberToken();
     $rememberEntry = $rememberTokenModel->findValid($_COOKIE['remember_token']);
@@ -69,14 +94,27 @@ use App\Core\Renderer;
 
 $settingModel = new \App\Models\Setting();
 if ($settingModel->get('maintenance_mode', '0') === '1') {
+    // Le déclenchement peut être programmé pour plus tard (voir
+    // AdminController::updateMaintenanceSettings()) — tant que l'heure
+    // prévue n'est pas atteinte, le site reste accessible normalement.
+    $maintenanceStartsAt = $settingModel->get('maintenance_starts_at');
+    $hasMaintenanceStarted = !empty($maintenanceStartsAt) && strtotime($maintenanceStartsAt) <= time();
+
     $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $isAdmin = ($_SESSION['user_role'] ?? '') === 'admin';
-    $isExemptPath = in_array($requestPath, ['/login', '/logout'], true) || str_starts_with($requestPath, '/admin');
+    $isExemptPath = in_array($requestPath, ['/login', '/logout'], true)
+        || str_starts_with($requestPath, '/admin')
+        || str_starts_with($requestPath, '/webhooks/');
 
-    if (!$isAdmin && !$isExemptPath) {
+    if ($hasMaintenanceStarted && !$isAdmin && !$isExemptPath) {
+        $durationMinutes = (int) $settingModel->get('maintenance_duration_minutes', '0');
+        $endsAt = $durationMinutes > 0
+            ? date('Y-m-d H:i:s', strtotime($maintenanceStartsAt) + $durationMinutes * 60)
+            : null;
+
         http_response_code(503);
         (new Renderer(__DIR__ . '/../app/Views'))->render('errors/maintenance', [
-            'message' => $settingModel->get('maintenance_message') ?: 'Le site est actuellement en maintenance, merci de revenir un peu plus tard.',
+            'endsAt' => $endsAt,
             'pageTitle' => 'Maintenance — ' . $settingModel->get('site_name', 'Toile'),
         ], false);
         exit;

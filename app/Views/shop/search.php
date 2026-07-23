@@ -36,6 +36,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
             $searchStandalone = false;
             $searchValue = $filters['q'];
             $searchPlaceholder = 'Nom de la boutique...';
+            $searchAutocompleteUrl = '/boutiques/autocomplete';
             ?>
             <?php require __DIR__ . '/../components/search-bar.php'; ?>
 

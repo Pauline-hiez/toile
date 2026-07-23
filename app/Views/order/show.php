@@ -182,6 +182,12 @@ $stepIcons = [
                 <span class="text-[1rem] min-[481px]:text-[1.2rem] font-cursive font-semibold text-primary text-right"><?= $order['total_price'] > 0 ? number_format($order['total_price'] / 100, 2) . ' €' : 'À convenir avec l\'artiste' ?></span>
             </div>
 
+            <?php if ($actor !== 'client' && in_array($order['status'], ['accepted', 'in_progress', 'delivered', 'completed'], true)): ?>
+                <a href="/commandes/<?= (int) $order['id'] ?>/facture" class="btn btn--outline w-full justify-center mb-4">
+                    Télécharger la facture (PDF)
+                </a>
+            <?php endif; ?>
+
             <?php
             // Texte des boutons d'action : un verbe ("Refuser"), pas le
             // libellé du statut qui est un état ("Refusée") — utilisé

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\PasswordReset;
 use App\Models\RememberToken;
 use App\Core\GoogleAuth;
+use App\Core\RateLimiter;
 
 class AuthController
 {
@@ -43,6 +44,21 @@ class AuthController
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+        // Rate limiting par IP : protège contre la création massive de
+        // comptes (spam/bots), indépendamment de la validité des champs.
+        $ipIdentifier = 'ip:' . RateLimiter::clientIp();
+
+        if (RateLimiter::tooManyAttempts($ipIdentifier, 'register', 5, 60)) {
+            http_response_code(429);
+            $this->renderer->render('auth/register', [
+                'errors' => ['general' => 'Trop de tentatives d\'inscription. Réessaie dans une heure.'],
+                'old' => ['email' => $email, 'username' => $username],
+            ]);
+            return;
+        }
+
+        RateLimiter::hit($ipIdentifier, 'register');
 
         $errors = $this->validate($email, $username, $password, $passwordConfirm);
 
@@ -109,9 +125,28 @@ class AuthController
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
+        // Deux compteurs en parallèle : par email ciblé (protège un compte
+        // précis contre le bruteforce, même si l'attaquant change d'IP) et
+        // par IP (protège contre la pulvérisation sur de nombreux comptes
+        // depuis une seule source).
+        $emailIdentifier = 'email:' . strtolower($email);
+        $ipIdentifier = 'ip:' . RateLimiter::clientIp();
+
+        if (RateLimiter::tooManyAttempts($emailIdentifier, 'login', 5, 15)
+            || RateLimiter::tooManyAttempts($ipIdentifier, 'login', 20, 15)) {
+            http_response_code(429);
+            $this->renderer->render('auth/login', [
+                'error' => 'Trop de tentatives de connexion. Réessaie dans quelques minutes.',
+            ]);
+            return;
+        }
+
         $user = $this->userModel->findByEmail($email);
 
         if ($user === null || !password_verify($password, $user['password_hash'])) {
+            RateLimiter::hit($emailIdentifier, 'login');
+            RateLimiter::hit($ipIdentifier, 'login');
+
             $this->renderer->render('auth/login', [
                 'error' => 'Email ou mot de passe incorrect.',
             ]);
@@ -124,6 +159,9 @@ class AuthController
             ]);
             return;
         }
+
+        RateLimiter::clear($emailIdentifier, 'login');
+        RateLimiter::clear($ipIdentifier, 'login');
 
         session_regenerate_id(true);
 
@@ -202,6 +240,29 @@ class AuthController
     public function forgotPassword(): void
     {
         $email = trim($_POST['email'] ?? '');
+
+        // Par IP (volume global de demandes) et par email ciblé (protège
+        // un compte précis contre le spam de liens de réinitialisation) —
+        // enregistré avant toute recherche en base, qu'un compte existe ou
+        // non, pour ne pas laisser deviner l'existence d'un email via une
+        // différence de comportement du rate limiting.
+        $ipIdentifier = 'ip:' . RateLimiter::clientIp();
+        $emailIdentifier = 'email:' . strtolower($email);
+
+        if (RateLimiter::tooManyAttempts($ipIdentifier, 'forgot_password', 10, 60)
+            || RateLimiter::tooManyAttempts($emailIdentifier, 'forgot_password', 3, 60)) {
+            http_response_code(429);
+            $this->renderer->render('auth/forgot-password', [
+                'success' => null,
+                'error' => 'Trop de demandes. Réessaie dans quelques minutes.',
+                'pageTitle' => 'Mot de passe oublié - Toile',
+            ]);
+            return;
+        }
+
+        RateLimiter::hit($ipIdentifier, 'forgot_password');
+        RateLimiter::hit($emailIdentifier, 'forgot_password');
+
         $user = $this->userModel->findByEmail($email);
 
         $successMessage = 'Si un compte existe avec cet email, tu recevras un lien de réinitialisation.';

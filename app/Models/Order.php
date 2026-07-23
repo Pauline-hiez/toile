@@ -50,6 +50,30 @@ class Order extends BaseModel
         return (int) $stmt->fetchColumn();
     }
 
+    /**
+     * Chiffres clés "à vie" d'une boutique (onglet Statistiques de
+     * /my-shop) : nombre de commandes réellement honorées et revenu net
+     * (après commission plateforme) sur ces commandes — même filtre de
+     * statuts que les graphiques de revenus de l'admin.
+     */
+    public function getShopLifetimeStats(int $shopId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) AS total_orders,
+                    COALESCE(SUM(total_price - commission_amount), 0) AS net_revenue
+             FROM orders
+             WHERE shop_id = :shop_id
+             AND status IN ('accepted', 'in_progress', 'delivered', 'completed')"
+        );
+        $stmt->execute(['shop_id' => $shopId]);
+        $result = $stmt->fetch();
+
+        return [
+            'total_orders' => (int) $result['total_orders'],
+            'net_revenue' => (int) $result['net_revenue'],
+        ];
+    }
+
     public function findByIdWithDetails(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
@@ -75,26 +99,36 @@ class Order extends BaseModel
         return [
             'pending' => [
                 'artist' => ['accepted', 'rejected'],
+                // L'admin peut forcer une annulation en cas de litige,
+                // depuis n'importe quel statut actif (voir
+                // OrderController::transition() pour la détection de
+                // l'acteur 'admin' et la notification des deux parties).
+                'admin' => ['cancelled'],
             ],
             'quote_requested' => [
                 'artist' => ['price_proposed', 'rejected'],
+                'admin' => ['cancelled'],
             ],
             // L'acceptation du prix proposé ne passe pas par cette map :
             // elle nécessite un paiement Stripe (voir
             // OrderController::payQuote()), pas une simple transition.
             'price_proposed' => [
                 'client' => ['rejected'],
+                'admin' => ['cancelled'],
             ],
             'accepted' => [
                 'artist' => ['in_progress', 'cancelled'],
                 'client' => ['cancelled'],
+                'admin' => ['cancelled'],
             ],
             'in_progress' => [
                 'artist' => ['delivered', 'cancelled'],
+                'admin' => ['cancelled'],
             ],
             'delivered' => [
                 'client' => ['completed'],
-                'artist' => ['in_progress']
+                'artist' => ['in_progress'],
+                'admin' => ['cancelled'],
             ],
         ];
     }
@@ -140,10 +174,11 @@ class Order extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(o.title LIKE :q1 OR u.username LIKE :q2 OR s.name LIKE :q3)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
-            $params['q3'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['o.title', 'u.username', 's.name'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['status'])) {
@@ -199,6 +234,29 @@ class Order extends BaseModel
         $stmt->execute();
 
         return ['orders' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page Commandes).
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            // su : propriétaire de la boutique (avatar de la boutique) —
+            // distinct de u, le client de la commande.
+            'orders o
+             INNER JOIN users u ON u.id = o.client_id
+             INNER JOIN shop s ON s.id = o.shop_id
+             INNER JOIN users su ON su.id = s.user_id',
+            [
+                'o.title',
+                ['column' => 'u.username', 'avatarColumn' => 'u.avatar'],
+                ['column' => 's.name', 'avatarColumn' => 'su.avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 
     public function toggleArchived(int $id): bool

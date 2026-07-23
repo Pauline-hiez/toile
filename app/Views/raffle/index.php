@@ -15,7 +15,6 @@
  * @var int $homepageEntriesCount
  * @var string $nextBoutiquesDraw
  * @var string $nextHomepageDraw
- * @var array $recentTickets
  * @var array $recentWinners
  */
 
@@ -172,48 +171,30 @@ $steps = [
             <?php endforeach; ?>
         </div>
 
-        <div class="grid grid-cols-1 min-[768px]:grid-cols-2 gap-6">
-            <div class="bg-white border border-border rounded-2xl p-5 shadow-sm min-h-[160px]">
-                <h2 class="font-cursive text-[1.1rem] font-semibold text-ink mb-4">Mes derniers tickets</h2>
-                <?php if (empty($recentTickets)): ?>
-                    <p class="text-muted text-[0.85rem] text-center py-6">Tu n'as encore participé à aucun tirage.</p>
-                <?php else: ?>
-                    <div class="flex flex-col gap-2">
-                        <?php foreach ($recentTickets as $ticket): ?>
-                            <?php $info = $statusLabels[$ticket['status']] ?? ['label' => $ticket['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
-                            <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-sm bg-bg">
-                                <div>
-                                    <span class="text-[0.85rem] font-semibold block"><?= htmlspecialchars($typeLabels[$ticket['type']] ?? $ticket['type']) ?></span>
-                                    <span class="text-[0.75rem] text-muted"><?= htmlspecialchars($ticket['period']) ?></span>
-                                </div>
-                                <span class="<?= $info['class'] ?>"><?= htmlspecialchars($info['label']) ?></span>
+        <div class="bg-white border border-border rounded-2xl p-5 shadow-sm min-h-[160px] max-w-[560px] mx-auto">
+            <h2 class="font-cursive text-[1.1rem] font-semibold text-ink mb-4">Les derniers gagnants</h2>
+            <?php if (empty($recentWinners)): ?>
+                <p class="text-muted text-[0.85rem] text-center py-6">Aucun gagnant pour le moment.</p>
+            <?php else: ?>
+                <div class="flex flex-col gap-2">
+                    <?php foreach ($recentWinners as $winner): ?>
+                        <a href="/boutiques/<?= htmlspecialchars($winner['shop_slug']) ?>" class="flex items-center gap-3 py-2 px-3 rounded-sm bg-bg no-underline text-inherit transition-colors hover:bg-primary-light">
+                            <img class="w-9 h-9 rounded-full object-cover shrink-0" src="/uploads/avatars/<?= htmlspecialchars($winner['avatar'] ?: 'default.png') ?>" alt="">
+                            <div>
+                                <span class="text-[0.85rem] font-semibold block"><?= htmlspecialchars($winner['shop_name']) ?></span>
+                                <span class="text-[0.75rem] text-muted"><?= htmlspecialchars($typeLabels[$winner['type']] ?? $winner['type']) ?></span>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="bg-white border border-border rounded-2xl p-5 shadow-sm min-h-[160px]">
-                <h2 class="font-cursive text-[1.1rem] font-semibold text-ink mb-4">Les derniers gagnants</h2>
-                <?php if (empty($recentWinners)): ?>
-                    <p class="text-muted text-[0.85rem] text-center py-6">Aucun gagnant pour le moment.</p>
-                <?php else: ?>
-                    <div class="flex flex-col gap-2">
-                        <?php foreach ($recentWinners as $winner): ?>
-                            <a href="/boutiques/<?= htmlspecialchars($winner['shop_slug']) ?>" class="flex items-center gap-3 py-2 px-3 rounded-sm bg-bg no-underline text-inherit transition-colors hover:bg-primary-light">
-                                <img class="w-9 h-9 rounded-full object-cover shrink-0" src="/uploads/avatars/<?= htmlspecialchars($winner['avatar'] ?: 'default.png') ?>" alt="">
-                                <div>
-                                    <span class="text-[0.85rem] font-semibold block"><?= htmlspecialchars($winner['shop_name']) ?></span>
-                                    <span class="text-[0.75rem] text-muted"><?= htmlspecialchars($typeLabels[$winner['type']] ?? $winner['type']) ?></span>
-                                </div>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
+
+        <p class="text-center mt-8">
+            <a href="/my-shop?tab=raffle" class="text-primary text-[0.9rem] font-medium no-underline hover:underline">Voir l'historique de mes tickets →</a>
+        </p>
 
     <?php endif; ?>
 </section>
 
-<script src="/assets/js/admin-countdown.js"></script>
+<script src="/assets/js/admin-countdown.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-countdown.js') ?>"></script>

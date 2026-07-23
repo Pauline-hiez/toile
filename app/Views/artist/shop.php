@@ -11,6 +11,16 @@
  * @var array<int, string> $availableStyles Styles fixes + validés par l'admin (voir Shop::getAllStyles()).
  * @var array<int, string> $availableTypes Types fixes + validés par l'admin (voir Shop::getAllTypes()).
  * @var array $categoryRequests Demandes de style/type de cette boutique, toutes statuts confondus.
+ * @var string $tab 'infos'|'stats'|'raffle'
+ * @var int $days Période des graphiques de l'onglet Statistiques (14|30|90).
+ * @var array{labels: array, values: array}|null $revenueChart Revenu net (après commission) par jour — null si $shop est null.
+ * @var array{labels: array, values: array}|null $ordersChart Commandes par jour — null si $shop est null.
+ * @var array{total_orders: int, net_revenue: int}|null $lifetimeStats Chiffres à vie — null si $shop est null.
+ * @var array|null $raffleHistory Tickets de tirage au sort de la boutique (page courante) — null si $shop est null.
+ * @var int|null $raffleHistoryTotal
+ * @var int $rafflePage
+ * @var int $rafflePerPage
+ * @var array<int, int|string> $rafflePageNumbers
  */
 $pageTitle = 'Ma boutique — Toile';
 
@@ -27,6 +37,196 @@ $bannerShapeRatio = '579 / 160';
         <?= htmlspecialchars($success) ?>
     </div>
 <?php endif; ?>
+
+<?php if ($shop !== null): ?>
+    <nav class="flex items-center gap-2 mt-16 mb-6">
+        <a href="/my-shop?tab=infos" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'infos' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Ma boutique</a>
+        <a href="/my-shop?tab=stats" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'stats' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Statistiques</a>
+        <a href="/my-shop?tab=raffle" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'raffle' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Tirage au sort</a>
+        <a href="/my-shop?tab=invoices" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'invoices' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Factures</a>
+    </nav>
+<?php endif; ?>
+
+<?php if ($tab === 'invoices' && $shop !== null): ?>
+    <p class="text-[0.85rem] text-muted mb-4">
+        Historique des paiements de ton abonnement — la facture de chaque commande est disponible depuis son suivi de commande.
+    </p>
+
+    <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
+        <?php if (empty($subscriptionInvoices)): ?>
+            <p class="text-muted text-[0.85rem] text-center p-6">Aucune facture d'abonnement pour le moment.</p>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-[0.875rem] max-[560px]:min-w-[480px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2]">
+                    <thead>
+                        <tr>
+                            <th>Formule</th>
+                            <th>Période</th>
+                            <th>Payée le</th>
+                            <th>Montant</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($subscriptionInvoices as $invoice): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($invoice['plan_name']) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $invoice['period_start']) ?> — <?= \App\Core\FrenchDate::format('d MMM y', $invoice['period_end']) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $invoice['paid_at']) ?></td>
+                                <td><?= number_format($invoice['amount'] / 100, 2, ',', ' ') ?> €</td>
+                                <td><a href="/factures/abonnement/<?= (int) $invoice['id'] ?>" class="text-primary font-medium hover:underline">Télécharger (PDF)</a></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($tab === 'stats' && $shop !== null): ?>
+    <?php
+    $periods = [14 => '14 jours', 30 => '30 jours', 90 => '90 jours'];
+    $revenueTotal = array_sum($revenueChart['values']);
+    $ordersTotal = array_sum($ordersChart['values']);
+    ?>
+
+    <div class="grid grid-cols-2 min-[721px]:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= number_format($lifetimeStats['net_revenue'] / 100, 2, ',', ' ') ?> €</div>
+            <div class="font-cursive text-[0.9rem] text-success">Revenu total</div>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $lifetimeStats['total_orders'] ?></div>
+            <div class="font-cursive text-[0.9rem] text-success">Total commandes</div>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1">
+                <?= $ratingStats['count'] > 0 ? number_format($ratingStats['average'], 1) . ' ⭐' : '—' ?>
+            </div>
+            <div class="font-cursive text-[0.9rem] text-success"><?= $ratingStats['count'] > 0 ? $ratingStats['count'] . ' avis' : "Pas encore d'avis" ?></div>
+        </div>
+
+        <div class="bg-white border border-border rounded-2xl p-3 text-center shadow-sm max-w-[220px]">
+            <div class="font-cursive text-[1.7rem] font-bold text-success leading-none mb-1"><?= $favoriteCount ?></div>
+            <div class="font-cursive text-[0.9rem] text-success">Favoris</div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2 mb-6">
+        <?php foreach ($periods as $value => $label): ?>
+            <a href="/my-shop?tab=stats&days=<?= $value ?>"
+                class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $days === $value ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">
+                <?= htmlspecialchars($label) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
+    <p class="text-[0.8rem] text-muted mb-3">Totaux sur les <?= $days ?> derniers jours : <?= number_format($revenueTotal, 2, ',', ' ') ?> € · <?= $ordersTotal ?> commande(s)</p>
+
+    <div class="grid grid-cols-1 min-[1024px]:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+            <h2 class="text-base font-semibold mb-5 text-ink">Revenu net</h2>
+            <div class="relative min-h-[220px]"
+                data-admin-chart
+                data-labels="<?= htmlspecialchars(json_encode($revenueChart['labels']), ENT_QUOTES) ?>"
+                data-values="<?= htmlspecialchars(json_encode($revenueChart['values']), ENT_QUOTES) ?>"
+                data-suffix=" €"
+                role="img"
+                aria-label="Revenu net sur les <?= $days ?> derniers jours"
+            ></div>
+        </div>
+
+        <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+            <h2 class="text-base font-semibold mb-5 text-ink">Commandes</h2>
+            <div class="relative min-h-[220px]"
+                data-admin-chart
+                data-labels="<?= htmlspecialchars(json_encode($ordersChart['labels']), ENT_QUOTES) ?>"
+                data-values="<?= htmlspecialchars(json_encode($ordersChart['values']), ENT_QUOTES) ?>"
+                data-suffix=" commande(s)"
+                role="img"
+                aria-label="Commandes sur les <?= $days ?> derniers jours"
+            ></div>
+        </div>
+    </div>
+
+    <script src="/assets/js/admin-chart.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-chart.js') ?>"></script>
+<?php endif; ?>
+
+<?php if ($tab === 'raffle' && $shop !== null): ?>
+    <?php
+    $raffleStatusLabels = [
+        'entered' => ['label' => 'En attente du tirage', 'class' => \App\Core\Badge::classes('info')],
+        'selected' => ['label' => 'Sélectionné·e !', 'class' => \App\Core\Badge::classes('success')],
+        'not_selected' => ['label' => 'Non sélectionné·e', 'class' => \App\Core\Badge::classes('neutral')],
+        'cancelled' => ['label' => 'Annulé', 'class' => \App\Core\Badge::classes('danger')],
+    ];
+    $raffleTypeLabels = ['boutiques' => 'Vitrine boutiques', 'homepage' => "Page d'accueil"];
+
+    $queryWithout = function (array $overrides = []) {
+        $params = ['tab' => 'raffle'];
+        if (isset($overrides['page'])) {
+            $params['raffle_page'] = $overrides['page'];
+        }
+        return '/my-shop?' . http_build_query($params);
+    };
+    $total = $raffleHistoryTotal;
+    $page = $rafflePage;
+    $perPage = $rafflePerPage;
+    $totalPages = $raffleTotalPages;
+    $pageNumbers = $rafflePageNumbers;
+    $rangeStart = $total === 0 ? 0 : (($page - 1) * $perPage) + 1;
+    $rangeEnd = min($total, $page * $perPage);
+    $entityLabel = 'ticket(s)';
+    ?>
+
+    <p class="text-[0.85rem] text-muted mb-4">
+        Historique de tes participations aux tirages au sort.
+        <a href="/raffle" class="text-primary font-medium hover:underline">Participer à un tirage →</a>
+    </p>
+
+    <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
+        <?php if (empty($raffleHistory)): ?>
+            <p class="text-muted text-[0.85rem] text-center p-6">Tu n'as encore participé à aucun tirage.</p>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-[0.875rem] max-[560px]:min-w-[480px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2]">
+                    <thead>
+                        <tr>
+                            <th>Tirage</th>
+                            <th>Période</th>
+                            <th>Acheté le</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($raffleHistory as $ticket): ?>
+                            <?php $info = $raffleStatusLabels[$ticket['status']] ?? ['label' => $ticket['status'], 'class' => \App\Core\Badge::classes('neutral')]; ?>
+                            <tr>
+                                <td><?= htmlspecialchars($raffleTypeLabels[$ticket['type']] ?? $ticket['type']) ?></td>
+                                <td><?= htmlspecialchars($ticket['period']) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $ticket['created_at']) ?></td>
+                                <td><?= $ticket['amount_paid'] !== null ? number_format($ticket['amount_paid'] / 100, 2, ',', ' ') . ' €' : '—' ?></td>
+                                <td><span class="<?= $info['class'] ?>"><?= htmlspecialchars($info['label']) ?></span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($total > 0): ?>
+            <div class="p-4">
+                <?php require __DIR__ . '/../components/pagination.php'; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($tab === 'infos'): ?>
 
 <?php if ($shop !== null): ?>
     <div class="grid grid-cols-2 min-[721px]:grid-cols-4 gap-4 mb-8">
@@ -225,7 +425,7 @@ $bannerShapeRatio = '579 / 160';
         <h3 class="text-base font-semibold text-ink mb-1">Recadre ta bannière</h3>
         <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour qu'elle s'adapte bien au cadre.</p>
 
-        <div id="bannerCropWrapper" class="relative w-full aspect-[<?= $bannerShapeRatio ?>] bg-bg overflow-hidden mb-4">
+        <div id="bannerCropWrapper" class="relative w-full h-[420px] bg-bg overflow-hidden mb-4">
             <img id="bannerCropImage" src="" alt="" class="block max-w-full">
         </div>
 
@@ -301,3 +501,4 @@ $bannerShapeRatio = '579 / 160';
         });
     })();
 </script>
+<?php endif; ?>

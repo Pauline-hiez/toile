@@ -6,6 +6,28 @@ class ShopSubscription extends BaseModel
 {
     protected string $table = 'shop_subscription';
 
+    /**
+     * Abonnement avec les infos de la boutique/artiste jointes — utilisé
+     * par l'admin pour retrouver le shop_id avant de lister ses factures
+     * (voir AdminController::subscriptionInvoices()).
+     */
+    public function findByIdWithShop(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT ss.*, s.name AS shop_name, s.slug AS shop_slug, s.user_id AS shop_owner_id, u.username, sp.name AS plan_name
+             FROM shop_subscription ss
+             INNER JOIN shop s ON s.id = ss.shop_id
+             INNER JOIN users u ON u.id = s.user_id
+             INNER JOIN subscription_plan sp ON sp.id = ss.plan_id
+             WHERE ss.id = :id'
+        );
+        $stmt->execute(['id' => $id]);
+
+        $result = $stmt->fetch();
+
+        return $result ?: null;
+    }
+
     // Trouve l'abonnement actif d'une boutique, retourne null si pas d'abonnement
     public function findActiveByShopId(int $shopId): ?array
     {
@@ -49,6 +71,22 @@ class ShopSubscription extends BaseModel
         return $result ?: null;
     }
 
+    // Retrouve l'abonnement à partir de l'id Stripe (webhook — voir
+    // StripeWebhookController), avec la boutique associée pour notifier
+    // le bon utilisateur.
+    public function findByStripeSubscriptionId(string $stripeSubscriptionId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT ss.*, s.user_id
+            FROM shop_subscription ss
+            INNER JOIN shop s ON s.id = ss.shop_id
+            WHERE ss.stripe_subscription_id = :stripe_subscription_id'
+        );
+        $stmt->execute(['stripe_subscription_id' => $stripeSubscriptionId]);
+        $result = $stmt->fetch();
+        return $result ?: null;
+    }
+
     /**
      * Place (ou repasse) une boutique sur le palier gratuit "Commission".
      * Utilisé à la création d'une boutique et lors de l'annulation d'un
@@ -74,6 +112,19 @@ class ShopSubscription extends BaseModel
             $data['shop_id'] = $shopId;
             $this->create($data);
         }
+    }
+
+    /**
+     * Bascule forcée par l'admin vers un palier quelconque (support :
+     * correction, geste commercial), sans passer par Stripe — même
+     * mécanique que assignFreePlan() (pas de facturation, expiration
+     * lointaine), généralisée à un plan arbitraire plutôt qu'au seul
+     * palier gratuit. Voir AdminController::updateSubscriptionPlan(),
+     * qui annule d'abord l'abonnement Stripe existant s'il y en a un.
+     */
+    public function assignPlanManually(int $shopId, int $planId): void
+    {
+        $this->assignFreePlan($shopId, $planId);
     }
 
     // Retourne le taux de commission applicable pour une boutique, selon son plan actuel
@@ -123,10 +174,11 @@ class ShopSubscription extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(s.name LIKE :q1 OR u.username LIKE :q2 OR u.email LIKE :q3)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
-            $params['q3'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['s.name', 'u.username', 'u.email'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['status'])) {
@@ -182,5 +234,23 @@ class ShopSubscription extends BaseModel
         $stmt->execute();
 
         return ['subscriptions' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page Abonnements).
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'shop_subscription ss INNER JOIN shop s ON s.id = ss.shop_id INNER JOIN users u ON u.id = s.user_id',
+            [
+                ['column' => 's.name', 'avatarColumn' => 'u.avatar'],
+                ['column' => 'u.username', 'avatarColumn' => 'u.avatar'],
+                ['column' => 'u.email', 'avatarColumn' => 'u.avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 }

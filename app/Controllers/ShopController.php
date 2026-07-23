@@ -2,9 +2,14 @@
 
 namespace App\Controllers;
 
+use App\Core\ChartHelper;
+use App\Core\Paginator;
 use App\Core\Renderer;
+use App\Models\Order;
+use App\Models\RaffleEntry;
 use App\Models\Shop;
 use App\Models\ShopSubscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\PortfolioImage;
@@ -17,24 +22,30 @@ class ShopController
     private Renderer $renderer;
     private Shop $shopModel;
     private ShopSubscription $subscriptionModel;
+    private SubscriptionInvoice $invoiceModel;
     private Review $reviewModel;
     private Service $serviceModel;
     private PortfolioImage $portfolioModel;
     private Favorite $favoriteModel;
     private User $userModel;
     private CategoryRequest $categoryRequestModel;
+    private Order $orderModel;
+    private RaffleEntry $raffleModel;
 
     public function __construct(Renderer $renderer)
     {
         $this->renderer = $renderer;
         $this->shopModel = new Shop();
         $this->subscriptionModel = new ShopSubscription();
+        $this->invoiceModel = new SubscriptionInvoice();
         $this->reviewModel = new Review();
         $this->serviceModel = new Service();
         $this->portfolioModel = new PortfolioImage();
         $this->favoriteModel = new Favorite();
         $this->userModel = new User();
         $this->categoryRequestModel = new CategoryRequest();
+        $this->orderModel = new Order();
+        $this->raffleModel = new RaffleEntry();
     }
 
     public function manage(): void
@@ -50,14 +61,103 @@ class ShopController
             exit;
         }
 
+        $tab = in_array($_GET['tab'] ?? '', ['infos', 'stats', 'raffle', 'invoices'], true) ? $_GET['tab'] : 'infos';
+        $days = (int) ($_GET['days'] ?? 30);
+        $days = in_array($days, [14, 30, 90], true) ? $days : 30;
+
         $this->renderer->render('artist/shop', array_merge([
             'shop' => $shop,
             'errors' => [],
             'success' => null,
+            'tab' => $tab,
+            'days' => $days,
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], $this->shopStats($shop), $this->shopFormExtras($shop)), 'layouts/artist');
+        ], $this->shopStats($shop), $this->shopFormExtras($shop), $this->shopStatsCharts($shop, $days), $this->shopRaffleHistory($shop), $this->shopInvoices($shop)), 'layouts/artist');
+    }
+
+    /**
+     * Historique des factures d'abonnement de la boutique (onglet
+     * "Factures" de /my-shop) — alimenté par StripeWebhookController à
+     * chaque renouvellement réussi. Null si la boutique n'existe pas encore.
+     */
+    private function shopInvoices(?array $shop): array
+    {
+        if ($shop === null) {
+            return ['subscriptionInvoices' => null];
+        }
+
+        return ['subscriptionInvoices' => $this->invoiceModel->findByShopId($shop['id'])];
+    }
+
+    /**
+     * Historique paginé des tickets de tirage au sort de la boutique
+     * (onglet "Tirage au sort" de /my-shop) — null si la boutique
+     * n'existe pas encore.
+     */
+    private function shopRaffleHistory(?array $shop): array
+    {
+        if ($shop === null) {
+            return ['raffleHistory' => null, 'raffleHistoryTotal' => null, 'rafflePage' => 1, 'raffleTotalPages' => 1, 'rafflePageNumbers' => []];
+        }
+
+        $page = max(1, (int) ($_GET['raffle_page'] ?? 1));
+        $perPage = 10;
+
+        $result = $this->raffleModel->findByShopIdPaginated($shop['id'], $page, $perPage);
+        $totalPages = max(1, (int) ceil($result['total'] / $perPage));
+
+        return [
+            'raffleHistory' => $result['entries'],
+            'raffleHistoryTotal' => $result['total'],
+            'rafflePage' => $page,
+            'raffleTotalPages' => $totalPages,
+            'rafflePerPage' => $perPage,
+            'rafflePageNumbers' => Paginator::buildPageNumbers($page, $totalPages),
+        ];
+    }
+
+    /**
+     * Courbes + chiffres "à vie" de l'onglet Statistiques de /my-shop —
+     * revenu net (après commission) et commandes, mêmes conventions que
+     * les graphiques de l'admin (voir ChartHelper, admin-chart.js).
+     * Null si la boutique n'existe pas encore.
+     */
+    private function shopStatsCharts(?array $shop, int $days): array
+    {
+        if ($shop === null) {
+            return ['revenueChart' => null, 'ordersChart' => null, 'lifetimeStats' => null];
+        }
+
+        $revenueChart = ChartHelper::dailySeries(
+            "SELECT DATE(created_at) AS day, COALESCE(SUM(total_price - commission_amount), 0) / 100 AS total
+             FROM orders
+             WHERE shop_id = :shop_id
+             AND status IN ('accepted', 'in_progress', 'delivered', 'completed')
+             AND created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            true,
+            ['shop_id' => $shop['id']]
+        );
+
+        $ordersChart = ChartHelper::dailySeries(
+            "SELECT DATE(created_at) AS day, COUNT(*) AS total
+             FROM orders
+             WHERE shop_id = :shop_id
+             AND created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+             GROUP BY DATE(created_at)",
+            $days,
+            false,
+            ['shop_id' => $shop['id']]
+        );
+
+        return [
+            'revenueChart' => $revenueChart,
+            'ordersChart' => $ordersChart,
+            'lifetimeStats' => $this->orderModel->getShopLifetimeStats($shop['id']),
+        ];
     }
 
     /**
@@ -372,6 +472,35 @@ class ShopController
             'availableStyles' => $this->shopModel->getAllStyles(),
             'pageTitle' => 'Découvrir les artistes — Toile',
         ]);
+    }
+
+    /**
+     * Suggestions d'autocomplétion de la recherche publique (/boutiques) :
+     * noms de boutique correspondants (avatar de l'artiste en miniature),
+     * complétés des styles (image de tuile si disponible) et types (pas
+     * d'image, purement textuels) dont le nom contient la saisie.
+     */
+    public function autocomplete(): void
+    {
+        $q = trim($_GET['q'] ?? '');
+        $suggestions = [];
+
+        if ($q !== '') {
+            $shopSuggestions = $this->shopModel->findNameSuggestions($q, 5);
+
+            $styleImages = $this->shopModel->getStyleTileImages();
+            $categorySuggestions = [];
+            foreach (array_merge($this->shopModel->getAllStyles(), $this->shopModel->getAllTypes()) as $label) {
+                if (stripos($label, $q) !== false) {
+                    $categorySuggestions[] = ['label' => $label, 'image' => $styleImages[$label] ?? null];
+                }
+            }
+
+            $suggestions = \App\Core\SearchHelper::mergeSuggestionLists([$shopSuggestions, $categorySuggestions], 8);
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['suggestions' => $suggestions]);
     }
 
     /**

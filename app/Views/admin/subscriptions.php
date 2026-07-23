@@ -10,6 +10,7 @@
  * @var array{q: string, status: string, registered: string, plan: string} $filters
  * @var array $stats
  * @var array<int, int|string> $pageNumbers
+ * @var array $plans Paliers disponibles (voir SubscriptionPlan::findAll()), pour le formulaire de changement de palier.
  */
 
 $statusLabels = [
@@ -70,6 +71,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <?php
         $searchStandalone = false;
         $searchValue = $filters['q'];
+        $searchAutocompleteUrl = '/admin/subscriptions/autocomplete';
         ?>
         <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
@@ -136,12 +138,31 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <a href="/boutiques/<?= htmlspecialchars($sub['shop_slug']) ?>" title="Voir la boutique">
                                         <img src="/assets/images/icones/voir.png" alt="Voir">
                                     </a>
-                                    <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Modifier (bientôt disponible)">
+                                    <a href="/admin/subscriptions/<?= (int) $sub['id'] ?>/invoices" title="Factures">
+                                        <img src="/assets/images/icones/paiement.png" alt="Factures">
+                                    </a>
+                                    <button type="button"
+                                        data-plan-modal-open
+                                        data-subscription-id="<?= (int) $sub['id'] ?>"
+                                        data-shop-name="<?= htmlspecialchars($sub['shop_name']) ?>"
+                                        data-current-plan-id="<?= (int) $sub['plan_id'] ?>"
+                                        title="Modifier le palier">
                                         <img src="/assets/images/icones/modifier.png" alt="Modifier">
-                                    </a>
-                                    <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Annulation non disponible depuis l'admin pour le moment">
-                                        <img src="/assets/images/icones/supprimer.png" alt="Annuler">
-                                    </a>
+                                    </button>
+                                    <?php if ($isFree): ?>
+                                        <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Déjà sur le palier gratuit">
+                                            <img src="/assets/images/icones/supprimer.png" alt="Annuler">
+                                        </a>
+                                    <?php else: ?>
+                                        <form method="POST" action="/admin/subscriptions/<?= (int) $sub['id'] ?>/cancel">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+                                            <button type="submit" class="danger"
+                                                onclick="return confirm('Annuler l\'abonnement de <?= htmlspecialchars(addslashes($sub['shop_name'])) ?> et repasser sur le palier gratuit Commission ?');"
+                                                title="Annuler l'abonnement">
+                                                <img src="/assets/images/icones/supprimer.png" alt="Annuler">
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -155,4 +176,59 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     <?php require __DIR__ . '/../components/pagination.php'; ?>
 </div>
 
+<dialog id="planChangeModal" class="auth-modal">
+    <button type="button" class="absolute top-3 right-4 text-title text-3xl leading-none z-20" data-plan-modal-close aria-label="Fermer">&times;</button>
+
+    <div class="relative bg-bg rounded-2xl border border-border shadow-lg px-6 py-8 min-[481px]:px-10 min-[481px]:py-10 max-w-[420px]">
+        <h2 class="font-title text-[1.6rem] min-[481px]:text-[1.9rem] text-title font-semibold text-center leading-none mb-2">Changer de palier</h2>
+        <p class="text-[0.85rem] text-muted text-center mb-5">
+            Bascule <strong id="planModalShopName"></strong> vers un autre palier, sans passer par un paiement Stripe — utile pour une correction ou un geste commercial.
+        </p>
+
+        <form id="planChangeForm" method="POST" class="flex flex-col gap-4 max-w-[300px] mx-auto">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <div>
+                <label for="planModalSelect" class="block font-semibold text-[0.9rem] mb-2">Palier</label>
+                <select id="planModalSelect" name="plan_id" class="w-full border border-border rounded-full px-4 py-[0.4rem] bg-white font-main outline-none focus:border-primary">
+                    <?php foreach ($plans as $plan): ?>
+                        <option value="<?= (int) $plan['id'] ?>"><?= htmlspecialchars($plan['name']) ?> — <?= $plan['price'] > 0 ? number_format($plan['price'] / 100, 2, ',', ' ') . '€/mois' : 'Gratuit' ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="text-center mt-1">
+                <button type="submit" class="btn btn--primary px-10">Valider</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
 <script src="/assets/js/admin-table-select.js"></script>
+<script>
+    (function () {
+        var dialog = document.getElementById('planChangeModal');
+        var form = document.getElementById('planChangeForm');
+        var shopNameLabel = document.getElementById('planModalShopName');
+        var select = document.getElementById('planModalSelect');
+
+        document.querySelectorAll('[data-plan-modal-open]').forEach(function (trigger) {
+            trigger.addEventListener('click', function () {
+                form.action = '/admin/subscriptions/' + trigger.dataset.subscriptionId + '/plan';
+                shopNameLabel.textContent = trigger.dataset.shopName;
+                select.value = trigger.dataset.currentPlanId;
+                dialog.showModal();
+            });
+        });
+
+        dialog.querySelector('[data-plan-modal-close]').addEventListener('click', function () {
+            dialog.close();
+        });
+
+        dialog.addEventListener('click', function (e) {
+            if (e.target === dialog) {
+                dialog.close();
+            }
+        });
+    })();
+</script>

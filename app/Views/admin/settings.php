@@ -22,6 +22,7 @@ $tabs = [
     'subscriptions' => 'Abonnements',
     'homepage_styles' => 'Styles à la une',
     'maintenance' => 'Maintenance',
+    'invoicing' => 'Facturation',
 ];
 
 // Onglet actif par défaut : celui visé par la redirection après
@@ -375,7 +376,7 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
                 <h3 class="text-base font-semibold text-ink mb-1">Recadre le visuel</h3>
                 <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour bien centrer le sujet.</p>
 
-                <div class="relative w-full aspect-[4/3] bg-bg overflow-hidden mb-4">
+                <div class="relative w-full h-[420px] bg-bg overflow-hidden mb-4">
                     <img id="editStyleCropImage" src="" alt="" class="block max-w-full">
                 </div>
 
@@ -432,7 +433,7 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
                 <h3 class="text-base font-semibold text-ink mb-1">Recadre ton visuel</h3>
                 <p class="text-[0.8rem] text-muted mb-4">Déplace et zoome ton image pour bien centrer le sujet.</p>
 
-                <div class="relative w-full aspect-[4/3] bg-bg overflow-hidden mb-4">
+                <div class="relative w-full h-[420px] bg-bg overflow-hidden mb-4">
                     <img id="newCategoryCropImage" src="" alt="" class="block max-w-full">
                 </div>
 
@@ -455,20 +456,107 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
         <form method="POST" action="/admin/settings/maintenance" style="display: flex; flex-direction: column; gap: 1rem; max-width: 480px;">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
 
+            <?php
+            $maintenanceDurationTotal = (int) ($settings['maintenance_duration_minutes'] ?? 0);
+            $maintenanceDurationHours = intdiv($maintenanceDurationTotal, 60);
+            $maintenanceDurationMinutes = $maintenanceDurationTotal % 60;
+            $maintenanceStartsAt = $settings['maintenance_starts_at'] ?? '';
+            $maintenanceHasStarted = $maintenanceStartsAt !== '' && strtotime($maintenanceStartsAt) <= time();
+            ?>
+
             <label style="display: flex; align-items: center; gap: 0.5rem;">
                 <input type="checkbox" name="maintenance_mode" value="1" <?= ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' ?>>
                 Activer le mode maintenance
             </label>
 
+            <?php if (($settings['maintenance_mode'] ?? '0') === '1' && $maintenanceStartsAt !== ''): ?>
+                <p style="font-size: 0.85rem; font-weight: 600; color: <?= $maintenanceHasStarted ? 'var(--color-danger)' : 'var(--color-primary)' ?>;">
+                    <?= $maintenanceHasStarted
+                        ? 'En cours depuis le ' . \App\Core\FrenchDate::format('d MMMM y à HH:mm', $maintenanceStartsAt)
+                        : 'Programmée pour le ' . \App\Core\FrenchDate::format('d MMMM y à HH:mm', $maintenanceStartsAt) ?>
+                </p>
+            <?php endif; ?>
+
             <div>
-                <label for="maintenance_message" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Message affiché aux visiteurs</label>
-                <textarea id="maintenance_message" name="maintenance_message" rows="3"
-                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-family: var(--font-main); resize: vertical;"
-                ><?= htmlspecialchars($settings['maintenance_message'] ?? "Le site est actuellement en maintenance, merci de revenir un peu plus tard.") ?></textarea>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Durée de la maintenance</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="number" name="maintenance_duration_hours" min="0" value="<?= $maintenanceDurationHours ?>"
+                        style="width: 80px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; font-family: var(--font-main);">
+                    <span style="color: var(--color-text-muted); font-size: 0.85rem;">heures</span>
+                    <input type="number" name="maintenance_duration_minutes" min="0" max="59" value="<?= $maintenanceDurationMinutes ?>"
+                        style="width: 80px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; font-family: var(--font-main);">
+                    <span style="color: var(--color-text-muted); font-size: 0.85rem;">minutes</span>
+                </div>
+                <p style="color: var(--color-text-muted); font-size: 0.8rem; margin-top: 0.4rem;">
+                    Affiche un compte à rebours en temps réel aux visiteurs. Laisse à 0 pour n'afficher aucun compte à rebours.
+                </p>
+            </div>
+
+            <?php $maintenanceIsScheduled = ($settings['maintenance_trigger_mode'] ?? 'now') === 'scheduled'; ?>
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Déclenchement</label>
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400;">
+                        <input type="radio" name="maintenance_trigger" value="now" data-maintenance-trigger-radio <?= !$maintenanceIsScheduled ? 'checked' : '' ?>>
+                        Lancer maintenant, dès l'enregistrement
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 400;">
+                        <input type="radio" name="maintenance_trigger" value="scheduled" data-maintenance-trigger-radio <?= $maintenanceIsScheduled ? 'checked' : '' ?>>
+                        Programmer pour plus tard
+                    </label>
+                </div>
+
+                <div data-maintenance-schedule-field class="<?= $maintenanceIsScheduled ? '' : 'hidden' ?>" style="margin-top: 0.6rem;">
+                    <input type="datetime-local" id="maintenance_starts_at" name="maintenance_starts_at"
+                        value="<?= $maintenanceStartsAt !== '' ? htmlspecialchars(str_replace(' ', 'T', substr($maintenanceStartsAt, 0, 16))) : '' ?>"
+                        style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.9rem; font-family: var(--font-main);">
+                </div>
             </div>
 
             <div>
                 <button type="submit" class="btn btn--outline">Enregistrer le mode maintenance</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div data-settings-panel="invoicing" class="<?= $activeTab === 'invoicing' ? '' : 'hidden' ?>">
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+        <h2 class="text-base font-semibold mb-5 text-ink">Facturation</h2>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Identité légale affichée sur les factures PDF téléchargées depuis l'espace artiste et l'admin (commandes et abonnements). Tous les champs sont facultatifs — une ligne vide n'apparaît simplement pas sur le document.
+        </p>
+
+        <form method="POST" action="/admin/settings/invoicing" style="display: flex; flex-direction: column; gap: 1rem; max-width: 480px;">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <div>
+                <label for="company_name" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Raison sociale</label>
+                <input type="text" id="company_name" name="company_name" value="<?= htmlspecialchars($settings['company_name'] ?? '') ?>"
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+            </div>
+
+            <div>
+                <label for="company_address" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Adresse</label>
+                <textarea id="company_address" name="company_address" rows="2"
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.9rem; font-family: var(--font-main); resize: vertical;"><?= htmlspecialchars($settings['company_address'] ?? '') ?></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="company_siret" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">SIRET</label>
+                    <input type="text" id="company_siret" name="company_siret" value="<?= htmlspecialchars($settings['company_siret'] ?? '') ?>"
+                        style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="company_vat" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">TVA intracommunautaire</label>
+                    <input type="text" id="company_vat" name="company_vat" value="<?= htmlspecialchars($settings['company_vat'] ?? '') ?>"
+                        style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn--outline">Enregistrer les informations de facturation</button>
             </div>
         </form>
     </div>
@@ -768,5 +856,19 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
         if (dialog.hasAttribute('data-new-category-reopen')) {
             dialog.showModal();
         }
+    })();
+</script>
+
+<script>
+    (function () {
+        var radios = document.querySelectorAll('[data-maintenance-trigger-radio]');
+        var scheduleField = document.querySelector('[data-maintenance-schedule-field]');
+        if (!radios.length || !scheduleField) return;
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                scheduleField.classList.toggle('hidden', this.value !== 'scheduled');
+            });
+        });
     })();
 </script>

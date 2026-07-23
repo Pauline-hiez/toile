@@ -44,6 +44,37 @@ class RaffleEntry extends BaseModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Historique paginé des tickets d'une boutique, tous types confondus
+     * (onglet "Historique" de /raffle côté artiste) — contrairement à
+     * findRecentByShopId(), non plafonné à un aperçu.
+     *
+     * @return array{entries: array, total: int}
+     */
+    public function findByShopIdPaginated(int $shopId, int $page, int $perPage): array
+    {
+        $countStmt = $this->pdo->prepare('SELECT COUNT(*) FROM raffle_entry WHERE shop_id = :shop_id');
+        $countStmt->execute(['shop_id' => $shopId]);
+        $total = (int) $countStmt->fetchColumn();
+
+        $perPage = max(1, $perPage);
+        $page = max(1, $page);
+        $offset = ($page - 1) * $perPage;
+
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM raffle_entry
+             WHERE shop_id = :shop_id
+             ORDER BY created_at DESC
+             LIMIT :limit OFFSET :offset'
+        );
+        $stmt->bindValue('shop_id', $shopId, \PDO::PARAM_INT);
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['entries' => $stmt->fetchAll(), 'total' => $total];
+    }
+
     // Derniers gagnants toutes boutiques et tous types confondus
     public function findRecentWinners(int $limit = 6): array
     {
@@ -126,9 +157,11 @@ class RaffleEntry extends BaseModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $where[] = '(s.name LIKE :q1 OR u.username LIKE :q2)';
-            $params['q1'] = '%' . $filters['q'] . '%';
-            $params['q2'] = '%' . $filters['q'] . '%';
+            $keyword = \App\Core\SearchHelper::buildKeywordWhere($filters['q'], ['s.name', 'u.username'], 'q');
+            if ($keyword['sql'] !== '') {
+                $where[] = $keyword['sql'];
+                $params = array_merge($params, $keyword['params']);
+            }
         }
 
         if (!empty($filters['type'])) {
@@ -175,5 +208,22 @@ class RaffleEntry extends BaseModel
         $stmt->execute();
 
         return ['entries' => $stmt->fetchAll(), 'total' => $total];
+    }
+
+    /**
+     * Suggestions d'autocomplétion pour la recherche admin (page Tirage au sort).
+     */
+    public function findAdminSuggestions(string $q, int $limit = 8): array
+    {
+        return \App\Core\SearchHelper::suggest(
+            $this->pdo,
+            'raffle_entry re INNER JOIN shop s ON s.id = re.shop_id INNER JOIN users u ON u.id = s.user_id',
+            [
+                ['column' => 's.name', 'avatarColumn' => 'u.avatar'],
+                ['column' => 'u.username', 'avatarColumn' => 'u.avatar'],
+            ],
+            $q,
+            $limit
+        );
     }
 }

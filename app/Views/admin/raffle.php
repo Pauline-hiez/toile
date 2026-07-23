@@ -125,6 +125,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <?php
         $searchStandalone = false;
         $searchValue = $filters['q'];
+        $searchAutocompleteUrl = '/admin/raffle/autocomplete';
         ?>
         <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
@@ -183,4 +184,4 @@ $queryWithout = function (array $overrides = []) use ($filters) {
     <?php require __DIR__ . '/../components/pagination.php'; ?>
 </div>
 
-<script src="/assets/js/admin-countdown.js"></script>
+<script src="/assets/js/admin-countdown.js?v=<?= filemtime(__DIR__ . '/../../../public/assets/js/admin-countdown.js') ?>"></script>

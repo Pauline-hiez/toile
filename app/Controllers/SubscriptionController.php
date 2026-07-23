@@ -54,6 +54,26 @@ class SubscriptionController
         ]);
     }
 
+    /**
+     * Annule un abonnement Stripe existant avant d'en créer un nouveau
+     * (changement de plan) — sans quoi l'ancien reste actif et continue
+     * d'être facturé en parallèle du nouveau. Silencieux si l'abonnement
+     * n'existe plus côté Stripe (déjà annulé manuellement, etc.).
+     */
+    private function cancelExistingStripeSubscription(?string $stripeSubscriptionId): void
+    {
+        if ($stripeSubscriptionId === null) {
+            return;
+        }
+
+        try {
+            (new StripeService())->cancelSubscription($stripeSubscriptionId);
+        } catch (\Exception $e) {
+            // Rien à faire : l'important est de ne pas bloquer le
+            // changement de plan si l'ancien abonnement est déjà éteint.
+        }
+    }
+
     // Confirme le choix du palier gratuit "Commission" — ouvre la boutique
     // sans passer par Stripe (pas de facturation pour ce palier).
     public function confirmFree(): void
@@ -65,16 +85,30 @@ class SubscriptionController
             // Pas encore de boutique : le choix d'abonnement précède
             // désormais sa création — on mémorise le choix en session,
             // finalisé par ShopController::save() une fois la boutique créée.
+            $previousStripeSubscriptionId = $_SESSION['pending_shop_subscription']['stripe_subscription_id'] ?? null;
+
             if ($freePlan !== null) {
                 $_SESSION['pending_shop_subscription'] = ['plan_id' => $freePlan['id']];
             }
+
+            // Un choix payant précédent (pas encore rattaché à une
+            // boutique) est annulé une fois le nouveau choix mémorisé avec
+            // succès, sinon il continue de facturer en parallèle.
+            $this->cancelExistingStripeSubscription($previousStripeSubscriptionId);
+
             header('Location: /my-shop');
             exit;
         }
 
+        $existingSubscription = $this->subscriptionModel->findByShopId($shop['id']);
+
         if ($freePlan !== null) {
             $this->subscriptionModel->assignFreePlan($shop['id'], $freePlan['id']);
         }
+
+        // N'annule l'ancien abonnement Stripe qu'une fois le palier
+        // gratuit assigné avec succès en base.
+        $this->cancelExistingStripeSubscription($existingSubscription['stripe_subscription_id'] ?? null);
 
         $this->shopModel->update($shop['id'], [
             'plan_selected' => 1,
@@ -142,8 +176,19 @@ class SubscriptionController
         $shop = $this->shopModel->findByUserId($_SESSION['user_id']);
         $stripe = new StripeService();
 
+        $existingSubscription = $shop !== null ? $this->subscriptionModel->findByShopId($shop['id']) : null;
+        $previousStripeSubscriptionId = $existingSubscription['stripe_subscription_id']
+            ?? $_SESSION['pending_shop_subscription']['stripe_subscription_id']
+            ?? null;
+
         // Crée l'abonnement maintenant que la carte est attachée.
         $subscriptionData = $stripe->createSubscription($stripeCustomerId, $plan['stripe_price_id']);
+
+        // N'annule l'ancien abonnement Stripe qu'une fois le nouveau créé
+        // avec succès — si createSubscription() avait échoué et qu'on avait
+        // déjà annulé l'ancien, la boutique se serait retrouvée sans aucun
+        // abonnement actif.
+        $this->cancelExistingStripeSubscription($previousStripeSubscriptionId);
 
         unset($_SESSION['pending_subscription_plan_id']);
         unset($_SESSION['pending_stripe_customer_id']);
@@ -163,8 +208,6 @@ class SubscriptionController
             header('Location: /my-shop');
             exit;
         }
-
-        $existingSubscription = $this->subscriptionModel->findByShopId($shop['id']);
 
         $subscriptionRecord = [
             'shop_id' => $shop['id'],

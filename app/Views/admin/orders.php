@@ -83,6 +83,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <?php
         $searchStandalone = false;
         $searchValue = $filters['q'];
+        $searchAutocompleteUrl = '/admin/orders/autocomplete';
         ?>
         <?php require __DIR__ . '/../components/search-bar.php'; ?>
 
@@ -160,7 +161,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <a href="/commandes/<?= (int) $order['id'] ?>" title="Voir la commande">
                                         <img src="/assets/images/icones/voir.png" alt="Voir">
                                     </a>
-                                    <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Modifier (bientôt disponible)">
+                                    <a href="/commandes/<?= (int) $order['id'] ?>" title="Gérer le statut (forcer une annulation en cas de litige)">
                                         <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                     </a>
                                     <form method="POST" action="/admin/orders/<?= (int) $order['id'] ?>/toggle-archive">

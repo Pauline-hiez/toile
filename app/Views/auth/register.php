@@ -25,6 +25,10 @@ $pageTitle = 'Inscription — Toile';
                     <form method="POST" action="/register" class="flex flex-col gap-3 min-[481px]:gap-5">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
 
+                        <?php if (isset($errors['general'])): ?>
+                            <p class="text-danger text-[0.85rem] text-center"><?= htmlspecialchars($errors['general']) ?></p>
+                        <?php endif; ?>
+
                         <div>
                             <label for="username" class="block font-semibold text-[0.8rem] min-[481px]:text-[0.95rem] text-primary mb-1">Pseudo</label>
                             <div class="relative">

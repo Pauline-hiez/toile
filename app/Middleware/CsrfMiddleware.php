@@ -13,6 +13,15 @@ class CsrfMiddleware
             return;
         }
 
+        // Le webhook Stripe est appelé directement par Stripe (pas de
+        // session/formulaire, donc pas de jeton CSRF possible) — sa
+        // sécurité repose sur la vérification de signature Stripe elle-même
+        // (voir StripeWebhookController::handle()).
+        $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        if ($requestPath === '/webhooks/stripe') {
+            return;
+        }
+
         $submittedToken = $_POST['csrf_token'] ?? null;
 
         if (!Csrf::verify($submittedToken)) {

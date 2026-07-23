@@ -237,12 +237,31 @@ class StripeService
             'default_payment_method' => $this->getDefaultPaymentMethodId($customerId),
         ]);
 
+        // Depuis les versions récentes de l'API Stripe, current_period_start/
+        // end ne sont plus sur l'abonnement lui-même (toujours null à cet
+        // endroit) mais sur sa ligne (items.data[0]) — les lire au mauvais
+        // endroit donnait null, et date('Y-m-d H:i:s', null) retombe sur
+        // l'instant présent pour les deux, rendant l'abonnement expiré
+        // dès sa création.
+        $item = $subscription->items->data[0];
+
         return [
             'subscription_id' => $subscription->id,
             'status' => $subscription->status,
-            'current_period_start' => $subscription->current_period_start,
-            'current_period_end' => $subscription->current_period_end,
+            'current_period_start' => $item->current_period_start,
+            'current_period_end' => $item->current_period_end,
         ];
+    }
+
+    /**
+     * Relit la date de fin de période courante d'un abonnement existant
+     * (voir StripeWebhookController::handlePaymentSucceeded() — après un
+     * renouvellement, pour prolonger la période en base).
+     */
+    public function getSubscriptionCurrentPeriodEnd(string $subscriptionId): int
+    {
+        $subscription = Subscription::retrieve($subscriptionId);
+        return $subscription->items->data[0]->current_period_end;
     }
 
     /**
