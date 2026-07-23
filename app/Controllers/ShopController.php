@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\RaffleEntry;
 use App\Models\Shop;
 use App\Models\ShopSubscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\PortfolioImage;
@@ -21,6 +22,7 @@ class ShopController
     private Renderer $renderer;
     private Shop $shopModel;
     private ShopSubscription $subscriptionModel;
+    private SubscriptionInvoice $invoiceModel;
     private Review $reviewModel;
     private Service $serviceModel;
     private PortfolioImage $portfolioModel;
@@ -35,6 +37,7 @@ class ShopController
         $this->renderer = $renderer;
         $this->shopModel = new Shop();
         $this->subscriptionModel = new ShopSubscription();
+        $this->invoiceModel = new SubscriptionInvoice();
         $this->reviewModel = new Review();
         $this->serviceModel = new Service();
         $this->portfolioModel = new PortfolioImage();
@@ -58,7 +61,7 @@ class ShopController
             exit;
         }
 
-        $tab = in_array($_GET['tab'] ?? '', ['infos', 'stats', 'raffle'], true) ? $_GET['tab'] : 'infos';
+        $tab = in_array($_GET['tab'] ?? '', ['infos', 'stats', 'raffle', 'invoices'], true) ? $_GET['tab'] : 'infos';
         $days = (int) ($_GET['days'] ?? 30);
         $days = in_array($days, [14, 30, 90], true) ? $days : 30;
 
@@ -71,7 +74,21 @@ class ShopController
             'pageTitle' => 'Ma boutique — Toile',
             'pageHeading' => 'Ma boutique',
             'pageSubtitle' => "Personnalise la vitrine publique de ta boutique.",
-        ], $this->shopStats($shop), $this->shopFormExtras($shop), $this->shopStatsCharts($shop, $days), $this->shopRaffleHistory($shop)), 'layouts/artist');
+        ], $this->shopStats($shop), $this->shopFormExtras($shop), $this->shopStatsCharts($shop, $days), $this->shopRaffleHistory($shop), $this->shopInvoices($shop)), 'layouts/artist');
+    }
+
+    /**
+     * Historique des factures d'abonnement de la boutique (onglet
+     * "Factures" de /my-shop) — alimenté par StripeWebhookController à
+     * chaque renouvellement réussi. Null si la boutique n'existe pas encore.
+     */
+    private function shopInvoices(?array $shop): array
+    {
+        if ($shop === null) {
+            return ['subscriptionInvoices' => null];
+        }
+
+        return ['subscriptionInvoices' => $this->invoiceModel->findByShopId($shop['id'])];
     }
 
     /**

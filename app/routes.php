@@ -309,6 +309,24 @@ $router->map('GET', '/commandes/[i:id]', [
     ],
 ]);
 
+// Facture PDF de la commande (artiste propriétaire + admin uniquement,
+// vérifié dans InvoiceController — pas de restriction de rôle ici car un
+// admin peut aussi être artiste sur un autre compte).
+$router->map('GET', '/commandes/[i:id]/facture', [
+    'controller' => ['App\Controllers\InvoiceController', 'orderInvoice'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
+// Facture PDF d'un paiement d'abonnement (artiste propriétaire + admin).
+$router->map('GET', '/factures/abonnement/[i:id]', [
+    'controller' => ['App\Controllers\InvoiceController', 'subscriptionInvoice'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+    ],
+]);
+
 // Messagerie de commande
 $router->map('POST', '/commandes/[i:id]/messages', [
     'controller' => ['App\Controllers\OrderController', 'sendMessage'],
@@ -532,6 +550,14 @@ $router->map('GET', '/admin/subscriptions', [
     ],
 ]);
 
+$router->map('GET', '/admin/subscriptions/[i:id]/invoices', [
+    'controller' => ['App\Controllers\AdminController', 'subscriptionInvoices'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
 $router->map('GET', '/admin/subscriptions/autocomplete', [
     'controller' => ['App\Controllers\AdminController', 'subscriptionsAutocomplete'],
     'middlewares' => [
@@ -654,6 +680,14 @@ $router->map('POST', '/admin/settings/subscriptions', [
 
 $router->map('POST', '/admin/settings/maintenance', [
     'controller' => ['App\Controllers\AdminController', 'updateMaintenanceSettings'],
+    'middlewares' => [
+        fn() => \App\Middleware\AuthMiddleware::handle(),
+        fn() => \App\Middleware\RoleMiddleware::handle(['admin']),
+    ],
+]);
+
+$router->map('POST', '/admin/settings/invoicing', [
+    'controller' => ['App\Controllers\AdminController', 'updateInvoiceSettings'],
     'middlewares' => [
         fn() => \App\Middleware\AuthMiddleware::handle(),
         fn() => \App\Middleware\RoleMiddleware::handle(['admin']),

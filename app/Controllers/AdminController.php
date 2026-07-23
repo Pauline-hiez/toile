@@ -14,6 +14,7 @@ use App\Models\RaffleEntry;
 use App\Models\Report;
 use App\Models\Setting;
 use App\Models\CategoryRequest;
+use App\Models\SubscriptionInvoice;
 
 class AdminController
 {
@@ -28,6 +29,7 @@ class AdminController
     private Report $reportModel;
     private Setting $settingModel;
     private CategoryRequest $categoryRequestModel;
+    private SubscriptionInvoice $invoiceModel;
 
     public function __construct(Renderer $renderer)
     {
@@ -42,6 +44,7 @@ class AdminController
         $this->reportModel = new Report();
         $this->settingModel = new Setting();
         $this->categoryRequestModel = new CategoryRequest();
+        $this->invoiceModel = new SubscriptionInvoice();
     }
 
     /**
@@ -1561,5 +1564,48 @@ class AdminController
 
         header('Location: /admin/settings?section=maintenance&success=1');
         exit;
+    }
+
+    /**
+     * Identité légale de l'entreprise, affichée sur les factures PDF
+     * (commandes et abonnements) — voir InvoiceController. Tous les champs
+     * sont facultatifs : une ligne vide n'est simplement pas affichée sur
+     * le PDF plutôt que de bloquer la sauvegarde.
+     */
+    public function updateInvoiceSettings(): void
+    {
+        $this->settingModel->setMany([
+            'company_name' => trim($_POST['company_name'] ?? ''),
+            'company_address' => trim($_POST['company_address'] ?? ''),
+            'company_siret' => trim($_POST['company_siret'] ?? ''),
+            'company_vat' => trim($_POST['company_vat'] ?? ''),
+        ]);
+
+        header('Location: /admin/settings?section=invoicing&success=1');
+        exit;
+    }
+
+    /**
+     * Historique des factures d'abonnement d'une boutique (GET
+     * /admin/subscriptions/[id]/invoices) — [id] est l'id de la ligne
+     * shop_subscription (voir admin/subscriptions.php), pas le shop_id.
+     */
+    public function subscriptionInvoices(int $id): void
+    {
+        $subscription = $this->subscriptionModel->findByIdWithShop($id);
+
+        if ($subscription === null) {
+            http_response_code(404);
+            echo 'Abonnement introuvable.';
+            exit;
+        }
+
+        $this->renderer->render('admin/subscription-invoices', [
+            'subscription' => $subscription,
+            'invoices' => $this->invoiceModel->findByShopId($subscription['shop_id']),
+            'pageTitle' => 'Factures — ' . $subscription['shop_name'] . ' — Administration',
+            'pageHeading' => 'Factures d\'abonnement',
+            'pageSubtitle' => $subscription['shop_name'],
+        ], 'layouts/admin');
     }
 }

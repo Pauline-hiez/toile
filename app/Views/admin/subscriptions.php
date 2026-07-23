@@ -137,6 +137,9 @@ $queryWithout = function (array $overrides = []) use ($filters) {
                                     <a href="/boutiques/<?= htmlspecialchars($sub['shop_slug']) ?>" title="Voir la boutique">
                                         <img src="/assets/images/icones/voir.png" alt="Voir">
                                     </a>
+                                    <a href="/admin/subscriptions/<?= (int) $sub['id'] ?>/invoices" title="Factures">
+                                        <img src="/assets/images/icones/paiement.png" alt="Factures">
+                                    </a>
                                     <a href="#" aria-disabled="true" class="opacity-35 cursor-not-allowed pointer-events-none" title="Modifier (bientôt disponible)">
                                         <img src="/assets/images/icones/modifier.png" alt="Modifier">
                                     </a>

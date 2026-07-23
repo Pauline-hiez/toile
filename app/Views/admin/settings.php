@@ -22,6 +22,7 @@ $tabs = [
     'subscriptions' => 'Abonnements',
     'homepage_styles' => 'Styles à la une',
     'maintenance' => 'Maintenance',
+    'invoicing' => 'Facturation',
 ];
 
 // Onglet actif par défaut : celui visé par la redirection après
@@ -514,6 +515,48 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
 
             <div>
                 <button type="submit" class="btn btn--outline">Enregistrer le mode maintenance</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div data-settings-panel="invoicing" class="<?= $activeTab === 'invoicing' ? '' : 'hidden' ?>">
+    <div class="bg-white border border-border rounded-md p-6 shadow-sm flex flex-col">
+        <h2 class="text-base font-semibold mb-5 text-ink">Facturation</h2>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Identité légale affichée sur les factures PDF téléchargées depuis l'espace artiste et l'admin (commandes et abonnements). Tous les champs sont facultatifs — une ligne vide n'apparaît simplement pas sur le document.
+        </p>
+
+        <form method="POST" action="/admin/settings/invoicing" style="display: flex; flex-direction: column; gap: 1rem; max-width: 480px;">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::token()) ?>">
+
+            <div>
+                <label for="company_name" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Raison sociale</label>
+                <input type="text" id="company_name" name="company_name" value="<?= htmlspecialchars($settings['company_name'] ?? '') ?>"
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+            </div>
+
+            <div>
+                <label for="company_address" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Adresse</label>
+                <textarea id="company_address" name="company_address" rows="2"
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.9rem; font-family: var(--font-main); resize: vertical;"><?= htmlspecialchars($settings['company_address'] ?? '') ?></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="company_siret" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">SIRET</label>
+                    <input type="text" id="company_siret" name="company_siret" value="<?= htmlspecialchars($settings['company_siret'] ?? '') ?>"
+                        style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="company_vat" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">TVA intracommunautaire</label>
+                    <input type="text" id="company_vat" name="company_vat" value="<?= htmlspecialchars($settings['company_vat'] ?? '') ?>"
+                        style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn--outline">Enregistrer les informations de facturation</button>
             </div>
         </form>
     </div>

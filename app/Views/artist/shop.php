@@ -43,7 +43,45 @@ $bannerShapeRatio = '579 / 160';
         <a href="/my-shop?tab=infos" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'infos' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Ma boutique</a>
         <a href="/my-shop?tab=stats" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'stats' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Statistiques</a>
         <a href="/my-shop?tab=raffle" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'raffle' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Tirage au sort</a>
+        <a href="/my-shop?tab=invoices" class="inline-flex items-center rounded-full border px-4 py-1 text-[0.85rem] font-medium no-underline transition-colors <?= $tab === 'invoices' ? 'bg-primary text-white border-primary' : 'bg-white text-ink border-border hover:border-primary' ?>">Factures</a>
     </nav>
+<?php endif; ?>
+
+<?php if ($tab === 'invoices' && $shop !== null): ?>
+    <p class="text-[0.85rem] text-muted mb-4">
+        Historique des paiements de ton abonnement — la facture de chaque commande est disponible depuis son suivi de commande.
+    </p>
+
+    <div class="bg-white border border-border rounded-md overflow-hidden shadow-sm">
+        <?php if (empty($subscriptionInvoices)): ?>
+            <p class="text-muted text-[0.85rem] text-center p-6">Aucune facture d'abonnement pour le moment.</p>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-[0.875rem] max-[560px]:min-w-[480px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2]">
+                    <thead>
+                        <tr>
+                            <th>Formule</th>
+                            <th>Période</th>
+                            <th>Payée le</th>
+                            <th>Montant</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($subscriptionInvoices as $invoice): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($invoice['plan_name']) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $invoice['period_start']) ?> — <?= \App\Core\FrenchDate::format('d MMM y', $invoice['period_end']) ?></td>
+                                <td><?= \App\Core\FrenchDate::format('d MMM y', $invoice['paid_at']) ?></td>
+                                <td><?= number_format($invoice['amount'] / 100, 2, ',', ' ') ?> €</td>
+                                <td><a href="/factures/abonnement/<?= (int) $invoice['id'] ?>" class="text-primary font-medium hover:underline">Télécharger (PDF)</a></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
 <?php endif; ?>
 
 <?php if ($tab === 'stats' && $shop !== null): ?>

@@ -6,6 +6,27 @@ class ShopSubscription extends BaseModel
 {
     protected string $table = 'shop_subscription';
 
+    /**
+     * Abonnement avec les infos de la boutique/artiste jointes — utilisé
+     * par l'admin pour retrouver le shop_id avant de lister ses factures
+     * (voir AdminController::subscriptionInvoices()).
+     */
+    public function findByIdWithShop(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT ss.*, s.name AS shop_name, s.slug AS shop_slug, u.username
+             FROM shop_subscription ss
+             INNER JOIN shop s ON s.id = ss.shop_id
+             INNER JOIN users u ON u.id = s.user_id
+             WHERE ss.id = :id'
+        );
+        $stmt->execute(['id' => $id]);
+
+        $result = $stmt->fetch();
+
+        return $result ?: null;
+    }
+
     // Trouve l'abonnement actif d'une boutique, retourne null si pas d'abonnement
     public function findActiveByShopId(int $shopId): ?array
     {

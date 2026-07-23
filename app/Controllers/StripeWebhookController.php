@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Notification;
 use App\Models\ShopSubscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\SubscriptionPlan;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
@@ -21,12 +22,14 @@ class StripeWebhookController
 {
     private ShopSubscription $subscriptionModel;
     private SubscriptionPlan $planModel;
+    private SubscriptionInvoice $invoiceModel;
     private Notification $notificationModel;
 
     public function __construct()
     {
         $this->subscriptionModel = new ShopSubscription();
         $this->planModel = new SubscriptionPlan();
+        $this->invoiceModel = new SubscriptionInvoice();
         $this->notificationModel = new Notification();
     }
 
@@ -84,6 +87,41 @@ class StripeWebhookController
         $this->subscriptionModel->update($subscription['id'], [
             'status' => 'active',
             'current_period_end' => date('Y-m-d H:i:s', $periodEnd),
+        ]);
+
+        $this->recordInvoice($invoice, $subscription);
+    }
+
+    /**
+     * Trace ce paiement pour permettre la génération d'une facture PDF
+     * côté artiste/admin — dédoublonné sur stripe_invoice_id, Stripe
+     * pouvant renvoyer le même événement plusieurs fois (retries de
+     * webhook). La période de service vient de la ligne de facture
+     * (invoice.lines.data[0].period), PAS de invoice.period_start/end qui
+     * ne délimitent que le rattachement d'articles à la facture (voir la
+     * docstring de la propriété dans le SDK stripe-php).
+     */
+    private function recordInvoice(object $invoice, array $subscription): void
+    {
+        if ($this->invoiceModel->findByStripeInvoiceId($invoice->id) !== null) {
+            return;
+        }
+
+        $line = $invoice->lines->data[0] ?? null;
+        if ($line === null) {
+            return;
+        }
+
+        $plan = $this->planModel->findById($subscription['plan_id']);
+
+        $this->invoiceModel->create([
+            'shop_id' => $subscription['shop_id'],
+            'plan_name' => $plan['name'] ?? 'Abonnement',
+            'amount' => $invoice->amount_paid,
+            'stripe_invoice_id' => $invoice->id,
+            'period_start' => date('Y-m-d H:i:s', $line->period->start),
+            'period_end' => date('Y-m-d H:i:s', $line->period->end),
+            'paid_at' => date('Y-m-d H:i:s'),
         ]);
     }
 
