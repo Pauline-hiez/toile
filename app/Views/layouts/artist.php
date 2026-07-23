@@ -165,7 +165,7 @@ $navIcons = [
                                     <a href="/">Accueil</a>
                                     <a href="/profile">Profil</a>
                                     <?php if ($artistShop): ?>
-                                        <a href="/my-shop">Ma boutique</a>
+                                        <a href="/boutiques/<?= htmlspecialchars($artistShop['slug']) ?>">Ma boutique</a>
                                     <?php endif; ?>
                                     <hr>
                                     <a href="/logout">Se déconnecter</a>
