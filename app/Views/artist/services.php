@@ -14,7 +14,7 @@
 $pageTitle = 'Mes prestations — Toile';
 ?>
 
-<div class="grid grid-cols-3 gap-4 mb-8 max-w-[640px]">
+<div class="grid grid-cols-1 min-[481px]:grid-cols-3 gap-4 mb-8 max-w-[640px]">
     <a href="/my-services?tab=services" class="bg-white border border-border rounded-md p-5 text-center shadow-sm no-underline text-inherit transition-colors <?= $tab === 'services' ? 'border-primary' : 'hover:border-primary' ?>">
         <div class="text-[0.85rem] text-muted font-medium mb-2">Prestations</div>
         <div class="font-cursive text-[2.2rem] font-semibold text-ink"><?= count($services) ?></div>

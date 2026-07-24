@@ -161,7 +161,29 @@
         });
     }
 
+    // Sur écran tactile, la barre reste repliée (largeur 0, dépliée au
+    // survol via CSS) et seul le bouton loupe est cliquable : un premier
+    // tap soumettrait donc un formulaire vide sans jamais laisser saisir.
+    // Quand la barre est repliée (offsetWidth 0), on redirige le tap vers
+    // le focus du champ — le `:focus-within` du CSS le déplie — au lieu de
+    // soumettre. Une fois dépliée, le tap suivant soumet normalement.
+    function setupTouchExpand(bar) {
+        var input = bar.querySelector('input[type="text"]');
+        var submit = bar.querySelector('.search-bar__submit');
+        if (!input || !submit) {
+            return;
+        }
+
+        submit.addEventListener('click', function (e) {
+            if (input.offsetWidth === 0) {
+                e.preventDefault();
+                input.focus();
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('input[data-autocomplete]').forEach(setup);
+        document.querySelectorAll('.search-bar').forEach(setupTouchExpand);
     });
 })();

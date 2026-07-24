@@ -1228,6 +1228,15 @@ body::before {
 
     .site-header__icons {
         gap: 0.15rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    /* Barre de recherche dépliée au focus : si elle ne tient pas sur la
+       ligne des icônes (petits écrans tactiles), elle passe à la ligne
+       plutôt que d'être rognée par l'overflow-x du body. */
+    .search-bar:focus-within {
+        flex-basis: 100%;
     }
 
     .site-header__nav {
