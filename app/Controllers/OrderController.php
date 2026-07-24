@@ -183,20 +183,34 @@ class OrderController
             : null;
 
         if ($wantsShipping) {
-            $shippingFields = [
-                'shipping_name' => trim($_POST['shipping_name'] ?? ''),
-                'shipping_address_line1' => trim($_POST['shipping_address_line1'] ?? ''),
-                'shipping_address_line2' => trim($_POST['shipping_address_line2'] ?? ''),
-                'shipping_city' => trim($_POST['shipping_city'] ?? ''),
-                'shipping_postal_code' => trim($_POST['shipping_postal_code'] ?? ''),
-                'shipping_country' => trim($_POST['shipping_country'] ?? ''),
-            ];
+            if (isset($_POST['shipping_same_as_billing'])) {
+                // "Livrer à mon adresse de facturation" : on recopie
+                // l'adresse de facturation (déjà validée ci-dessus) plutôt
+                // que d'imposer une nouvelle saisie identique.
+                $shippingFields = [
+                    'shipping_name' => $billingFields['billing_name'],
+                    'shipping_address_line1' => $billingFields['billing_address_line1'],
+                    'shipping_address_line2' => $billingFields['billing_address_line2'],
+                    'shipping_city' => $billingFields['billing_city'],
+                    'shipping_postal_code' => $billingFields['billing_postal_code'],
+                    'shipping_country' => $billingFields['billing_country'],
+                ];
+            } else {
+                $shippingFields = [
+                    'shipping_name' => trim($_POST['shipping_name'] ?? ''),
+                    'shipping_address_line1' => trim($_POST['shipping_address_line1'] ?? ''),
+                    'shipping_address_line2' => trim($_POST['shipping_address_line2'] ?? ''),
+                    'shipping_city' => trim($_POST['shipping_city'] ?? ''),
+                    'shipping_postal_code' => trim($_POST['shipping_postal_code'] ?? ''),
+                    'shipping_country' => trim($_POST['shipping_country'] ?? ''),
+                ];
 
-            if ($shippingFields['shipping_address_line1'] === '' || $shippingFields['shipping_city'] === '' || $shippingFields['shipping_postal_code'] === '') {
-                $errors['shipping'] = 'Renseigne au moins l\'adresse, la ville et le code postal pour une livraison physique.';
+                if ($shippingFields['shipping_address_line1'] === '' || $shippingFields['shipping_city'] === '' || $shippingFields['shipping_postal_code'] === '') {
+                    $errors['shipping'] = 'Renseigne au moins l\'adresse, la ville et le code postal pour une livraison physique.';
+                }
+
+                $shippingFields = array_map(fn($v) => $v !== '' ? $v : null, $shippingFields);
             }
-
-            $shippingFields = array_map(fn($v) => $v !== '' ? $v : null, $shippingFields);
         }
 
         // Éléments de base : choix purement descriptifs groupés par
