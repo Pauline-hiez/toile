@@ -2,7 +2,7 @@ name: Deploy to InfinityFree
 
 on:
   push:
-    branches: [main] # branche à déployer
+    branches: [V1] # branche à déployer
   workflow_dispatch: # + bouton manuel dans l'onglet Actions
 
 jobs:
