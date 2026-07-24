@@ -737,14 +737,6 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
             syncHiddenInputs();
         });
 
-        // Diagnostic : montre exactement ce qui part au serveur au clic sur
-        // "Enregistrer la sélection", pour vérifier que l'ordre visible à
-        // l'écran correspond bien à ce qui est réellement soumis.
-        form.addEventListener('submit', function () {
-            var order = selectedItems().map(function (item) { return item.dataset.name; });
-            console.log('[Styles à la une] Ordre envoyé au serveur :', order);
-        });
-
         syncHiddenInputs();
     })();
 

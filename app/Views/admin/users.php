@@ -105,7 +105,7 @@ $queryWithout = function (array $overrides = []) use ($filters) {
         <p class="text-muted text-[0.85rem] text-center p-6">Aucun utilisateur ne correspond à ces filtres.</p>
     <?php else: ?>
         <div class="overflow-x-auto">
-            <table class="w-full border-collapse text-[0.875rem] max-[720px]:min-w-[640px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2] [&_input]:w-4 [&_input]:h-4 [&_input]:accent-primary [&_input]:cursor-pointer" data-bulk-table data-bulk-form="usersBulkForm">
+            <table class="data-table max-[720px]:min-w-[640px] [&_input]:w-4 [&_input]:h-4 [&_input]:accent-primary [&_input]:cursor-pointer" data-bulk-table data-bulk-form="usersBulkForm">
                 <thead>
                     <tr>
                         <th>

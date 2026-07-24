@@ -1,7 +1,12 @@
 <?php
 
-ini_set('display_errors', 1);
+// Défaut sûr pour la fenêtre de bootstrap (avant de connaître APP_ENV) :
+// on logge toujours, mais on n'affiche jamais les erreurs à l'écran — pas
+// de fuite de chemins/SQL/config si une erreur survient avant le chargement
+// du .env. L'affichage est réactivé juste après, uniquement hors production.
 error_reporting(E_ALL);
+ini_set('log_errors', '1');
+ini_set('display_errors', '0');
 
 // PHP est en UTC par défaut, alors que MySQL suit l'heure système
 // (Europe/Paris) — sans ça, tout calcul de durée entre time() et un
@@ -13,6 +18,12 @@ require __DIR__ . '/../vendor/autoload.php';
 // Charger le .env EN PREMIER, avant tout autre code
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
+
+// Erreurs affichées à l'écran uniquement en dev/local ; en production
+// (APP_ENV=production) elles restent masquées et sont seulement journalisées.
+if (in_array($_ENV['APP_ENV'] ?? 'production', ['development', 'local'], true)) {
+    ini_set('display_errors', '1');
+}
 
 session_start();
 

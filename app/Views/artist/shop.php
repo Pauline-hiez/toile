@@ -57,7 +57,7 @@ $bannerShapeRatio = '579 / 160';
             <p class="text-muted text-[0.85rem] text-center p-6">Aucune facture d'abonnement pour le moment.</p>
         <?php else: ?>
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-[0.875rem] max-[560px]:min-w-[480px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2]">
+                <table class="data-table max-[560px]:min-w-[480px]">
                     <thead>
                         <tr>
                             <th>Formule</th>
@@ -192,7 +192,7 @@ $bannerShapeRatio = '579 / 160';
             <p class="text-muted text-[0.85rem] text-center p-6">Tu n'as encore participé à aucun tirage.</p>
         <?php else: ?>
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-[0.875rem] max-[560px]:min-w-[480px] [&_th]:py-3 [&_th]:px-4 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[0.8rem] [&_th]:text-muted [&_th]:bg-bg [&_th]:border-b [&_th]:border-border [&_td]:py-3 [&_td]:px-4 [&_td]:border-b [&_td]:border-border [&_td]:align-middle [&_tr:last-child_td]:border-b-0 [&_tr:hover_td]:bg-[#faf7f2]">
+                <table class="data-table max-[560px]:min-w-[480px]">
                     <thead>
                         <tr>
                             <th>Tirage</th>

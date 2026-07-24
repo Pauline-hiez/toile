@@ -175,6 +175,41 @@ body::before {
     pointer-events: none;
 }
 
+/* ---- Tableau de données (dashboards admin & artiste) ----
+   Corps de tableau partagé par toutes les listes (commandes, utilisateurs,
+   abonnements, factures...). Les variantes propres à chaque page restent en
+   utilitaires Tailwind sur le <table> : largeur mini de défilement
+   (max-[720px]:min-w-[640px]), cases à cocher, etc. */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.data-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.data-table tr:hover td {
+    background: #faf7f2;
+}
+
 /* ---- Boutons ---- */
 
 .btn {
