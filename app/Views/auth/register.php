@@ -99,6 +99,7 @@ $pageTitle = 'Inscription — Toile';
                         Vous avez déjà un compte ? <a href="/login" class="font-semibold underline">Connectez-vous</a>
                     </p>
 
+                    <?php if (!\App\Core\Demo::isEnabled()): ?>
                     <div class="flex items-center gap-3 text-[0.75rem] min-[481px]:text-[0.85rem] text-primary">
                         <span class="flex-1 border-t border-border"></span>
                         Ou
@@ -112,6 +113,7 @@ $pageTitle = 'Inscription — Toile';
                             <img src="/assets/images/reseaux/google-icone.png" alt="Google" class="w-11 h-11 min-[481px]:w-16 min-[481px]:h-16 object-contain">
                         </a>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

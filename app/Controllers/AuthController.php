@@ -358,6 +358,12 @@ class AuthController
 
     public function redirectToGoogle(): void
     {
+        // Connexion Google indisponible en démonstration (OAuth sortant bloqué).
+        if (\App\Core\Demo::isEnabled()) {
+            header('Location: /login?error=google_failed');
+            exit;
+        }
+
         $googleAuth = new GoogleAuth();
         header('Location: ' . $googleAuth->getAuthUrl());
         exit;
@@ -366,6 +372,11 @@ class AuthController
     // Traite le retour Google (callback)
     public function handleGoogleCallback(): void
     {
+        if (\App\Core\Demo::isEnabled()) {
+            header('Location: /login?error=google_failed');
+            exit;
+        }
+
         $code = $_GET['code'] ?? null;
 
         if ($code === null) {

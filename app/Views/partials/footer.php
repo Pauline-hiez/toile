@@ -14,6 +14,11 @@ $socialLinks = [
     'tiktok' => $settingModel->get('social_tiktok'),
 ];
 ?>
+<?php if (\App\Core\Demo::isEnabled()): ?>
+    <div class="bg-title text-white text-center text-[0.8rem] px-4 py-2 leading-snug">
+        🎨 Version de démonstration — les paiements, l'envoi d'emails et la connexion Google sont désactivés.
+    </div>
+<?php endif; ?>
 <footer class="site-footer">
     <div class="site-footer__inner">
         <div class="site-footer__logo">
