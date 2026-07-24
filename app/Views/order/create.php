@@ -1,4 +1,12 @@
-<?php $pageTitle = 'Commander : ' . htmlspecialchars($service['title']) . ' — Toile'; ?>
+<?php
+$pageTitle = 'Commander : ' . htmlspecialchars($service['title']) . ' — Toile';
+
+// Pré-remplissage de l'adresse de facturation : les valeurs soumises en cas
+// d'erreur (fournies par store()), sinon l'adresse par défaut du profil
+// (fournie par create()). Robuste si non passé.
+$billingPrefill = $billingPrefill ?? [];
+$bp = fn(string $k) => htmlspecialchars($billingPrefill[$k] ?? '');
+?>
 
 <div class="relative overflow-hidden">
     <div class="max-w-[640px] mx-auto px-5 min-[641px]:px-10 py-6">
@@ -122,6 +130,47 @@
                     Je préfère demander un devis d'abord
                 </label>
             <?php endif; ?>
+        </div>
+
+        <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4">
+            <h2 class="font-cursive text-[1.1rem] font-semibold text-ink">Adresse de facturation</h2>
+            <p class="text-[0.78rem] text-muted -mt-2">Obligatoire — elle figurera sur ta facture. Pré-remplie depuis ton profil si tu en as une.</p>
+            <?php if (isset($errors['billing'])): ?>
+                <p class="text-danger text-[0.78rem] -mt-2"><?= htmlspecialchars($errors['billing']) ?></p>
+            <?php endif; ?>
+
+            <div>
+                <label for="billing_name" class="block text-[0.85rem] font-semibold text-ink mb-1">Nom / raison sociale</label>
+                <input type="text" id="billing_name" name="billing_name" value="<?= $bp('billing_name') ?>" required
+                    class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+            </div>
+
+            <div>
+                <label for="billing_address_line1" class="block text-[0.85rem] font-semibold text-ink mb-1">Adresse</label>
+                <input type="text" id="billing_address_line1" name="billing_address_line1" value="<?= $bp('billing_address_line1') ?>" required
+                    class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary mb-2">
+                <input type="text" id="billing_address_line2" name="billing_address_line2" value="<?= $bp('billing_address_line2') ?>" placeholder="Complément d'adresse (optionnel)"
+                    class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+            </div>
+
+            <div class="flex flex-col min-[480px]:flex-row gap-4">
+                <div class="flex-1">
+                    <label for="billing_postal_code" class="block text-[0.85rem] font-semibold text-ink mb-1">Code postal</label>
+                    <input type="text" id="billing_postal_code" name="billing_postal_code" value="<?= $bp('billing_postal_code') ?>" required
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+                <div class="flex-[2]">
+                    <label for="billing_city" class="block text-[0.85rem] font-semibold text-ink mb-1">Ville</label>
+                    <input type="text" id="billing_city" name="billing_city" value="<?= $bp('billing_city') ?>" required
+                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                </div>
+            </div>
+
+            <div>
+                <label for="billing_country" class="block text-[0.85rem] font-semibold text-ink mb-1">Pays</label>
+                <input type="text" id="billing_country" name="billing_country" value="<?= $bp('billing_country') ?: 'France' ?>" required
+                    class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+            </div>
         </div>
 
         <div class="relative z-0 bg-white border border-border rounded-2xl shadow-sm p-5 flex flex-col gap-4">

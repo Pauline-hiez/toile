@@ -79,7 +79,7 @@ class Order extends BaseModel
         $stmt = $this->pdo->prepare(
             'SELECT o.*,
                     s.name AS shop_name, s.slug AS shop_slug, s.user_id AS shop_owner_id,
-                    u.username AS client_name,
+                    u.username AS client_name, u.email AS client_email,
                     sv.title AS service_title
              FROM orders o
              INNER JOIN shop s ON s.id = o.shop_id

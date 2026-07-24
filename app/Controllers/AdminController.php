@@ -1580,6 +1580,7 @@ class AdminController
             'company_address' => trim($_POST['company_address'] ?? ''),
             'company_siret' => trim($_POST['company_siret'] ?? ''),
             'company_vat' => trim($_POST['company_vat'] ?? ''),
+            'company_legal' => trim($_POST['company_legal'] ?? ''),
         ]);
 
         header('Location: /admin/settings?section=invoicing&success=1');

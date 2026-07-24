@@ -115,6 +115,7 @@ class StripeWebhookController
         $plan = $this->planModel->findById($subscription['plan_id']);
 
         $this->invoiceModel->create([
+            'invoice_number' => \App\Core\InvoiceNumber::next('FAC'),
             'shop_id' => $subscription['shop_id'],
             'plan_name' => $plan['name'] ?? 'Abonnement',
             'amount' => $invoice->amount_paid,

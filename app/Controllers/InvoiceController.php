@@ -73,7 +73,7 @@ class InvoiceController
             'company' => $this->settingModel->all(),
         ]);
 
-        PdfService::download($html, 'facture-commande-' . $order['id'] . '.pdf');
+        PdfService::download($html, 'facture-' . ($order['invoice_number'] ?: 'commande-' . $order['id']) . '.pdf');
     }
 
     public function subscriptionInvoice(int $id): void
@@ -100,7 +100,7 @@ class InvoiceController
             'company' => $this->settingModel->all(),
         ]);
 
-        PdfService::download($html, 'facture-abonnement-' . $invoice['id'] . '.pdf');
+        PdfService::download($html, 'facture-' . ($invoice['invoice_number'] ?: 'abonnement-' . $invoice['id']) . '.pdf');
     }
 
     // Rendu de la vue en chaîne (pas envoyée au navigateur) : Renderer::render()

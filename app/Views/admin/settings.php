@@ -552,7 +552,15 @@ $activeTab = array_key_exists($section, $tabs) ? $section : 'general';
                     <label for="company_vat" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">TVA intracommunautaire</label>
                     <input type="text" id="company_vat" name="company_vat" value="<?= htmlspecialchars($settings['company_vat'] ?? '') ?>"
                         style="width: 100%; border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.4rem 0.9rem; font-family: var(--font-main);">
+                    <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.3rem;">Laisse vide en franchise en base de TVA.</p>
                 </div>
+            </div>
+
+            <div>
+                <label for="company_legal" style="display: block; font-weight: 600; margin-bottom: 0.4rem;">Mentions légales complémentaires</label>
+                <textarea id="company_legal" name="company_legal" rows="2" placeholder="Ex : SAS au capital de 1 000 € — RCS Paris 912 345 678 — APE 9003B"
+                    style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.9rem; font-family: var(--font-main); resize: vertical;"><?= htmlspecialchars($settings['company_legal'] ?? '') ?></textarea>
+                <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.3rem;">Forme juridique, capital, RCS, APE… — affichées en pied de facture. Facultatif.</p>
             </div>
 
             <div>
