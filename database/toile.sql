@@ -199,6 +199,22 @@ CREATE TABLE orders (
     shipping_postal_code VARCHAR(20) NULL,
     shipping_country VARCHAR(100) NULL,
 
+    -- Adresse de facturation du client, figée à la commande (obligatoire à
+    -- la saisie — voir OrderController::store()) : identifie l'acheteur sur
+    -- la facture. Distincte de l'adresse de livraison.
+    billing_name VARCHAR(150) NULL,
+    billing_address_line1 VARCHAR(255) NULL,
+    billing_address_line2 VARCHAR(255) NULL,
+    billing_city VARCHAR(100) NULL,
+    billing_postal_code VARCHAR(20) NULL,
+    billing_country VARCHAR(100) NULL,
+
+    -- Numéro de facture séquentiel (série CMD), attribué une seule fois à la
+    -- capture du paiement (voir App\Core\InvoiceNumber). NULL tant que la
+    -- commande n'a pas été payée/capturée.
+    invoice_number VARCHAR(30) NULL UNIQUE,
+    invoiced_at DATETIME NULL,
+
     is_archived BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -471,6 +487,10 @@ CREATE TABLE shop_subscription (
 CREATE TABLE subscription_invoice (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
+    -- Numéro de facture séquentiel (série ABO), attribué au paiement Stripe
+    -- (voir App\Core\InvoiceNumber / StripeWebhookController::recordInvoice()).
+    invoice_number VARCHAR(30) NULL UNIQUE,
+
     shop_id INT NOT NULL,
     plan_name VARCHAR(100) NOT NULL,
     amount INT NOT NULL,
@@ -486,6 +506,21 @@ CREATE TABLE subscription_invoice (
     CONSTRAINT fk_subscription_invoice_shop
         FOREIGN KEY (shop_id) REFERENCES shop(id)
         ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table : invoice_counter
+-- Compteur de numérotation des factures, une ligne par (série, année).
+-- Incrémenté atomiquement par App\Core\InvoiceNumber pour garantir une
+-- séquence continue et sans trou, même en cas d'accès concurrents.
+-- -----------------------------------------------------
+CREATE TABLE invoice_counter (
+    series VARCHAR(20) NOT NULL,
+    year INT NOT NULL,
+    last_number INT NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (series, year)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

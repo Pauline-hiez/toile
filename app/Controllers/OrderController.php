@@ -74,7 +74,28 @@ class OrderController
             'options' => $options,
             'basesGrouped' => $basesGrouped,
             'errors' => [],
+            'billingPrefill' => $this->profileBillingPrefill(),
         ]);
+    }
+
+    /**
+     * Adresse de facturation par défaut d'après le profil du client
+     * connecté, pour pré-remplir le formulaire de commande.
+     *
+     * @return array<string, string>
+     */
+    private function profileBillingPrefill(): array
+    {
+        $user = $this->userModel->findById($_SESSION['user_id']);
+
+        return [
+            'billing_name' => $user['username'] ?? '',
+            'billing_address_line1' => $user['address_line1'] ?? '',
+            'billing_address_line2' => $user['address_line2'] ?? '',
+            'billing_city' => $user['city'] ?? '',
+            'billing_postal_code' => $user['postal_code'] ?? '',
+            'billing_country' => $user['country'] ?? '',
+        ];
     }
 
     /**
@@ -126,6 +147,17 @@ class OrderController
             'shipping_country' => null,
         ];
 
+        // Adresse de facturation du client : obligatoire, figée sur la
+        // commande (elle apparaîtra sur la facture — voir InvoiceController).
+        $billingFields = [
+            'billing_name' => trim($_POST['billing_name'] ?? ''),
+            'billing_address_line1' => trim($_POST['billing_address_line1'] ?? ''),
+            'billing_address_line2' => trim($_POST['billing_address_line2'] ?? ''),
+            'billing_city' => trim($_POST['billing_city'] ?? ''),
+            'billing_postal_code' => trim($_POST['billing_postal_code'] ?? ''),
+            'billing_country' => trim($_POST['billing_country'] ?? ''),
+        ];
+
         $errors = [];
 
         if (mb_strlen($title) < 3) {
@@ -135,6 +167,20 @@ class OrderController
         if (mb_strlen($description) < 10) {
             $errors['description'] = 'La description doit faire au moins 10 caractères.';
         }
+
+        if ($billingFields['billing_name'] === ''
+            || $billingFields['billing_address_line1'] === ''
+            || $billingFields['billing_city'] === ''
+            || $billingFields['billing_postal_code'] === ''
+            || $billingFields['billing_country'] === ''
+        ) {
+            $errors['billing'] = 'Renseigne ton adresse de facturation complète (nom, adresse, code postal, ville, pays).';
+        }
+
+        // complément d'adresse vide -> null en base.
+        $billingFields['billing_address_line2'] = $billingFields['billing_address_line2'] !== ''
+            ? $billingFields['billing_address_line2']
+            : null;
 
         if ($wantsShipping) {
             $shippingFields = [
@@ -178,6 +224,7 @@ class OrderController
                 'options' => $options,
                 'basesGrouped' => $basesGrouped,
                 'errors' => $errors,
+                'billingPrefill' => $billingFields,
                 'pageTitle' => 'Commander — Toile',
             ]);
             return;
@@ -206,6 +253,7 @@ class OrderController
                     'options' => $options,
                     'basesGrouped' => $basesGrouped,
                     'errors' => $errors,
+                    'billingPrefill' => $billingFields,
                     'pageTitle' => 'Commander — Toile',
                 ]);
                 return;
@@ -228,7 +276,7 @@ class OrderController
                 'total_price' => $totalPrice,
                 'status' => 'quote_requested',
                 'delivery_file' => $referenceFile,
-            ], $shippingFields));
+            ], $shippingFields, $billingFields));
 
             $this->orderBaseModel->createForOrder($orderId, $selectedBaseIds, $flatBases);
 
@@ -286,7 +334,7 @@ class OrderController
             'total_price' => $totalPrice,
             'delivery_file' => $referenceFile,
             'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
-        ], $shippingFields);
+        ], $shippingFields, $billingFields);
         // Stocké à part : ce n'est pas une colonne de orders, seulement
         // utilisé après coup pour peupler order_service_base (voir confirm()).
         $_SESSION['pending_order_base_ids'] = $selectedBaseIds;
@@ -566,6 +614,15 @@ class OrderController
 
                     $stripe->capturePaymentIntent($order['stripe_payment_intent_id']);
 
+                    // Capture réussie = fait générateur de la facture : on lui
+                    // attribue son numéro séquentiel définitif (une seule fois).
+                    if (empty($order['invoice_number'])) {
+                        $this->orderModel->update($order['id'], [
+                            'invoice_number' => \App\Core\InvoiceNumber::next('FAC'),
+                            'invoiced_at' => date('Y-m-d H:i:s'),
+                        ]);
+                    }
+
                     // Email de confirmation de débit au client.
                     $client = $this->userModel->findById($order['client_id']);
                     if ($client) {
@@ -755,9 +812,24 @@ class OrderController
         // Contrairement à store(), la commande existe déjà : on persiste
         // le PaymentIntent directement dessus (pas besoin de session), ce
         // qui rend confirmQuotePayment() résistant à un rafraîchissement.
-        $this->orderModel->update($order['id'], [
-            'stripe_payment_intent_id' => $paymentData['payment_intent_id'],
-        ]);
+        $orderUpdate = ['stripe_payment_intent_id' => $paymentData['payment_intent_id']];
+
+        // Devis « général » (modale sans prestation) : le formulaire de
+        // commande — donc l'adresse de facturation — n'a jamais été montré.
+        // Au moment du paiement, on la fige depuis le profil du client pour
+        // que la facture ne soit pas incomplète.
+        if (empty($order['billing_address_line1']) && !empty($user['address_line1'])) {
+            $orderUpdate += [
+                'billing_name' => $user['username'],
+                'billing_address_line1' => $user['address_line1'],
+                'billing_address_line2' => $user['address_line2'] ?: null,
+                'billing_city' => $user['city'],
+                'billing_postal_code' => $user['postal_code'],
+                'billing_country' => $user['country'],
+            ];
+        }
+
+        $this->orderModel->update($order['id'], $orderUpdate);
 
         $this->renderer->render('order/payment', [
             'service' => ['title' => $order['service_title'] ?? $order['title']],
