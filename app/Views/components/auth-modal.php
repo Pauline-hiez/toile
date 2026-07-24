@@ -74,6 +74,7 @@
                             Pas encore de compte ? <a href="/register" data-auth-switch="register" class="font-semibold underline">Créer un compte</a>
                         </p>
 
+                        <?php if (!\App\Core\Demo::isEnabled()): ?>
                         <div class="flex items-center gap-3 text-[0.8rem] min-[481px]:text-[0.9rem] text-primary mt-3">
                             <span class="flex-1 border-t border-border"></span>
                             Ou
@@ -87,6 +88,7 @@
                                 <img src="/assets/images/reseaux/google-icone.png" alt="Google" class="w-12 h-12 min-[481px]:w-14 min-[481px]:h-14 object-contain">
                             </a>
                         </div>
+                        <?php endif; ?>
                     </div>
 
                     <div data-auth-panel="register" class="hidden">
@@ -152,6 +154,7 @@
                             Vous avez déjà un compte ? <a href="/login" data-auth-switch="login" class="font-semibold underline">Connectez-vous</a>
                         </p>
 
+                        <?php if (!\App\Core\Demo::isEnabled()): ?>
                         <div class="flex items-center gap-3 text-[0.8rem] min-[481px]:text-[0.9rem] text-primary mt-3">
                             <span class="flex-1 border-t border-border"></span>
                             Ou
@@ -165,6 +168,7 @@
                                 <img src="/assets/images/reseaux/google-icone.png" alt="Google" class="w-12 h-12 min-[481px]:w-14 min-[481px]:h-14 object-contain">
                             </a>
                         </div>
+                        <?php endif; ?>
                     </div>
 
                 </div>

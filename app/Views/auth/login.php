@@ -86,6 +86,7 @@ $pageTitle = 'Connexion — Toile';
                         Pas encore de compte ? <a href="/register" class="font-semibold underline">Créer un compte</a>
                     </p>
 
+                    <?php if (!\App\Core\Demo::isEnabled()): ?>
                     <div class="flex items-center gap-3 text-[0.75rem] min-[481px]:text-[0.85rem] text-primary">
                         <span class="flex-1 border-t border-border"></span>
                         Ou
@@ -99,6 +100,7 @@ $pageTitle = 'Connexion — Toile';
                             <img src="/assets/images/reseaux/google-icone.png" alt="Google" class="w-11 h-11 min-[481px]:w-16 min-[481px]:h-16 object-contain">
                         </a>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

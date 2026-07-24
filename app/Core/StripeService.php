@@ -16,6 +16,14 @@ class StripeService
 {
     public function __construct()
     {
+        // En mode démonstration, aucun appel Stripe ne peut aboutir (réseau
+        // sortant bloqué). On échoue immédiatement plutôt que d'attendre le
+        // timeout du SDK : l'exception est interceptée dans index.php pour
+        // afficher une page « indisponible en démo ».
+        if (Demo::isEnabled()) {
+            throw new DemoModeException('Stripe désactivé en mode démonstration.');
+        }
+
         Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
     }
 

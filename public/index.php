@@ -150,4 +150,14 @@ if (isset($target['controller'])) {
 }
 
 $controller = new $controllerClass($renderer);
-call_user_func_array([$controller, $method], $match['params']);
+
+try {
+    call_user_func_array([$controller, $method], $match['params']);
+} catch (\App\Core\DemoModeException $e) {
+    // Une action réseau désactivée en démonstration (paiement Stripe...) a
+    // été tentée : on affiche une page dédiée plutôt que de laisser fuiter
+    // une erreur. Voir App\Core\Demo / StripeService.
+    http_response_code(503);
+    $renderer->render('errors/demo', ['pageTitle' => 'Démonstration — Toile']);
+    exit;
+}

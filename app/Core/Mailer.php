@@ -25,6 +25,14 @@ class Mailer
         string $type = 'general',
         array $embeddedImages = []
     ): bool {
+        // Mode démonstration : le SMTP sortant est bloqué (hébergement
+        // mutualisé), une tentative d'envoi gèlerait la page jusqu'au
+        // timeout. On journalise et on considère l'envoi comme « ignoré ».
+        if (Demo::isEnabled()) {
+            self::log($to, $type, $subject, 'skipped');
+            return true;
+        }
+
         $mail = new PHPMailer(true);
 
         try {
