@@ -186,37 +186,44 @@ $bp = fn(string $k) => htmlspecialchars($billingPrefill[$k] ?? '');
             <?php endif; ?>
 
             <div id="shipping-fields" class="hidden flex-col gap-4">
-                <div>
-                    <label for="shipping_name" class="block text-[0.85rem] font-semibold text-ink mb-1">Nom complet</label>
-                    <input type="text" id="shipping_name" name="shipping_name"
-                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
-                </div>
+                <label class="inline-flex items-center gap-2 text-[0.85rem] text-ink cursor-pointer">
+                    <input type="checkbox" id="shipping-same-as-billing" name="shipping_same_as_billing" value="1" checked class="w-4 h-4 accent-primary cursor-pointer">
+                    Livrer à mon adresse de facturation
+                </label>
 
-                <div>
-                    <label for="shipping_address_line1" class="block text-[0.85rem] font-semibold text-ink mb-1">Adresse</label>
-                    <input type="text" id="shipping_address_line1" name="shipping_address_line1"
-                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary mb-2">
-                    <input type="text" id="shipping_address_line2" name="shipping_address_line2" placeholder="Complément d'adresse (optionnel)"
-                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
-                </div>
-
-                <div class="flex flex-col min-[480px]:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="shipping_postal_code" class="block text-[0.85rem] font-semibold text-ink mb-1">Code postal</label>
-                        <input type="text" id="shipping_postal_code" name="shipping_postal_code"
+                <div id="shipping-address-fields" class="hidden flex-col gap-4">
+                    <div>
+                        <label for="shipping_name" class="block text-[0.85rem] font-semibold text-ink mb-1">Nom complet</label>
+                        <input type="text" id="shipping_name" name="shipping_name"
                             class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
                     </div>
-                    <div class="flex-[2]">
-                        <label for="shipping_city" class="block text-[0.85rem] font-semibold text-ink mb-1">Ville</label>
-                        <input type="text" id="shipping_city" name="shipping_city"
+
+                    <div>
+                        <label for="shipping_address_line1" class="block text-[0.85rem] font-semibold text-ink mb-1">Adresse</label>
+                        <input type="text" id="shipping_address_line1" name="shipping_address_line1"
+                            class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary mb-2">
+                        <input type="text" id="shipping_address_line2" name="shipping_address_line2" placeholder="Complément d'adresse (optionnel)"
                             class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
                     </div>
-                </div>
 
-                <div>
-                    <label for="shipping_country" class="block text-[0.85rem] font-semibold text-ink mb-1">Pays</label>
-                    <input type="text" id="shipping_country" name="shipping_country" placeholder="France"
-                        class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    <div class="flex flex-col min-[480px]:flex-row gap-4">
+                        <div class="flex-1">
+                            <label for="shipping_postal_code" class="block text-[0.85rem] font-semibold text-ink mb-1">Code postal</label>
+                            <input type="text" id="shipping_postal_code" name="shipping_postal_code"
+                                class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                        </div>
+                        <div class="flex-[2]">
+                            <label for="shipping_city" class="block text-[0.85rem] font-semibold text-ink mb-1">Ville</label>
+                            <input type="text" id="shipping_city" name="shipping_city"
+                                class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="shipping_country" class="block text-[0.85rem] font-semibold text-ink mb-1">Pays</label>
+                        <input type="text" id="shipping_country" name="shipping_country" placeholder="France"
+                            class="w-full bg-white border border-border rounded-full px-4 py-[0.5rem] font-main text-[0.9rem] outline-none focus:border-primary">
+                    </div>
                 </div>
             </div>
         </div>
@@ -256,10 +263,24 @@ $bp = fn(string $k) => htmlspecialchars($billingPrefill[$k] ?? '');
 
     const wantsShippingInput = document.getElementById('wants-shipping');
     const shippingFields = document.getElementById('shipping-fields');
+    const sameAsBillingInput = document.getElementById('shipping-same-as-billing');
+    const shippingAddressFields = document.getElementById('shipping-address-fields');
 
-    wantsShippingInput.addEventListener('change', () => {
-        shippingFields.classList.toggle('hidden', !wantsShippingInput.checked);
-        shippingFields.classList.toggle('flex', wantsShippingInput.checked);
-    });
+    function toggleBlock(el, show) {
+        el.classList.toggle('hidden', !show);
+        el.classList.toggle('flex', show);
+    }
+
+    // Deux niveaux : la case "version physique" ouvre le bloc livraison ;
+    // dedans, "Livrer à mon adresse de facturation" (coché par défaut)
+    // masque les champs — le serveur recopie alors l'adresse de facturation.
+    // Les champs ne s'affichent que pour une adresse de livraison différente.
+    function syncShipping() {
+        toggleBlock(shippingFields, wantsShippingInput.checked);
+        toggleBlock(shippingAddressFields, wantsShippingInput.checked && !sameAsBillingInput.checked);
+    }
+
+    wantsShippingInput.addEventListener('change', syncShipping);
+    sameAsBillingInput.addEventListener('change', syncShipping);
 </script>
 <script src="/assets/js/input-sparks.js"></script>
