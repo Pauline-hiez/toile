@@ -58,7 +58,7 @@ CREATE TABLE `email_log` (
   `error_message` text,
   `sent_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -66,7 +66,6 @@ CREATE TABLE `email_log` (
 --
 
 /*!40000 ALTER TABLE `email_log` DISABLE KEYS */;
-INSERT INTO `email_log` VALUES (1,'admin@toile.fr','welcome','Bienvenue sur Toile !','sent',NULL,'2026-07-23 13:42:40'),(2,'pauline.hiez@laplateforme.io','welcome','Bienvenue sur Toile !','sent',NULL,'2026-07-23 14:05:28'),(3,'pauline.hiez@laplateforme.io','artist_approved','Ta demande artiste a été acceptée !','sent',NULL,'2026-07-23 14:08:36'),(4,'client@test.com','welcome','Bienvenue sur Toile !','sent',NULL,'2026-07-23 16:21:57'),(5,'client@test.com','payment_captured','Paiement débité — Commande #2','sent',NULL,'2026-07-23 16:33:55'),(6,'client@test.com','order_status','Commande #2 — Acceptée','sent',NULL,'2026-07-23 16:33:59'),(7,'client@test.com','order_status','Commande #2 — En cours de création','sent',NULL,'2026-07-23 16:34:09'),(8,'client@test.com','order_status','Commande #2 — Livrée - En attente de validation','sent',NULL,'2026-07-23 16:34:37'),(9,'pauline.hiez@laplateforme.io','order_status','Commande #2 — Terminée','sent',NULL,'2026-07-23 16:35:09');
 /*!40000 ALTER TABLE `email_log` ENABLE KEYS */;
 
 --
@@ -112,7 +111,7 @@ CREATE TABLE `invoice_counter` (
 --
 
 /*!40000 ALTER TABLE `invoice_counter` DISABLE KEYS */;
-INSERT INTO `invoice_counter` VALUES ('FAC',2026,5);
+INSERT INTO `invoice_counter` VALUES ('FAC',2026,15);
 /*!40000 ALTER TABLE `invoice_counter` ENABLE KEYS */;
 
 --
@@ -132,7 +131,7 @@ CREATE TABLE `notification` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_notification_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -140,7 +139,6 @@ CREATE TABLE `notification` (
 --
 
 /*!40000 ALTER TABLE `notification` DISABLE KEYS */;
-INSERT INTO `notification` VALUES (1,3,'artist_approved','Félicitations ! Ta demande a été acceptée, tu es maintenant un Artiste !','/my-subscription',1,'2026-07-23 14:08:36'),(3,3,'new_order','Nouvelle commande : Caricature chien','/commandes/2',1,'2026-07-23 16:33:04'),(4,6,'payment_captured','Paiement de 60.00 € débité — commande acceptée.','/commandes/2',1,'2026-07-23 16:33:55'),(5,6,'order_status','Commande #2 : Acceptée','/commandes/2',1,'2026-07-23 16:33:55'),(6,6,'order_status','Commande #2 : En cours de création','/commandes/2',1,'2026-07-23 16:34:06'),(7,6,'order_status','Commande #2 : Livrée - En attente de validation','/commandes/2',1,'2026-07-23 16:34:32'),(8,3,'order_status','Commande #2 : Terminée','/commandes/2',1,'2026-07-23 16:35:05'),(9,3,'new_review','Nouvel avis (5⭐) sur ta boutique','/boutiques/pop-s-art',1,'2026-07-23 16:35:28');
 /*!40000 ALTER TABLE `notification` ENABLE KEYS */;
 
 --
@@ -185,7 +183,7 @@ CREATE TABLE `order_service_base` (
   PRIMARY KEY (`id`),
   KEY `fk_order_service_base_order` (`order_id`),
   KEY `fk_order_service_base_base` (`service_base_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -193,7 +191,7 @@ CREATE TABLE `order_service_base` (
 --
 
 /*!40000 ALTER TABLE `order_service_base` DISABLE KEYS */;
-INSERT INTO `order_service_base` VALUES (1,2,6,'Caricature','Moyenne'),(2,2,1,'Matériaux','Feutre');
+INSERT INTO `order_service_base` VALUES (1,1,1,'Format','A4'),(2,1,3,'Cadrage','Buste'),(3,2,5,'Format','A4'),(4,2,7,'Utilisation','Personnel'),(5,3,9,'Vue','Face'),(6,3,12,'Niveau de détail','Standard'),(7,4,14,'Format','A4'),(8,4,16,'Utilisation','Personnel'),(9,5,18,'Vue','Face'),(10,5,21,'Niveau de détail','Standard'),(11,6,23,'Style','Chibi'),(12,7,25,'Vue','Face'),(13,7,28,'Niveau de détail','Standard'),(14,8,30,'Style','Chibi'),(15,9,32,'Ambiance','Jour'),(16,9,34,'Format','Paysage'),(17,10,36,'Style','Chibi'),(18,11,38,'Ambiance','Jour'),(19,11,40,'Format','Paysage'),(20,12,42,'Emplacement','Bras'),(21,12,45,'Style','Fin'),(22,13,47,'Ambiance','Jour'),(23,13,49,'Format','Paysage'),(24,14,51,'Emplacement','Bras'),(25,14,54,'Style','Fin'),(26,15,56,'Plateforme','Twitch'),(27,16,59,'Emplacement','Bras'),(28,16,62,'Style','Fin'),(29,17,64,'Plateforme','Twitch'),(30,18,67,'Taille','16x16'),(31,19,70,'Plateforme','Twitch'),(32,20,73,'Taille','16x16'),(33,21,76,'Format','A4'),(34,21,78,'Cadrage','Buste'),(35,22,80,'Taille','16x16'),(36,23,83,'Format','A4'),(37,23,85,'Cadrage','Buste'),(38,24,87,'Format','A4'),(39,24,89,'Utilisation','Personnel'),(40,25,91,'Format','A4'),(41,25,93,'Cadrage','Buste'),(42,26,95,'Format','A4'),(43,26,97,'Utilisation','Personnel'),(44,27,99,'Vue','Face'),(45,27,102,'Niveau de détail','Standard'),(46,28,104,'Format','A4'),(47,28,106,'Utilisation','Personnel'),(48,29,108,'Vue','Face'),(49,29,111,'Niveau de détail','Standard'),(50,30,113,'Style','Chibi');
 /*!40000 ALTER TABLE `order_service_base` ENABLE KEYS */;
 
 --
@@ -237,7 +235,7 @@ CREATE TABLE `orders` (
   KEY `fk_order_client` (`client_id`),
   KEY `fk_order_shop` (`shop_id`),
   KEY `fk_order_service` (`service_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -245,7 +243,7 @@ CREATE TABLE `orders` (
 --
 
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (2,6,1,1,'Caricature chien','J\'aimerais une caricature de mon chien jouant avec sa balle, je vous laisse choisir les autres éléments de décor',6000,0.00,0,'completed','pi_3TwNg2CHvrrlwjMD1i0obAkE','1bce692095076e17fa63a2ca6579e471.webp',NULL,NULL,NULL,NULL,NULL,NULL,'Mary Poppins','3, rue du test',NULL,'Toulon','83000','France','CMD-2026-0001','2026-07-23 16:33:51',0,'2026-07-23 16:33:04'),(4,8,1,NULL,'Portrait aquarelle du chat','Commande de démonstration — Portrait aquarelle du chat.',8500,0.00,0,'completed','pi_seed_204cf2412489',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Julie Bernard','14 rue des Fleurs',NULL,'Nantes','44000','France','FAC-2026-00001','2026-06-12 06:52:13',0,'2026-06-12 06:52:13'),(5,9,1,NULL,'Illustration de couple','Commande de démonstration — Illustration de couple.',12000,0.00,0,'completed','pi_seed_254e5f666bc2',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Thomas Leroy','3 allée du Parc',NULL,'Bordeaux','33000','France','FAC-2026-00002','2026-06-24 06:52:13',0,'2026-06-24 06:52:13'),(6,10,1,NULL,'Character design complet','Commande de démonstration — Character design complet.',18000,0.00,0,'delivered','pi_seed_ae1ae49ba6ba',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Camille Petit','27 avenue Jean Jaurès',NULL,'Toulouse','31000','France','FAC-2026-00003','2026-07-08 06:52:13',0,'2026-07-08 06:52:13'),(7,8,1,NULL,'Commission chibi','Commande de démonstration — Commission chibi.',3500,0.00,0,'in_progress','pi_seed_7a63b7024faa',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Julie Bernard','14 rue des Fleurs',NULL,'Nantes','44000','France','FAC-2026-00004','2026-07-15 06:52:13',0,'2026-07-15 06:52:13'),(8,9,1,NULL,'Portrait de famille format A3','Commande de démonstration — Portrait de famille format A3.',9000,0.00,0,'accepted','pi_seed_a9eb725459fd',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Thomas Leroy','3 allée du Parc',NULL,'Bordeaux','33000','France','FAC-2026-00005','2026-07-19 06:52:13',0,'2026-07-19 06:52:13'),(9,10,1,NULL,'Sketch rapide personnage','Commande de démonstration — Sketch rapide personnage.',2500,0.00,0,'pending','pi_seed_d2fb8683eab0',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'2026-07-21 06:52:13'),(10,8,1,NULL,'Illustration bannière Twitch','Commande de démonstration — Illustration bannière Twitch.',7000,0.00,0,'quote_requested',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,'2026-07-22 06:52:13');
+INSERT INTO `orders` VALUES (1,12,1,1,'Portrait de mon chat','Bonjour, je souhaiterais une Portrait numérique : portrait de mon chat. Merci de me dire si c\'est possible !',7000,5.00,350,'completed','pi_demo_20a531fb7e0fb8d6',NULL,'Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France','Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France','FAC-2026-00001','2026-07-24 06:44:40',0,'2026-07-22 06:44:40'),(2,13,1,2,'Illustration de mon perso de JDR','Bonjour, je souhaiterais une Illustration de personnage : illustration de mon perso de jdr. Merci de me dire si c\'est possible !',10500,5.00,525,'completed','pi_demo_d8c75eeffe5cc2a1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France','FAC-2026-00002','2026-07-20 06:44:40',0,'2026-07-18 06:44:40'),(3,14,1,3,'Design de ma mascotte','Bonjour, je souhaiterais une Character design complet : design de ma mascotte. Merci de me dire si c\'est possible !',15000,5.00,750,'delivered','pi_demo_349cd9a93e19f005',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France','FAC-2026-00003','2026-07-16 06:44:40',0,'2026-07-14 06:44:40'),(4,15,2,4,'Chibi de mon couple','Bonjour, je souhaiterais une Illustration de personnage : chibi de mon couple. Merci de me dire si c\'est possible !',8000,10.00,800,'in_progress','pi_demo_e0ba13b7c9c79bf2',NULL,'Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France','Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France','FAC-2026-00004','2026-07-12 06:44:40',0,'2026-07-10 06:44:40'),(5,16,2,5,'Décor pour ma nouvelle','Bonjour, je souhaiterais une Character design complet : décor pour ma nouvelle. Merci de me dire si c\'est possible !',15000,10.00,1500,'accepted','pi_demo_f061de872beb2ff6',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France','FAC-2026-00005','2026-07-08 06:44:40',0,'2026-07-06 06:44:40'),(6,12,2,6,'Tatouage bras loup géométrique','Bonjour, je souhaiterais une Chibi mignon : tatouage bras loup géométrique. Merci de me dire si c\'est possible !',5500,0.00,0,'pending',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France',NULL,NULL,0,'2026-07-02 06:44:40'),(7,13,3,7,'Bannière pour ma chaîne Twitch','Bonjour, je souhaiterais une Character design complet : bannière pour ma chaîne twitch. Merci de me dire si c\'est possible !',17500,0.00,0,'quote_requested',NULL,NULL,'Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France','Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France',NULL,NULL,0,'2026-06-28 06:44:40'),(8,14,3,8,'Sprite pour mon jeu indé','Bonjour, je souhaiterais une Chibi mignon : sprite pour mon jeu indé. Merci de me dire si c\'est possible !',3000,0.00,0,'price_proposed',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France',NULL,NULL,0,'2026-06-24 06:44:40'),(9,15,3,9,'Portrait de famille','Bonjour, je souhaiterais une Concept d\'environnement : portrait de famille. Merci de me dire si c\'est possible !',12000,0.00,0,'cancelled',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France',NULL,NULL,0,'2026-06-20 06:44:40'),(10,16,4,10,'Fanart de mon OC','Bonjour, je souhaiterais une Chibi mignon : fanart de mon oc. Merci de me dire si c\'est possible !',3000,0.00,0,'rejected',NULL,NULL,'Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France','Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France',NULL,NULL,0,'2026-06-16 06:44:40'),(11,12,4,11,'Logo illustré pour ma boutique','Bonjour, je souhaiterais une Concept d\'environnement : logo illustré pour ma boutique. Merci de me dire si c\'est possible !',14500,0.00,0,'completed','pi_demo_6f497bccfd54b34c',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France','FAC-2026-00006','2026-06-14 06:44:40',0,'2026-06-12 06:44:40'),(12,13,4,12,'Emote pour mon Discord','Bonjour, je souhaiterais une Design de tatouage : emote pour mon discord. Merci de me dire si c\'est possible !',8500,0.00,0,'completed','pi_demo_124f18e6b49f50ff',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France','FAC-2026-00007','2026-06-10 06:44:40',0,'2026-06-08 06:44:40'),(13,14,5,13,'Portrait de mon chat','Bonjour, je souhaiterais une Concept d\'environnement : portrait de mon chat. Merci de me dire si c\'est possible !',12000,5.00,600,'delivered','pi_demo_2dbc8372d15cb4d5',NULL,'Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France','Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France','FAC-2026-00008','2026-06-06 06:44:40',0,'2026-06-04 06:44:40'),(14,15,5,14,'Illustration de mon perso de JDR','Bonjour, je souhaiterais une Design de tatouage : illustration de mon perso de jdr. Merci de me dire si c\'est possible !',6000,5.00,300,'in_progress','pi_demo_4cb3d76550a68c17',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France','FAC-2026-00009','2026-06-02 06:44:40',0,'2026-05-31 06:44:40'),(15,16,5,15,'Design de ma mascotte','Bonjour, je souhaiterais une Bannière / header : design de ma mascotte. Merci de me dire si c\'est possible !',5000,5.00,250,'accepted','pi_demo_4929c81c30eb8622',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France','FAC-2026-00010','2026-05-29 06:44:40',0,'2026-05-27 06:44:40'),(16,12,6,16,'Chibi de mon couple','Bonjour, je souhaiterais une Design de tatouage : chibi de mon couple. Merci de me dire si c\'est possible !',8500,0.00,0,'pending',NULL,NULL,'Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France','Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France',NULL,NULL,0,'2026-05-23 06:44:40'),(17,13,6,17,'Décor pour ma nouvelle','Bonjour, je souhaiterais une Bannière / header : décor pour ma nouvelle. Merci de me dire si c\'est possible !',7500,0.00,0,'quote_requested',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France',NULL,NULL,0,'2026-05-19 06:44:40'),(18,14,6,18,'Tatouage bras loup géométrique','Bonjour, je souhaiterais une Sprite pixel art : tatouage bras loup géométrique. Merci de me dire si c\'est possible !',3500,0.00,0,'price_proposed',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France',NULL,NULL,0,'2026-05-15 06:44:40'),(19,15,7,19,'Bannière pour ma chaîne Twitch','Bonjour, je souhaiterais une Bannière / header : bannière pour ma chaîne twitch. Merci de me dire si c\'est possible !',5000,0.00,0,'cancelled',NULL,NULL,'Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France','Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France',NULL,NULL,0,'2026-05-11 06:44:40'),(20,16,7,20,'Sprite pour mon jeu indé','Bonjour, je souhaiterais une Sprite pixel art : sprite pour mon jeu indé. Merci de me dire si c\'est possible !',3500,0.00,0,'rejected',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France',NULL,NULL,0,'2026-05-07 06:44:40'),(21,12,7,21,'Portrait de famille','Bonjour, je souhaiterais une Portrait numérique : portrait de famille. Merci de me dire si c\'est possible !',7000,0.00,0,'completed','pi_demo_53c86d0aba47a578',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France','FAC-2026-00011','2026-05-05 06:44:40',0,'2026-05-03 06:44:40'),(22,13,8,22,'Fanart de mon OC','Bonjour, je souhaiterais une Sprite pixel art : fanart de mon oc. Merci de me dire si c\'est possible !',6000,10.00,600,'completed','pi_demo_651b3cb261d17be0',NULL,'Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France','Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France','FAC-2026-00012','2026-05-01 06:44:40',0,'2026-04-29 06:44:40'),(23,14,8,23,'Logo illustré pour ma boutique','Bonjour, je souhaiterais une Portrait numérique : logo illustré pour ma boutique. Merci de me dire si c\'est possible !',4500,10.00,450,'delivered','pi_demo_5a965e7b110fd820',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France','FAC-2026-00013','2026-04-27 06:44:40',0,'2026-04-25 06:44:40'),(24,15,8,24,'Emote pour mon Discord','Bonjour, je souhaiterais une Illustration de personnage : emote pour mon discord. Merci de me dire si c\'est possible !',8000,10.00,800,'in_progress','pi_demo_94fe3dcec930000b',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France','FAC-2026-00014','2026-04-23 06:44:40',0,'2026-04-21 06:44:40'),(25,16,9,25,'Portrait de mon chat','Bonjour, je souhaiterais une Portrait numérique : portrait de mon chat. Merci de me dire si c\'est possible !',4500,5.00,225,'accepted','pi_demo_5beb1d5546ddb3c0',NULL,'Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France','Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France','FAC-2026-00015','2026-04-19 06:44:40',0,'2026-04-17 06:44:40'),(26,12,9,26,'Illustration de mon perso de JDR','Bonjour, je souhaiterais une Illustration de personnage : illustration de mon perso de jdr. Merci de me dire si c\'est possible !',10500,0.00,0,'pending',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Julie Bernard','12 rue des Lilas',NULL,'Lyon','69003','France',NULL,NULL,0,'2026-04-13 06:44:40'),(27,13,9,27,'Design de ma mascotte','Bonjour, je souhaiterais une Character design complet : design de ma mascotte. Merci de me dire si c\'est possible !',17500,0.00,0,'quote_requested',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Thomas Leroy','5 avenue Victor Hugo',NULL,'Paris','75016','France',NULL,NULL,0,'2026-04-09 06:44:40'),(28,14,10,28,'Chibi de mon couple','Bonjour, je souhaiterais une Illustration de personnage : chibi de mon couple. Merci de me dire si c\'est possible !',8000,0.00,0,'price_proposed',NULL,NULL,'Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France','Camille Petit','8 boulevard Longchamp',NULL,'Marseille','13001','France',NULL,NULL,0,'2026-04-05 06:44:40'),(29,15,10,29,'Décor pour ma nouvelle','Bonjour, je souhaiterais une Character design complet : décor pour ma nouvelle. Merci de me dire si c\'est possible !',15000,0.00,0,'cancelled',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Antoine Garnier','23 rue du Taur',NULL,'Toulouse','31000','France',NULL,NULL,0,'2026-07-20 06:44:40'),(30,16,10,30,'Tatouage bras loup géométrique','Bonjour, je souhaiterais une Chibi mignon : tatouage bras loup géométrique. Merci de me dire si c\'est possible !',3000,0.00,0,'rejected',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'Sophie Martin','3 quai de la Fosse',NULL,'Nantes','44000','France',NULL,NULL,0,'2026-07-16 06:44:40');
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 
 --
@@ -291,7 +289,7 @@ CREATE TABLE `portfolio_image` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_portfolio_image_shop` (`shop_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -299,7 +297,6 @@ CREATE TABLE `portfolio_image` (
 --
 
 /*!40000 ALTER TABLE `portfolio_image` DISABLE KEYS */;
-INSERT INTO `portfolio_image` VALUES (1,1,'8a43c3dfca59f8110fcd7c048a87e478.png',0,NULL,'2026-07-23 16:18:07'),(2,1,'ac881d56f7597246012ff5d6df5c260a.png',1,NULL,'2026-07-23 16:18:07'),(3,1,'15e92cee570a4ab8a1caa7dbf673b82c.png',2,NULL,'2026-07-23 16:18:07');
 /*!40000 ALTER TABLE `portfolio_image` ENABLE KEYS */;
 
 --
@@ -345,7 +342,7 @@ CREATE TABLE `rate_limit_attempt` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_rate_limit_lookup` (`identifier`,`action`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -353,7 +350,7 @@ CREATE TABLE `rate_limit_attempt` (
 --
 
 /*!40000 ALTER TABLE `rate_limit_attempt` DISABLE KEYS */;
-INSERT INTO `rate_limit_attempt` VALUES (1,'ip:127.0.0.1','register','2026-07-23 13:42:34'),(2,'ip:127.0.0.1','register','2026-07-23 14:05:22'),(3,'ip:127.0.0.1','register','2026-07-23 14:05:28'),(4,'ip:127.0.0.1','register','2026-07-23 16:21:49');
+INSERT INTO `rate_limit_attempt` VALUES (5,'email:pauline-hiez@plateforme.io','login','2026-07-24 16:32:45'),(1,'ip:127.0.0.1','register','2026-07-23 13:42:34'),(2,'ip:127.0.0.1','register','2026-07-23 14:05:22'),(3,'ip:127.0.0.1','register','2026-07-23 14:05:28'),(4,'ip:127.0.0.1','register','2026-07-23 16:21:49');
 /*!40000 ALTER TABLE `rate_limit_attempt` ENABLE KEYS */;
 
 --
@@ -371,7 +368,7 @@ CREATE TABLE `remember_token` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_remember_token_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -428,7 +425,7 @@ CREATE TABLE `review` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `order_id` (`order_id`),
   CONSTRAINT `chk_review_rating` CHECK ((`rating` between 1 and 5))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -436,7 +433,7 @@ CREATE TABLE `review` (
 --
 
 /*!40000 ALTER TABLE `review` DISABLE KEYS */;
-INSERT INTO `review` VALUES (1,2,5,'Super artiste !','2026-07-23 16:35:28');
+INSERT INTO `review` VALUES (1,1,5,'Travail magnifique, exactement ce que j\'imaginais !','2026-07-25 06:44:40'),(2,2,5,'Très à l\'écoute et super réactif. Je recommande vivement.','2026-07-21 06:44:40'),(3,11,5,'Un rendu au-delà de mes attentes, merci infiniment.','2026-06-15 06:44:40'),(4,12,5,'Superbe qualité et livraison dans les temps.','2026-06-11 06:44:40'),(5,21,5,'Parfait du début à la fin, je reviendrai !','2026-05-06 06:44:40'),(6,22,5,'Belle prestation, quelques allers-retours mais résultat au top.','2026-05-02 06:44:40');
 /*!40000 ALTER TABLE `review` ENABLE KEYS */;
 
 --
@@ -458,7 +455,7 @@ CREATE TABLE `service` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_service_shop` (`shop_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -466,7 +463,7 @@ CREATE TABLE `service` (
 --
 
 /*!40000 ALTER TABLE `service` DISABLE KEYS */;
-INSERT INTO `service` VALUES (1,1,'Caricature','Base 1 personnage + 3 éléments de décor','bc437e96ab1813313655c04019855113.png',6000,4,1,'2026-07-23 16:26:42');
+INSERT INTO `service` VALUES (1,1,'Portrait numérique','Un portrait numérique soigné à partir de ta photo ou de ta description.',NULL,4500,7,1,'2026-01-08 06:44:39'),(2,1,'Illustration de personnage','Illustration complète de ton personnage, pose et couleurs comprises.',NULL,8000,10,1,'2026-01-08 06:44:39'),(3,1,'Character design complet','Conception complète d\'un personnage original avec fiche technique.',NULL,15000,14,1,'2026-01-08 06:44:39'),(4,2,'Illustration de personnage','Illustration complète de ton personnage, pose et couleurs comprises.',NULL,8000,10,1,'2026-01-18 06:44:39'),(5,2,'Character design complet','Conception complète d\'un personnage original avec fiche technique.',NULL,15000,14,1,'2026-01-18 06:44:39'),(6,2,'Chibi mignon','Un adorable chibi de ton personnage, parfait pour les avatars.',NULL,3000,5,1,'2026-01-18 06:44:39'),(7,3,'Character design complet','Conception complète d\'un personnage original avec fiche technique.',NULL,15000,14,1,'2026-01-28 06:44:39'),(8,3,'Chibi mignon','Un adorable chibi de ton personnage, parfait pour les avatars.',NULL,3000,5,1,'2026-01-28 06:44:39'),(9,3,'Concept d\'environnement','Décor d\'ambiance pour ton univers, jeu ou récit.',NULL,12000,12,1,'2026-01-28 06:44:39'),(10,4,'Chibi mignon','Un adorable chibi de ton personnage, parfait pour les avatars.',NULL,3000,5,1,'2026-02-07 06:44:39'),(11,4,'Concept d\'environnement','Décor d\'ambiance pour ton univers, jeu ou récit.',NULL,12000,12,1,'2026-02-07 06:44:39'),(12,4,'Design de tatouage','Un design de tatouage sur-mesure, prêt à être encré.',NULL,6000,8,1,'2026-02-07 06:44:39'),(13,5,'Concept d\'environnement','Décor d\'ambiance pour ton univers, jeu ou récit.',NULL,12000,12,1,'2026-02-17 06:44:39'),(14,5,'Design de tatouage','Un design de tatouage sur-mesure, prêt à être encré.',NULL,6000,8,1,'2026-02-17 06:44:39'),(15,5,'Bannière / header','Une bannière percutante pour tes réseaux ou ta chaîne.',NULL,5000,6,1,'2026-02-17 06:44:39'),(16,6,'Design de tatouage','Un design de tatouage sur-mesure, prêt à être encré.',NULL,6000,8,1,'2026-02-27 06:44:39'),(17,6,'Bannière / header','Une bannière percutante pour tes réseaux ou ta chaîne.',NULL,5000,6,1,'2026-02-27 06:44:39'),(18,6,'Sprite pixel art','Un sprite pixel art propre, animé sur demande.',NULL,3500,6,1,'2026-02-27 06:44:39'),(19,7,'Bannière / header','Une bannière percutante pour tes réseaux ou ta chaîne.',NULL,5000,6,1,'2026-03-09 06:44:40'),(20,7,'Sprite pixel art','Un sprite pixel art propre, animé sur demande.',NULL,3500,6,1,'2026-03-09 06:44:40'),(21,7,'Portrait numérique','Un portrait numérique soigné à partir de ta photo ou de ta description.',NULL,4500,7,1,'2026-03-09 06:44:40'),(22,8,'Sprite pixel art','Un sprite pixel art propre, animé sur demande.',NULL,3500,6,1,'2026-03-19 06:44:40'),(23,8,'Portrait numérique','Un portrait numérique soigné à partir de ta photo ou de ta description.',NULL,4500,7,1,'2026-03-19 06:44:40'),(24,8,'Illustration de personnage','Illustration complète de ton personnage, pose et couleurs comprises.',NULL,8000,10,1,'2026-03-19 06:44:40'),(25,9,'Portrait numérique','Un portrait numérique soigné à partir de ta photo ou de ta description.',NULL,4500,7,1,'2026-03-29 06:44:40'),(26,9,'Illustration de personnage','Illustration complète de ton personnage, pose et couleurs comprises.',NULL,8000,10,1,'2026-03-29 06:44:40'),(27,9,'Character design complet','Conception complète d\'un personnage original avec fiche technique.',NULL,15000,14,1,'2026-03-29 06:44:40'),(28,10,'Illustration de personnage','Illustration complète de ton personnage, pose et couleurs comprises.',NULL,8000,10,1,'2026-04-08 06:44:40'),(29,10,'Character design complet','Conception complète d\'un personnage original avec fiche technique.',NULL,15000,14,1,'2026-04-08 06:44:40'),(30,10,'Chibi mignon','Un adorable chibi de ton personnage, parfait pour les avatars.',NULL,3000,5,1,'2026-04-08 06:44:40');
 /*!40000 ALTER TABLE `service` ENABLE KEYS */;
 
 --
@@ -484,7 +481,7 @@ CREATE TABLE `service_base` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_service_base_service` (`service_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -492,7 +489,7 @@ CREATE TABLE `service_base` (
 --
 
 /*!40000 ALTER TABLE `service_base` DISABLE KEYS */;
-INSERT INTO `service_base` VALUES (1,1,'Matériaux','Feutre','2026-07-23 16:26:42'),(2,1,'Matériaux','Peinture gouache','2026-07-23 16:26:42'),(3,1,'Matériaux','Aquarelle','2026-07-23 16:26:42'),(4,1,'Matériaux','Crayon noir et blanc','2026-07-23 16:26:42'),(5,1,'Caricature','Légère','2026-07-23 16:26:42'),(6,1,'Caricature','Moyenne','2026-07-23 16:26:42'),(7,1,'Caricature','Forte','2026-07-23 16:26:42');
+INSERT INTO `service_base` VALUES (1,1,'Format','A4','2026-01-08 06:44:39'),(2,1,'Format','A5','2026-01-08 06:44:39'),(3,1,'Cadrage','Buste','2026-01-08 06:44:39'),(4,1,'Cadrage','Plein format','2026-01-08 06:44:39'),(5,2,'Format','A4','2026-01-08 06:44:39'),(6,2,'Format','A3','2026-01-08 06:44:39'),(7,2,'Utilisation','Personnel','2026-01-08 06:44:39'),(8,2,'Utilisation','Commercial','2026-01-08 06:44:39'),(9,3,'Vue','Face','2026-01-08 06:44:39'),(10,3,'Vue','3/4','2026-01-08 06:44:39'),(11,3,'Vue','Dos','2026-01-08 06:44:39'),(12,3,'Niveau de détail','Standard','2026-01-08 06:44:39'),(13,3,'Niveau de détail','Détaillé','2026-01-08 06:44:39'),(14,4,'Format','A4','2026-01-18 06:44:39'),(15,4,'Format','A3','2026-01-18 06:44:39'),(16,4,'Utilisation','Personnel','2026-01-18 06:44:39'),(17,4,'Utilisation','Commercial','2026-01-18 06:44:39'),(18,5,'Vue','Face','2026-01-18 06:44:39'),(19,5,'Vue','3/4','2026-01-18 06:44:39'),(20,5,'Vue','Dos','2026-01-18 06:44:39'),(21,5,'Niveau de détail','Standard','2026-01-18 06:44:39'),(22,5,'Niveau de détail','Détaillé','2026-01-18 06:44:39'),(23,6,'Style','Chibi','2026-01-18 06:44:39'),(24,6,'Style','Semi-chibi','2026-01-18 06:44:39'),(25,7,'Vue','Face','2026-01-28 06:44:39'),(26,7,'Vue','3/4','2026-01-28 06:44:39'),(27,7,'Vue','Dos','2026-01-28 06:44:39'),(28,7,'Niveau de détail','Standard','2026-01-28 06:44:39'),(29,7,'Niveau de détail','Détaillé','2026-01-28 06:44:39'),(30,8,'Style','Chibi','2026-01-28 06:44:39'),(31,8,'Style','Semi-chibi','2026-01-28 06:44:39'),(32,9,'Ambiance','Jour','2026-01-28 06:44:39'),(33,9,'Ambiance','Nuit','2026-01-28 06:44:39'),(34,9,'Format','Paysage','2026-01-28 06:44:39'),(35,9,'Format','Portrait','2026-01-28 06:44:39'),(36,10,'Style','Chibi','2026-02-07 06:44:39'),(37,10,'Style','Semi-chibi','2026-02-07 06:44:39'),(38,11,'Ambiance','Jour','2026-02-07 06:44:39'),(39,11,'Ambiance','Nuit','2026-02-07 06:44:39'),(40,11,'Format','Paysage','2026-02-07 06:44:39'),(41,11,'Format','Portrait','2026-02-07 06:44:39'),(42,12,'Emplacement','Bras','2026-02-07 06:44:39'),(43,12,'Emplacement','Dos','2026-02-07 06:44:39'),(44,12,'Emplacement','Jambe','2026-02-07 06:44:39'),(45,12,'Style','Fin','2026-02-07 06:44:39'),(46,12,'Style','Ombré','2026-02-07 06:44:39'),(47,13,'Ambiance','Jour','2026-02-17 06:44:39'),(48,13,'Ambiance','Nuit','2026-02-17 06:44:39'),(49,13,'Format','Paysage','2026-02-17 06:44:39'),(50,13,'Format','Portrait','2026-02-17 06:44:39'),(51,14,'Emplacement','Bras','2026-02-17 06:44:39'),(52,14,'Emplacement','Dos','2026-02-17 06:44:39'),(53,14,'Emplacement','Jambe','2026-02-17 06:44:39'),(54,14,'Style','Fin','2026-02-17 06:44:39'),(55,14,'Style','Ombré','2026-02-17 06:44:39'),(56,15,'Plateforme','Twitch','2026-02-17 06:44:39'),(57,15,'Plateforme','YouTube','2026-02-17 06:44:39'),(58,15,'Plateforme','Twitter','2026-02-17 06:44:39'),(59,16,'Emplacement','Bras','2026-02-27 06:44:39'),(60,16,'Emplacement','Dos','2026-02-27 06:44:39'),(61,16,'Emplacement','Jambe','2026-02-27 06:44:39'),(62,16,'Style','Fin','2026-02-27 06:44:39'),(63,16,'Style','Ombré','2026-02-27 06:44:39'),(64,17,'Plateforme','Twitch','2026-02-27 06:44:39'),(65,17,'Plateforme','YouTube','2026-02-27 06:44:39'),(66,17,'Plateforme','Twitter','2026-02-27 06:44:39'),(67,18,'Taille','16x16','2026-02-27 06:44:39'),(68,18,'Taille','32x32','2026-02-27 06:44:39'),(69,18,'Taille','64x64','2026-02-27 06:44:39'),(70,19,'Plateforme','Twitch','2026-03-09 06:44:40'),(71,19,'Plateforme','YouTube','2026-03-09 06:44:40'),(72,19,'Plateforme','Twitter','2026-03-09 06:44:40'),(73,20,'Taille','16x16','2026-03-09 06:44:40'),(74,20,'Taille','32x32','2026-03-09 06:44:40'),(75,20,'Taille','64x64','2026-03-09 06:44:40'),(76,21,'Format','A4','2026-03-09 06:44:40'),(77,21,'Format','A5','2026-03-09 06:44:40'),(78,21,'Cadrage','Buste','2026-03-09 06:44:40'),(79,21,'Cadrage','Plein format','2026-03-09 06:44:40'),(80,22,'Taille','16x16','2026-03-19 06:44:40'),(81,22,'Taille','32x32','2026-03-19 06:44:40'),(82,22,'Taille','64x64','2026-03-19 06:44:40'),(83,23,'Format','A4','2026-03-19 06:44:40'),(84,23,'Format','A5','2026-03-19 06:44:40'),(85,23,'Cadrage','Buste','2026-03-19 06:44:40'),(86,23,'Cadrage','Plein format','2026-03-19 06:44:40'),(87,24,'Format','A4','2026-03-19 06:44:40'),(88,24,'Format','A3','2026-03-19 06:44:40'),(89,24,'Utilisation','Personnel','2026-03-19 06:44:40'),(90,24,'Utilisation','Commercial','2026-03-19 06:44:40'),(91,25,'Format','A4','2026-03-29 06:44:40'),(92,25,'Format','A5','2026-03-29 06:44:40'),(93,25,'Cadrage','Buste','2026-03-29 06:44:40'),(94,25,'Cadrage','Plein format','2026-03-29 06:44:40'),(95,26,'Format','A4','2026-03-29 06:44:40'),(96,26,'Format','A3','2026-03-29 06:44:40'),(97,26,'Utilisation','Personnel','2026-03-29 06:44:40'),(98,26,'Utilisation','Commercial','2026-03-29 06:44:40'),(99,27,'Vue','Face','2026-03-29 06:44:40'),(100,27,'Vue','3/4','2026-03-29 06:44:40'),(101,27,'Vue','Dos','2026-03-29 06:44:40'),(102,27,'Niveau de détail','Standard','2026-03-29 06:44:40'),(103,27,'Niveau de détail','Détaillé','2026-03-29 06:44:40'),(104,28,'Format','A4','2026-04-08 06:44:40'),(105,28,'Format','A3','2026-04-08 06:44:40'),(106,28,'Utilisation','Personnel','2026-04-08 06:44:40'),(107,28,'Utilisation','Commercial','2026-04-08 06:44:40'),(108,29,'Vue','Face','2026-04-08 06:44:40'),(109,29,'Vue','3/4','2026-04-08 06:44:40'),(110,29,'Vue','Dos','2026-04-08 06:44:40'),(111,29,'Niveau de détail','Standard','2026-04-08 06:44:40'),(112,29,'Niveau de détail','Détaillé','2026-04-08 06:44:40'),(113,30,'Style','Chibi','2026-04-08 06:44:40'),(114,30,'Style','Semi-chibi','2026-04-08 06:44:40');
 /*!40000 ALTER TABLE `service_base` ENABLE KEYS */;
 
 --
@@ -509,7 +506,7 @@ CREATE TABLE `service_option` (
   `extra_price` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_service_option_service` (`service_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -517,7 +514,7 @@ CREATE TABLE `service_option` (
 --
 
 /*!40000 ALTER TABLE `service_option` DISABLE KEYS */;
-INSERT INTO `service_option` VALUES (1,1,'Ajout 1 personnage',2000),(2,1,'Ajout 1 élément de décor',1000);
+INSERT INTO `service_option` VALUES (1,1,'Arrière-plan détaillé',3000),(2,1,'Fichier haute résolution',1500),(3,2,'Personnage supplémentaire',5000),(4,2,'Fichier source (PSD)',2500),(5,3,'Turnaround complet',6000),(6,3,'Palette alternative',2000),(7,4,'Personnage supplémentaire',5000),(8,4,'Fichier source (PSD)',2500),(9,5,'Turnaround complet',6000),(10,5,'Palette alternative',2000),(11,6,'Accessoire',1000),(12,6,'Mini décor',1500),(13,7,'Turnaround complet',6000),(14,7,'Palette alternative',2000),(15,8,'Accessoire',1000),(16,8,'Mini décor',1500),(17,9,'Variante de cadrage',4000),(18,9,'Fichier haute résolution',2000),(19,10,'Accessoire',1000),(20,10,'Mini décor',1500),(21,11,'Variante de cadrage',4000),(22,11,'Fichier haute résolution',2000),(23,12,'Version couleur',2500),(24,13,'Variante de cadrage',4000),(25,13,'Fichier haute résolution',2000),(26,14,'Version couleur',2500),(27,15,'Déclinaisons réseaux',2000),(28,15,'Logo intégré',3000),(29,16,'Version couleur',2500),(30,17,'Déclinaisons réseaux',2000),(31,17,'Logo intégré',3000),(32,18,'Animation idle',4000),(33,18,'Palette custom',1500),(34,19,'Déclinaisons réseaux',2000),(35,19,'Logo intégré',3000),(36,20,'Animation idle',4000),(37,20,'Palette custom',1500),(38,21,'Arrière-plan détaillé',3000),(39,21,'Fichier haute résolution',1500),(40,22,'Animation idle',4000),(41,22,'Palette custom',1500),(42,23,'Arrière-plan détaillé',3000),(43,23,'Fichier haute résolution',1500),(44,24,'Personnage supplémentaire',5000),(45,24,'Fichier source (PSD)',2500),(46,25,'Arrière-plan détaillé',3000),(47,25,'Fichier haute résolution',1500),(48,26,'Personnage supplémentaire',5000),(49,26,'Fichier source (PSD)',2500),(50,27,'Turnaround complet',6000),(51,27,'Palette alternative',2000),(52,28,'Personnage supplémentaire',5000),(53,28,'Fichier source (PSD)',2500),(54,29,'Turnaround complet',6000),(55,29,'Palette alternative',2000),(56,30,'Accessoire',1000),(57,30,'Mini décor',1500);
 /*!40000 ALTER TABLE `service_option` ENABLE KEYS */;
 
 --
@@ -573,7 +570,7 @@ CREATE TABLE `shop` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`user_id`),
   UNIQUE KEY `slug` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -581,7 +578,7 @@ CREATE TABLE `shop` (
 --
 
 /*!40000 ALTER TABLE `shop` DISABLE KEYS */;
-INSERT INTO `shop` VALUES (1,3,'Pop\'s Art','pop-s-art','Passionnée d\'art, je suis à votre disposition pour réaliser vos demandes',NULL,NULL,NULL,NULL,'8962934f34a334e8a860019cefd15406.png','[\"réaliste\"]','[\"illustrateur\", \"designer graphique\"]',1,1,1,'commission',NULL,0,'2026-07-23 14:18:11');
+INSERT INTO `shop` VALUES (1,2,'Studio Léa','studio-lea','Portraitiste passionnée, je capture les émotions au plus près du réel.',NULL,NULL,NULL,NULL,'default.png','[\"réaliste\"]','[\"portraitiste\", \"illustrateur\"]',1,1,1,'subscription',NULL,0,'2026-01-08 06:44:39'),(2,3,'Pixel Forge','pixel-forge','Artiste pixel art rétro, je donne vie à tes personnages case par case.',NULL,NULL,NULL,NULL,'default.png','[\"pixel art\"]','[\"illustrateur\", \"character designer\"]',1,1,1,'commission',NULL,0,'2026-01-18 06:44:39'),(3,4,'Chibi Corner','chibi-corner','Univers kawaii et couleurs pastel : je dessine tout en mignon.',NULL,NULL,NULL,NULL,'default.png','[\"chibi\", \"anime\"]','[\"illustrateur\"]',1,1,1,'commission',NULL,0,'2026-01-28 06:44:39'),(4,5,'Concept Lab','concept-lab','Concept artist pour jeux vidéo et films d\'animation.',NULL,NULL,NULL,NULL,'default.png','[\"concept art\"]','[\"concept artist\", \"designer graphique\"]',1,1,1,'subscription',NULL,0,'2026-02-07 06:44:39'),(5,6,'Encre & Réalisme','encre-realisme','Du portrait réaliste au design de tatouage, l\'encre est mon terrain de jeu.',NULL,NULL,NULL,NULL,'default.png','[\"réaliste\"]','[\"portraitiste\", \"tatoueur\"]',1,1,1,'subscription',NULL,0,'2026-02-17 06:44:39'),(6,7,'Anime Dream','anime-dream','Fan d\'anime, je crée des personnages pleins de vie.',NULL,NULL,NULL,NULL,'default.png','[\"anime\", \"chibi\"]','[\"illustrateur\", \"character designer\"]',1,1,1,'commission',NULL,0,'2026-02-27 06:44:39'),(7,8,'Character Base','character-base','Spécialiste du character design, du croquis à la fiche finale.',NULL,NULL,NULL,NULL,'default.png','[\"concept art\", \"anime\"]','[\"character designer\"]',1,1,1,'subscription',NULL,0,'2026-03-09 06:44:40'),(8,9,'Atelier Chloé','atelier-chloe','Illustratrice indépendante, douce et minutieuse.',NULL,NULL,NULL,NULL,'default.png','[\"réaliste\"]','[\"illustrateur\"]',1,1,1,'commission',NULL,0,'2026-03-19 06:44:40'),(9,10,'Retro Pixels','retro-pixels','Pixel art et identité visuelle rétro pour tes projets.',NULL,NULL,NULL,NULL,'default.png','[\"pixel art\"]','[\"designer graphique\", \"illustrateur\"]',1,1,1,'subscription',NULL,0,'2026-03-29 06:44:40'),(10,11,'Ink & Soul','ink-soul','Le tatouage comme récit : chaque pièce raconte une histoire.',NULL,NULL,NULL,NULL,'default.png','[\"réaliste\", \"concept art\"]','[\"tatoueur\", \"illustrateur\"]',1,1,1,'commission',NULL,0,'2026-04-08 06:44:40');
 /*!40000 ALTER TABLE `shop` ENABLE KEYS */;
 
 --
@@ -603,7 +600,7 @@ CREATE TABLE `shop_subscription` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `shop_id` (`shop_id`),
   KEY `fk_shop_subscription_plan` (`plan_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -611,7 +608,7 @@ CREATE TABLE `shop_subscription` (
 --
 
 /*!40000 ALTER TABLE `shop_subscription` DISABLE KEYS */;
-INSERT INTO `shop_subscription` VALUES (1,1,3,'sub_1TwLQyCHvrrlwjMDULmIeXy1','active','2026-07-23 14:09:04','2026-08-23 14:09:04','2026-07-23 14:18:11');
+INSERT INTO `shop_subscription` VALUES (1,1,2,NULL,'active','2026-06-27 06:44:39','2026-08-27 06:44:39','2026-01-08 06:44:39'),(2,2,1,NULL,'active','2026-06-27 06:44:39','2026-08-27 06:44:39','2026-01-18 06:44:39'),(3,3,1,NULL,'active','2026-06-27 06:44:39','2026-08-27 06:44:39','2026-01-28 06:44:39'),(4,4,3,NULL,'active','2026-06-27 06:44:39','2026-08-27 06:44:39','2026-02-07 06:44:39'),(5,5,2,NULL,'active','2026-06-27 06:44:39','2026-08-27 06:44:39','2026-02-17 06:44:39'),(6,6,1,NULL,'active','2026-06-27 06:44:39','2026-08-27 06:44:39','2026-02-27 06:44:39'),(7,7,3,NULL,'active','2026-06-27 06:44:40','2026-08-27 06:44:40','2026-03-09 06:44:40'),(8,8,1,NULL,'active','2026-06-27 06:44:40','2026-08-27 06:44:40','2026-03-19 06:44:40'),(9,9,2,NULL,'active','2026-06-27 06:44:40','2026-08-27 06:44:40','2026-03-29 06:44:40'),(10,10,1,NULL,'active','2026-06-27 06:44:40','2026-08-27 06:44:40','2026-04-08 06:44:40');
 /*!40000 ALTER TABLE `shop_subscription` ENABLE KEYS */;
 
 --
@@ -636,7 +633,7 @@ CREATE TABLE `subscription_invoice` (
   UNIQUE KEY `stripe_invoice_id` (`stripe_invoice_id`),
   UNIQUE KEY `invoice_number` (`invoice_number`),
   KEY `fk_subscription_invoice_shop` (`shop_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -710,7 +707,7 @@ CREATE TABLE `users` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -718,7 +715,7 @@ CREATE TABLE `users` (
 --
 
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin@toile.fr','Admin','$2y$10$mX9W5NNTGLztNylK7blhee8yZr3Xd3gnCQpsYHEgLVBF.xYVV7iwm','credentials',NULL,NULL,NULL,'a7bd743a988d9323bb5c6cb37497fb71.png',NULL,NULL,NULL,NULL,NULL,NULL,'admin',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-23 13:42:34'),(3,'pauline.hiez@laplateforme.io','Pop\'s Art','$2y$10$ye9LocNFcnHfXb3dFydYRuB3xvsmqCzi4WINyzBd7D5zeONxdhovy','credentials',NULL,'cus_UwDsj9I9Zqs928',NULL,'b9770e66a08048da4fb9eb58f22ff5e3.png',NULL,NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Pop\'s Art','Pop\'s Art','pauline.hiez@laplateforme.io','Passionnée d\'art depuis longtemps, je souhaite proposer mes services au passionnés.','Je souhaite ouvrir une boutique pour mettre mon sens artistique au service des autres','2026-07-23 14:08:16','2026-07-23 14:05:22'),(6,'client@test.com','Mary Poppins','$2y$10$XuCIWzdIoO7RKWepspVhbOebbei992Y74vpHJBcDZMksGY0vAwm4.','credentials',NULL,'cus_UwGCRdKRdysnXX',NULL,'default.png',NULL,NULL,NULL,NULL,NULL,NULL,'user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-23 16:21:49'),(8,'julie.bernard@demo.test','Julie Bernard','$2y$10$8BuAsGvpdsPqSFgOpK2wzuAGVwCGOfTFlQ1c4NvElskyMkJCSMnBK','credentials',NULL,NULL,NULL,'default.png',NULL,'14 rue des Fleurs',NULL,'Nantes','44000','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-24 08:52:13'),(9,'thomas.leroy@demo.test','Thomas Leroy','$2y$10$8BuAsGvpdsPqSFgOpK2wzuAGVwCGOfTFlQ1c4NvElskyMkJCSMnBK','credentials',NULL,NULL,NULL,'default.png',NULL,'3 allée du Parc',NULL,'Bordeaux','33000','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-24 08:52:13'),(10,'camille.petit@demo.test','Camille Petit','$2y$10$8BuAsGvpdsPqSFgOpK2wzuAGVwCGOfTFlQ1c4NvElskyMkJCSMnBK','credentials',NULL,NULL,NULL,'default.png',NULL,'27 avenue Jean Jaurès',NULL,'Toulouse','31000','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-24 08:52:13');
+INSERT INTO `users` VALUES (1,'pauline.hiez@laplateforme.io','Pauline','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png',NULL,NULL,NULL,NULL,NULL,NULL,'admin',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-07-27 08:44:39'),(2,'lea.moreau@demo.test','Léa Moreau','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png','Portraitiste passionnée, je capture les émotions au plus près du réel.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Léa Moreau',NULL,NULL,NULL,NULL,NULL,'2026-01-08 06:44:39'),(3,'hugo.bernard@demo.test','Hugo Bernard','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png','Artiste pixel art rétro, je donne vie à tes personnages case par case.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Hugo Bernard',NULL,NULL,NULL,NULL,NULL,'2026-01-18 06:44:39'),(4,'manon.petit@demo.test','Manon Petit','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png','Univers kawaii et couleurs pastel : je dessine tout en mignon.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Manon Petit',NULL,NULL,NULL,NULL,NULL,'2026-01-28 06:44:39'),(5,'nathan.dubois@demo.test','Nathan Dubois','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png','Concept artist pour jeux vidéo et films d\'animation.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Nathan Dubois',NULL,NULL,NULL,NULL,NULL,'2026-02-07 06:44:39'),(6,'camille.roux@demo.test','Camille Roux','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png','Du portrait réaliste au design de tatouage, l\'encre est mon terrain de jeu.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Camille Roux',NULL,NULL,NULL,NULL,NULL,'2026-02-17 06:44:39'),(7,'emma.laurent@demo.test','Emma Laurent','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:39','default.png','Fan d\'anime, je crée des personnages pleins de vie.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Emma Laurent',NULL,NULL,NULL,NULL,NULL,'2026-02-27 06:44:39'),(8,'lucas.girard@demo.test','Lucas Girard','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png','Spécialiste du character design, du croquis à la fiche finale.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Lucas Girard',NULL,NULL,NULL,NULL,NULL,'2026-03-09 06:44:40'),(9,'chloe.fontaine@demo.test','Chloé Fontaine','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png','Illustratrice indépendante, douce et minutieuse.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Chloé Fontaine',NULL,NULL,NULL,NULL,NULL,'2026-03-19 06:44:40'),(10,'theo.mercier@demo.test','Théo Mercier','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png','Pixel art et identité visuelle rétro pour tes projets.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Théo Mercier',NULL,NULL,NULL,NULL,NULL,'2026-03-29 06:44:40'),(11,'sarah.lopez@demo.test','Sarah Lopez','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png','Le tatouage comme récit : chaque pièce raconte une histoire.',NULL,NULL,NULL,NULL,NULL,'artist',0,'approved','Sarah Lopez',NULL,NULL,NULL,NULL,NULL,'2026-04-08 06:44:40'),(12,'julie.bernard@demo.test','Julie Bernard','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png',NULL,'12 rue des Lilas',NULL,'Lyon','69003','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-02-27 06:44:40'),(13,'thomas.leroy@demo.test','Thomas Leroy','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png',NULL,'5 avenue Victor Hugo',NULL,'Paris','75016','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-09 06:44:40'),(14,'camille.petit@demo.test','Camille Petit','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png',NULL,'8 boulevard Longchamp',NULL,'Marseille','13001','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-19 06:44:40'),(15,'antoine.garnier@demo.test','Antoine Garnier','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png',NULL,'23 rue du Taur',NULL,'Toulouse','31000','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-03-29 06:44:40'),(16,'sophie.martin@demo.test','Sophie Martin','$2y$10$ecpE00aTCuEehhgW5kGQyu6WSZRqG.W2ywIGdZeVuYSENJfK8mSNi','credentials',NULL,NULL,'2026-07-27 08:44:40','default.png',NULL,'3 quai de la Fosse',NULL,'Nantes','44000','France','user',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2026-04-08 06:44:40');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -730,4 +727,4 @@ INSERT INTO `users` VALUES (1,'admin@toile.fr','Admin','$2y$10$mX9W5NNTGLztNylK7
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-24 16:14:39
+-- Dump completed on 2026-07-27  8:44:55
