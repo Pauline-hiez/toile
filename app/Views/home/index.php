@@ -13,6 +13,12 @@ $pageTitle = 'Accueil — Toile';
 
 <section class="max-w-[1400px] mx-auto pt-6 pb-6 min-[641px]:pt-10 grid grid-cols-1 min-[1100px]:grid-cols-2 items-center gap-4">
     <div class="order-first min-[1100px]:order-none px-5 min-[641px]:px-10">
+        <?php if (\App\Core\Demo::isEnabled()): ?>
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 max-w-[480px] bg-primary-light border border-primary/30 rounded-2xl px-3 py-2 mb-4">
+                <span class="inline-flex items-center gap-1 bg-primary text-white text-[0.7rem] font-semibold uppercase tracking-wide rounded-full px-2 py-[0.15rem] shrink-0">🎨 Démo</span>
+                <span class="text-[0.78rem] text-primary leading-[1.4]">Version de démonstration — paiements &amp; emails désactivés · mot de passe&nbsp;: <code class="font-mono text-ink">password123</code></span>
+            </div>
+        <?php endif; ?>
         <h1 class="font-title text-title text-shine text-[2.8rem] min-[641px]:text-[3.8rem] leading-[1.15] mb-3">Donnez vie à<br>vos idées.</h1>
         <p class="font-title italic text-[1.6rem] text-primary mb-4">L'art n'attend que vous.</p>
         <p class="text-muted text-base leading-[1.6] max-w-[480px] mb-7">
