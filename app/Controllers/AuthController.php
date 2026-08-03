@@ -104,8 +104,8 @@ class AuthController
             $errors['username'] = 'Le nom d\'utilisateur doit faire au moins 3 caractères.';
         }
 
-        if (mb_strlen($password) < 8) {
-            $errors['password'] = 'Le mot de passe doit faire au moins 8 caractères.';
+        if (!\App\Core\PasswordPolicy::isValid($password)) {
+            $errors['password'] = \App\Core\PasswordPolicy::REQUIREMENTS;
         } elseif ($password !== $passwordConfirm) {
             $errors['password'] = 'Les mots de passe ne correspondent pas.';
         }
@@ -335,10 +335,19 @@ class AuthController
             return;
         }
 
-        if (mb_strlen($password) < 8 || $password !== $passwordConfirm) {
+        if (!\App\Core\PasswordPolicy::isValid($password)) {
             $this->renderer->render('auth/reset-password', [
                 'token' => $token,
-                'error' => 'Le mot de passe doit faire au moins 8 caractères et les deux champs doivent correspondre.',
+                'error' => \App\Core\PasswordPolicy::REQUIREMENTS,
+                'pageTitle' => 'Réinitialisation - Toile',
+            ]);
+            return;
+        }
+
+        if ($password !== $passwordConfirm) {
+            $this->renderer->render('auth/reset-password', [
+                'token' => $token,
+                'error' => 'Les deux mots de passe ne correspondent pas.',
                 'pageTitle' => 'Réinitialisation - Toile',
             ]);
             return;

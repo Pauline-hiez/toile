@@ -33,6 +33,7 @@ $pageTitle = 'Nouveau mot de passe — Toile';
 
                             <div>
                                 <label for="password" class="block font-semibold text-[0.8rem] min-[481px]:text-[0.95rem] text-primary mb-1">Nouveau mot de passe</label>
+                                <p class="text-[0.7rem] min-[481px]:text-[0.78rem] text-muted mb-1"><?= \App\Core\PasswordPolicy::REQUIREMENTS ?></p>
                                 <div class="relative">
                                     <input type="password" id="password" name="password" required
                                         class="js-spark-input relative w-full border border-title rounded-full px-4 min-[481px]:px-5 pr-10 min-[481px]:pr-11 py-[0.3rem] bg-bg font-main text-[0.88rem] min-[481px]:text-[1rem] outline-none transition-colors duration-300 focus:border-primary">

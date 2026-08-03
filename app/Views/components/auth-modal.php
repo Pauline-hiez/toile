@@ -111,6 +111,7 @@
 
                             <div>
                                 <label for="modalRegisterPassword" class="block font-semibold text-[0.85rem] min-[481px]:text-[0.95rem] text-primary mb-1">Mot de passe</label>
+                                <p class="text-[0.72rem] min-[481px]:text-[0.8rem] text-muted mb-1"><?= \App\Core\PasswordPolicy::REQUIREMENTS ?></p>
                                 <div class="relative">
                                     <input type="password" id="modalRegisterPassword" name="password" required
                                         class="js-spark-input relative w-full border border-title rounded-full px-4 pr-10 py-[0.3rem] bg-bg font-main text-[0.92rem] min-[481px]:text-[1rem] outline-none transition-colors duration-300 focus:border-primary">
