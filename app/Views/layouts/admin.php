@@ -203,7 +203,7 @@ $navIcons = [
             <img src="/assets/images/decor/pot.png" alt="" class="block w-[210px] h-auto">
         </div>
 
-        <div id="adminMain" class="ml-[220px] flex-1 flex flex-col min-h-screen">
+        <div id="adminMain" class="ml-[220px] flex-1 min-w-0 flex flex-col min-h-screen">
             <header class="bg-bg flex items-center justify-between gap-6 px-8 py-5 sticky top-0 z-50 max-[720px]:px-5 max-[720px]:py-4 max-[720px]:gap-3">
                 <div class="flex items-center gap-4 min-w-0">
                     <button type="button" id="adminMenuBtn" aria-label="Ouvrir le menu" class="hidden max-[960px]:flex items-center justify-center w-10 h-10 border border-border rounded-full bg-white text-title cursor-pointer shrink-0">
